@@ -1,18 +1,15 @@
 name: Fork Release
 
 on:
-  workflow_dispatch:
-    inputs:
-      version:
-        description: 'Release version (for example, v0.12.1-sql.1)'
-        required: true
-        type: string
+  push:
+    tags:
+      - 'v*-sql.*'
 
 permissions:
   contents: write
 
 concurrency:
-  group: fork-release-${{ inputs.version }}
+  group: fork-release-${{ github.ref_name }}
   cancel-in-progress: false
 
 jobs:
@@ -29,7 +26,7 @@ jobs:
 
       - name: Validate release version
         env:
-          VERSION: ${{ inputs.version }}
+          VERSION: ${{ github.ref_name }}
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
@@ -37,10 +34,7 @@ jobs:
             echo "Invalid version '$VERSION'. Expected a value such as v0.12.1-sql.1." >&2
             exit 2
           fi
-          if git rev-parse --verify --quiet "refs/tags/$VERSION" >/dev/null; then
-            echo "Tag '$VERSION' already exists." >&2
-            exit 2
-          fi
+          git rev-parse --verify "refs/tags/$VERSION^{commit}" >/dev/null
           if gh release view "$VERSION" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             echo "Release '$VERSION' already exists." >&2
             exit 2
@@ -60,7 +54,7 @@ jobs:
 
       - name: Build static binary with UI
         env:
-          VERSION: ${{ inputs.version }}
+          VERSION: ${{ github.ref_name }}
         run: |
           set -euo pipefail
           scripts/build.sh \
@@ -81,7 +75,7 @@ jobs:
 
       - name: Package portable release
         env:
-          VERSION: ${{ inputs.version }}
+          VERSION: ${{ github.ref_name }}
         run: |
           set -euo pipefail
           scripts/ci/prepare-release-candidates.sh \
@@ -112,16 +106,16 @@ jobs:
       - name: Preserve release files as workflow artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: codebase-memory-mcp-${{ inputs.version }}-linux-amd64-portable
+          name: codebase-memory-mcp-${{ github.ref_name }}-linux-amd64-portable
           path: |
             release-output/codebase-memory-mcp-linux-amd64-portable.tar.gz
             release-output/codebase-memory-mcp-linux-amd64-portable.mcpb
             release-output/checksums.txt
           if-no-files-found: error
 
-      - name: Create tag and GitHub release
+      - name: Create GitHub release for pushed tag
         env:
-          VERSION: ${{ inputs.version }}
+          VERSION: ${{ github.ref_name }}
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
@@ -130,7 +124,7 @@ jobs:
             release-output/codebase-memory-mcp-linux-amd64-portable.mcpb \
             release-output/checksums.txt \
             --repo "$GITHUB_REPOSITORY" \
-            --target "$GITHUB_SHA" \
+            --verify-tag \
             --title "Codebase Memory SQL Lineage $VERSION" \
             --notes "Portable Linux x86_64 build with the SQL-lineage changes from commit $GITHUB_SHA." \
             --latest
