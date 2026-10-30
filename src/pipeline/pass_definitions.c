@@ -1127,6 +1127,7 @@ int cbm_pipeline_pass_definitions(cbm_pipeline_ctx_t *ctx, const cbm_file_info_t
             file_doc = NULL;
             total_defs++;
         }
+        (void)cbm_pipeline_sql_structure(ctx, result, rel);
 
         /* Store calls for pass_calls (we save them in the extraction results
          * for now — a future optimization would batch these) */

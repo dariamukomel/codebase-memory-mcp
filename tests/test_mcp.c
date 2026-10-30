@@ -1496,6 +1496,11 @@ TEST(mcp_tools_have_behavior_annotations) {
         {"trace_path", true, false, true, false},
         {"get_code_snippet", true, false, true, false},
         {"get_file_outline", true, false, true, false},
+        {"get_sql_file_outline", true, false, true, false},
+        {"get_sql_statement", true, false, true, false},
+        {"get_sql_structure", true, false, true, false},
+        {"search_sql", true, false, true, false},
+        {"get_sql_snippet", true, false, true, false},
         {"get_graph_schema", true, false, true, false},
         {"compare_graphs", true, false, true, false},
         {"get_architecture", true, false, true, false},
@@ -2204,7 +2209,9 @@ TEST(server_handle_analysis_profile_filters_and_rejects_mutators) {
     ASSERT_NOT_NULL(resp);
     static const char *const analysis_tools[] = {
         "search_graph",     "query_graph",      "trace_path",     "get_code_snippet",
-        "get_file_outline", "get_graph_schema", "compare_graphs", "get_architecture",
+        "get_file_outline", "get_sql_file_outline", "get_sql_statement", "get_sql_structure",
+        "search_sql", "get_sql_snippet",
+        "get_graph_schema", "compare_graphs", "get_architecture",
         "search_code",      "list_projects",    "index_status",   "check_index_coverage",
         "detect_changes",
     };

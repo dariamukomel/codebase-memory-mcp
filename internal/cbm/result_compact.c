@@ -357,6 +357,14 @@ static void cr_walk(cr_ctx_t *c, CBMFileResult *r) {
     for (int i = 0; i < r->defs.count && r->defs.items; i++) {
         cr_walk_def(c, &r->defs.items[i]);
     }
+    cr_array(c, (void **)&r->sql_entities.items, r->sql_entities.count, sizeof(CBMSqlEntity));
+    for (int i = 0; i < r->sql_entities.count && r->sql_entities.items; i++) {
+        cr_str(c, &r->sql_entities.items[i].name);
+        cr_str(c, &r->sql_entities.items[i].syntax_type);
+        cr_str(c, &r->sql_entities.items[i].detail);
+        cr_str(c, &r->sql_entities.items[i].slot);
+        cr_str(c, &r->sql_entities.items[i].alias);
+    }
     cr_array(c, (void **)&r->calls.items, r->calls.count, sizeof(CBMCall));
     for (int i = 0; i < r->calls.count && r->calls.items; i++) {
         cr_walk_call(c, &r->calls.items[i]);
@@ -597,6 +605,7 @@ void cbm_result_compact(CBMFileResult *result) {
 
     /* Exact-count arrays: nothing may append into the dead headroom. */
     tmp.defs.cap = tmp.defs.count;
+    tmp.sql_entities.cap = tmp.sql_entities.count;
     tmp.calls.cap = tmp.calls.count;
     tmp.imports.cap = tmp.imports.count;
     tmp.py_namespace.cap = tmp.py_namespace.count;

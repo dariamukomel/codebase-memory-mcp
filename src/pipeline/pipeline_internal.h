@@ -1226,6 +1226,10 @@ void cbm_pipeline_create_route_nodes(cbm_gbuf_t *gb);
 int cbm_pipeline_pass_definitions(cbm_pipeline_ctx_t *ctx, const cbm_file_info_t *files,
                                   int file_count);
 
+/* Persist the compact SQL entity array and its containment edges. */
+int cbm_pipeline_sql_structure(cbm_pipeline_ctx_t *ctx, const CBMFileResult *result,
+                               const char *rel_path);
+
 int cbm_pipeline_pass_k8s(cbm_pipeline_ctx_t *ctx, const cbm_file_info_t *files, int file_count);
 
 int cbm_pipeline_pass_calls(cbm_pipeline_ctx_t *ctx, const cbm_file_info_t *files, int file_count);
@@ -1655,8 +1659,11 @@ int cbm_pipeline_build_fresh_semantic_manifest(cbm_pipeline_t *p, const char *pr
  *      a kube / k8s task DEPLOYS {via:ansible} the template it applies
  *      (pass_ansible.c). An external Chart is keyed by its publisher URL.
  *      An index built before holds none of them, so it rebuilds once on
- *      upgrade. */
-enum { CBM_SEMANTIC_INDEX_VERSION = 9 };
+ *      upgrade.
+ *  10: ordinary SQL files gain a compact structural graph.
+ *  11: SQL persistence drops CST wrapper/dynamic-variable nodes and records
+ *      source/target/output roles with lineage-oriented edges. */
+enum { CBM_SEMANTIC_INDEX_VERSION = 13 };
 
 typedef struct {
     cbm_gbuf_t *gbuf;

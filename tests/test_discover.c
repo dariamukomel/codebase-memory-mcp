@@ -1244,7 +1244,7 @@ TEST(discover_generic_dirs_fast_mode) {
     PASS();
 }
 
-TEST(discover_deploy_excluded_full_mode) {
+TEST(discover_deploy_included_full_mode) {
     char *base = th_mktempdir("cbm_disc_deploy");
     ASSERT(base != NULL);
 
@@ -1258,7 +1258,45 @@ TEST(discover_deploy_excluded_full_mode) {
 
     int rc = cbm_discover(base, &opts, &files, &count);
     ASSERT_EQ(rc, 0);
-    ASSERT_EQ(count, 1);
+    ASSERT_EQ(count, 3);
+    ASSERT_TRUE(discover_has_rel_path(files, count, "src/main.go"));
+    ASSERT_TRUE(discover_has_rel_path(files, count, "deploy/main.go"));
+    ASSERT_TRUE(discover_has_rel_path(files, count, "deployed/main.go"));
+
+    cbm_discover_free(files, count);
+    th_cleanup(base);
+    PASS();
+}
+
+TEST(discover_deploy_excluded_lesser_modes) {
+    ASSERT_FALSE(cbm_should_skip_dir("deploy", CBM_MODE_FULL));
+    ASSERT_FALSE(cbm_should_skip_dir("deployed", CBM_MODE_FULL));
+    ASSERT_TRUE(cbm_should_skip_dir("deploy", CBM_MODE_MODERATE));
+    ASSERT_TRUE(cbm_should_skip_dir("deployed", CBM_MODE_MODERATE));
+    ASSERT_TRUE(cbm_should_skip_dir("deploy", CBM_MODE_FAST));
+    ASSERT_TRUE(cbm_should_skip_dir("deployed", CBM_MODE_FAST));
+    PASS();
+}
+
+TEST(discover_cbmignore_negates_nested_fast_deploy_dir) {
+    char *base = th_mktempdir("cbm_disc_deploy_neg");
+    ASSERT(base != NULL);
+
+    th_write_file(TH_PATH(base, ".cbmignore"), "!etl/workflows/deploy/\n");
+    th_write_file(TH_PATH(base, "main.go"), "package main\n");
+    th_write_file(TH_PATH(base, "etl/workflows/deploy/job.sql"), "select 1;\n");
+    th_write_file(TH_PATH(base, "other/deploy/generated.go"), "package generated\n");
+
+    cbm_discover_opts_t opts = {.mode = CBM_MODE_FAST};
+    cbm_file_info_t *files = NULL;
+    int count = 0;
+
+    int rc = cbm_discover(base, &opts, &files, &count);
+    ASSERT_EQ(rc, 0);
+    ASSERT_EQ(count, 2);
+    ASSERT_TRUE(discover_has_rel_path(files, count, "main.go"));
+    ASSERT_TRUE(discover_has_rel_path(files, count, "etl/workflows/deploy/job.sql"));
+    ASSERT_FALSE(discover_has_rel_path(files, count, "other/deploy/generated.go"));
 
     cbm_discover_free(files, count);
     th_cleanup(base);
@@ -2495,7 +2533,9 @@ SUITE(discover) {
     RUN_TEST(discover_new_ignore_patterns);
     RUN_TEST(discover_generic_dirs_full_mode);
     RUN_TEST(discover_generic_dirs_fast_mode);
-    RUN_TEST(discover_deploy_excluded_full_mode);
+    RUN_TEST(discover_deploy_included_full_mode);
+    RUN_TEST(discover_deploy_excluded_lesser_modes);
+    RUN_TEST(discover_cbmignore_negates_nested_fast_deploy_dir);
     RUN_TEST(discover_cbmignore_no_git);
 
     /* .cbmignore negation vs built-in skip dirs (issue #500) */

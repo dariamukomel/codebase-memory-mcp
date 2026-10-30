@@ -653,6 +653,54 @@ typedef struct {
     int cap;
 } CBMDefArray;
 
+/* Compact SQL structure retained after the tree-sitter CST is released.  The
+ * extractor records only navigable, source-addressable entities; source text
+ * and the complete CST deliberately remain outside the persistent model. */
+typedef enum {
+    CBM_SQL_STATEMENT = 0,
+    CBM_SQL_CTE,
+    CBM_SQL_SUBQUERY,
+    CBM_SQL_QUERY,
+    CBM_SQL_RELATION,
+    CBM_SQL_PROJECTION,
+    CBM_SQL_TABLE_REF,
+    CBM_SQL_COLUMN_REF,
+    CBM_SQL_KIND_COUNT
+} CBMSqlEntityKind;
+
+typedef enum {
+    CBM_SQL_ROLE_NEUTRAL = 0,
+    CBM_SQL_ROLE_SOURCE,
+    CBM_SQL_ROLE_TARGET,
+    CBM_SQL_ROLE_OUTPUT
+} CBMSqlRole;
+
+typedef struct {
+    CBMSqlEntityKind kind;
+    const char *name;        /* optional semantic/raw name, never substituted */
+    const char *syntax_type; /* exact tree-sitter node type */
+    const char *detail;      /* optional semantic detail */
+    const char *slot;        /* Tree-sitter field name in the immediate parent */
+    const char *alias;       /* optional source/projection alias, never resolved */
+    CBMSqlRole role;         /* universal lineage role inherited through CST wrappers */
+    int parent;              /* entity-array index, -1 for the file */
+    uint32_t ordinal;        /* order among entities of the same parent */
+    uint32_t start_byte;
+    uint32_t end_byte;
+    uint32_t start_line;   /* one-based */
+    uint32_t start_column; /* zero-based byte column */
+    uint32_t end_line;     /* one-based */
+    uint32_t end_column;   /* zero-based byte column */
+    uint32_t error_count;  /* ERROR/missing CST nodes in this SQL segment */
+    bool partial;
+} CBMSqlEntity;
+
+typedef struct {
+    CBMSqlEntity *items;
+    int count;
+    int cap;
+} CBMSqlEntityArray;
+
 typedef struct {
     CBMCall *items;
     int count;
@@ -850,6 +898,7 @@ typedef struct CBMFileResult {
     CBMArena arena; // owns local memory; composites may also retain child arenas below
 
     CBMDefArray defs;
+    CBMSqlEntityArray sql_entities;
     CBMCallArray calls;
     CBMImportArray imports;
     CBMPyNamespaceFacts py_namespace;
@@ -1365,6 +1414,7 @@ void cbm_extract_definitions_without_module(CBMExtractCtx *ctx);
 // per ref()/source() call. No-op unless the file parses as SQL and actually
 // contains a dbt builtin call. Defined in extract_dbt.c.
 void cbm_extract_dbt(CBMExtractCtx *ctx);
+void cbm_extract_sql_structure(CBMExtractCtx *ctx);
 void cbm_extract_imports(CBMExtractCtx *ctx);
 void cbm_extract_usages(CBMExtractCtx *ctx);
 void cbm_extract_semantic(CBMExtractCtx *ctx);

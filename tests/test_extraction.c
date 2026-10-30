@@ -1954,6 +1954,329 @@ TEST(sql_create_table) {
     PASS();
 }
 
+TEST(sql_create_table_like_keeps_source_and_next_statement_separate) {
+    const char *src =
+        "CREATE TABLE IF NOT EXISTS dst.accrual LIKE src.accrual;\n"
+        "WITH staged AS (SELECT id FROM raw.accrual)\n"
+        "INSERT OVERWRITE TABLE dst.accrual SELECT id FROM staged;\n";
+    CBMFileResult *r = extract(src, CBM_LANG_SQL, "t", "create_like.sql");
+    ASSERT_NOT_NULL(r);
+    ASSERT_FALSE(r->has_error);
+    int statements = 0;
+    bool target = false, like_source = false, raw_source = false;
+    for (int i = 0; i < r->sql_entities.count; i++) {
+        const CBMSqlEntity *e = &r->sql_entities.items[i];
+        statements += e->kind == CBM_SQL_STATEMENT;
+        if (e->kind != CBM_SQL_TABLE_REF || !e->name) continue;
+        target |= strcmp(e->name, "dst.accrual") == 0 &&
+                  e->role == CBM_SQL_ROLE_TARGET;
+        like_source |= strcmp(e->name, "src.accrual") == 0 &&
+                       e->role == CBM_SQL_ROLE_SOURCE;
+        raw_source |= strcmp(e->name, "raw.accrual") == 0 &&
+                      e->role == CBM_SQL_ROLE_SOURCE;
+    }
+    ASSERT_EQ(statements, 2);
+    ASSERT_TRUE(target);
+    ASSERT_TRUE(like_source);
+    ASSERT_TRUE(raw_source);
+    cbm_free_result(r);
+    PASS();
+}
+
+TEST(sql_structural_statements_are_top_level_segments) {
+    const char *src = "SELECT id FROM users;\n"
+                      "INSERT INTO archive SELECT id FROM users;\n"
+                      "UPDATE users SET active = 1;\n";
+    CBMFileResult *r = extract(src, CBM_LANG_SQL, "t", "queries.sql");
+    ASSERT_NOT_NULL(r);
+    int statements = 0;
+    for (int i = 0; i < r->sql_entities.count; i++) {
+        const CBMSqlEntity *e = &r->sql_entities.items[i];
+        if (e->kind != CBM_SQL_STATEMENT) continue;
+        ASSERT_EQ(e->parent, -1);
+        ASSERT_LT(e->start_byte, e->end_byte);
+        ASSERT_GTE(e->start_line, 1);
+        statements++;
+    }
+    ASSERT_EQ(statements, 3);
+    cbm_free_result(r);
+    PASS();
+}
+
+TEST(sql_with_insert_is_one_statement_with_ctes) {
+    const char *src = "WITH raw AS (SELECT id FROM source_orders),\n"
+                      "normalized AS (SELECT id FROM raw)\n"
+                      "INSERT INTO target_orders SELECT id FROM normalized;\n";
+    CBMFileResult *r = extract(src, CBM_LANG_SQL, "t", "load.sql");
+    ASSERT_NOT_NULL(r);
+    int statements = 0, ctes = 0, tables = 0;
+    for (int i = 0; i < r->sql_entities.count; i++) {
+        const CBMSqlEntity *e = &r->sql_entities.items[i];
+        statements += e->kind == CBM_SQL_STATEMENT;
+        ctes += e->kind == CBM_SQL_CTE;
+        tables += e->kind == CBM_SQL_TABLE_REF;
+        ASSERT_LTE(e->end_byte, strlen(src));
+    }
+    ASSERT_EQ(statements, 1);
+    ASSERT_EQ(ctes, 2);
+    ASSERT_GTE(tables, 3);
+    cbm_free_result(r);
+    PASS();
+}
+
+TEST(sql_object_references_and_queries_preserve_insert_structure) {
+    const char *src =
+        "INSERT INTO ${app.tgt.schemaName}_stg.${app.tgt.tableName}_t "
+        "SELECT * FROM (SELECT * FROM source_orders) nested;\n";
+    CBMFileResult *r = extract(src, CBM_LANG_SQL, "t", "insert.sql");
+    ASSERT_NOT_NULL(r);
+    ASSERT_FALSE(r->has_error);
+    int statements = 0, queries = 0, tables = 0, subqueries = 0;
+    int relations = 0, projections = 0;
+    bool saw_target = false, saw_source = false, saw_fake_subquery_table = false;
+    for (int i = 0; i < r->sql_entities.count; i++) {
+        const CBMSqlEntity *e = &r->sql_entities.items[i];
+        statements += e->kind == CBM_SQL_STATEMENT;
+        queries += e->kind == CBM_SQL_QUERY;
+        tables += e->kind == CBM_SQL_TABLE_REF;
+        subqueries += e->kind == CBM_SQL_SUBQUERY;
+        relations += e->kind == CBM_SQL_RELATION;
+        projections += e->kind == CBM_SQL_PROJECTION;
+        if (e->kind == CBM_SQL_TABLE_REF && e->name) {
+            saw_target |= strcmp(e->name,
+                "${app.tgt.schemaName}_stg.${app.tgt.tableName}_t") == 0;
+            saw_source |= strcmp(e->name, "source_orders") == 0;
+            saw_fake_subquery_table |= strstr(e->name, "SELECT") != NULL;
+        }
+    }
+    ASSERT_EQ(statements, 1);
+    ASSERT_GTE(queries, 2);
+    ASSERT_EQ(tables, 2);
+    ASSERT_GTE(subqueries, 1);
+    ASSERT_GTE(relations, 2);
+    ASSERT_GTE(projections, 2);
+    ASSERT_TRUE(saw_target);
+    ASSERT_TRUE(saw_source);
+    ASSERT_FALSE(saw_fake_subquery_table);
+    cbm_free_result(r);
+    PASS();
+}
+
+TEST(sql_semantic_fields_keep_only_lineage_identifiers) {
+    const char *src =
+        "INSERT INTO dst.events "
+        "SELECT current_timestamp, t.id, normalize(t.value), ${app.loadingId} "
+        "FROM src.events t;\n";
+    CBMFileResult *r = extract(src, CBM_LANG_SQL, "t", "semantic.sql");
+    ASSERT_NOT_NULL(r);
+    ASSERT_FALSE(r->has_error);
+    int tables = 0, columns = 0, projections = 0;
+    bool target = false, source = false, normalize_entity = false;
+    bool timestamp_column = false, dynamic_column = false;
+    bool target_parent_statement = false, source_parent_relation = false;
+    unsigned projection_ordinals = 0;
+    for (int i = 0; i < r->sql_entities.count; i++) {
+        const CBMSqlEntity *e = &r->sql_entities.items[i];
+        tables += e->kind == CBM_SQL_TABLE_REF;
+        columns += e->kind == CBM_SQL_COLUMN_REF;
+        projections += e->kind == CBM_SQL_PROJECTION;
+        if (e->kind == CBM_SQL_PROJECTION && e->ordinal < 8) {
+            projection_ordinals |= 1u << e->ordinal;
+        }
+        if (e->kind == CBM_SQL_TABLE_REF && e->name) {
+            target |= strcmp(e->name, "dst.events") == 0 && e->slot &&
+                      strcmp(e->slot, "target") == 0 && e->role == CBM_SQL_ROLE_TARGET;
+            source |= strcmp(e->name, "src.events") == 0 && e->slot &&
+                      strcmp(e->slot, "table") == 0 && e->role == CBM_SQL_ROLE_SOURCE;
+            if (strcmp(e->name, "dst.events") == 0 && e->parent >= 0) {
+                const CBMSqlEntity *parent = &r->sql_entities.items[e->parent];
+                target_parent_statement = parent->kind == CBM_SQL_STATEMENT;
+            } else if (strcmp(e->name, "src.events") == 0 && e->parent >= 0) {
+                const CBMSqlEntity *parent = &r->sql_entities.items[e->parent];
+                source_parent_relation = parent->kind == CBM_SQL_RELATION;
+            }
+        }
+        if (e->kind == CBM_SQL_COLUMN_REF && e->name) {
+            timestamp_column |= strcmp(e->name, "current_timestamp") == 0;
+            dynamic_column |= strcmp(e->name, "${app.loadingId}") == 0;
+        }
+        normalize_entity |= e->name && strcmp(e->name, "normalize") == 0;
+    }
+    ASSERT_EQ(tables, 2);
+    ASSERT_EQ(columns, 2);
+    ASSERT_EQ(projections, 4);
+    ASSERT_TRUE(target);
+    ASSERT_TRUE(source);
+    ASSERT_TRUE(target_parent_statement);
+    ASSERT_TRUE(source_parent_relation);
+    ASSERT_EQ(projection_ordinals, 0x0fu);
+    ASSERT_FALSE(timestamp_column);
+    ASSERT_FALSE(dynamic_column);
+    ASSERT_FALSE(normalize_entity);
+    cbm_free_result(r);
+    PASS();
+}
+
+TEST(sql_semantic_slots_survive_result_compaction) {
+    CBMFileResult *r = extract("INSERT INTO dst.events SELECT id FROM src.events;\n",
+                               CBM_LANG_SQL, "t", "compact.sql");
+    ASSERT_NOT_NULL(r);
+    ASSERT_GT(r->sql_entities.count, 0);
+    cbm_result_compact(r);
+    ASSERT_EQ(r->sql_entities.cap, r->sql_entities.count);
+    bool target = false, source = false;
+    for (int i = 0; i < r->sql_entities.count; i++) {
+        const CBMSqlEntity *e = &r->sql_entities.items[i];
+        if (e->kind != CBM_SQL_TABLE_REF || !e->name || !e->slot) continue;
+        target |= strcmp(e->name, "dst.events") == 0 && strcmp(e->slot, "target") == 0 &&
+                  e->role == CBM_SQL_ROLE_TARGET;
+        source |= strcmp(e->name, "src.events") == 0 && strcmp(e->slot, "table") == 0 &&
+                  e->role == CBM_SQL_ROLE_SOURCE;
+    }
+    ASSERT_TRUE(target);
+    ASSERT_TRUE(source);
+    cbm_free_result(r);
+    PASS();
+}
+
+TEST(sql_lineage_uses_field_roles_without_cst_wrappers) {
+    const char *src =
+        "WITH cte AS (SELECT id, amount FROM ${src.schema}.orders) "
+        "INSERT INTO ${dst.schema}.report "
+        "SELECT c.id, d.name FROM cte c "
+        "JOIN ${src.schema}.dictionary d ON c.id = d.id;";
+    CBMFileResult *r = extract(src, CBM_LANG_SQL, "t", "lineage.sql");
+    ASSERT_NOT_NULL(r);
+    ASSERT_FALSE(r->has_error);
+    int statements = 0, ctes = 0, queries = 0, relations = 0;
+    int tables = 0, projections = 0, columns = 0, predicate_columns = 0;
+    bool target = false, source_orders = false, source_dictionary = false, cte_ref = false;
+    for (int i = 0; i < r->sql_entities.count; i++) {
+        const CBMSqlEntity *e = &r->sql_entities.items[i];
+        statements += e->kind == CBM_SQL_STATEMENT;
+        ctes += e->kind == CBM_SQL_CTE;
+        queries += e->kind == CBM_SQL_QUERY;
+        projections += e->kind == CBM_SQL_PROJECTION;
+        columns += e->kind == CBM_SQL_COLUMN_REF;
+        if (e->kind == CBM_SQL_RELATION) {
+            relations++;
+            ASSERT_GTE(e->parent, 0);
+            ASSERT_EQ(r->sql_entities.items[e->parent].kind, CBM_SQL_QUERY);
+        } else if (e->kind == CBM_SQL_TABLE_REF && e->name) {
+            tables++;
+            target |= strcmp(e->name, "${dst.schema}.report") == 0 &&
+                      e->role == CBM_SQL_ROLE_TARGET;
+            source_orders |= strcmp(e->name, "${src.schema}.orders") == 0 &&
+                             e->role == CBM_SQL_ROLE_SOURCE;
+            source_dictionary |= strcmp(e->name, "${src.schema}.dictionary") == 0 &&
+                                 e->role == CBM_SQL_ROLE_SOURCE;
+            cte_ref |= strcmp(e->name, "cte") == 0 && e->role == CBM_SQL_ROLE_SOURCE;
+        } else if (e->kind == CBM_SQL_COLUMN_REF && e->name) {
+            predicate_columns += strcmp(e->name, "d.id") == 0;
+        }
+        ASSERT_FALSE(e->syntax_type && strcmp(e->syntax_type, "dynamic_identifier") == 0);
+    }
+    ASSERT_EQ(statements, 1);
+    ASSERT_EQ(ctes, 1);
+    ASSERT_EQ(queries, 2);
+    ASSERT_EQ(relations, 3);
+    ASSERT_EQ(tables, 4);
+    ASSERT_EQ(projections, 4);
+    ASSERT_EQ(columns, 4);
+    ASSERT_EQ(predicate_columns, 0);
+    ASSERT_TRUE(target);
+    ASSERT_TRUE(source_orders);
+    ASSERT_TRUE(source_dictionary);
+    ASSERT_TRUE(cte_ref);
+    cbm_free_result(r);
+    PASS();
+}
+
+TEST(sql_error_recovery_skips_junk_and_keeps_sql_segments) {
+    const char *src =
+        "LET x = 1;\n"
+        "PRINT x;\n"
+        "IF x = 1 BEGIN\n"
+        "  SELECT id FROM inside_table;\n"
+        "END;\n"
+        "SELECT id FROM outside_table;\n";
+    CBMFileResult *r = extract(src, CBM_LANG_SQL, "t", "control.sql");
+    ASSERT_NOT_NULL(r);
+    int statements = 0, tables = 0;
+    bool inside = false, outside = false;
+    for (int i = 0; i < r->sql_entities.count; i++) {
+        const CBMSqlEntity *e = &r->sql_entities.items[i];
+        statements += e->kind == CBM_SQL_STATEMENT;
+        if (e->kind == CBM_SQL_TABLE_REF && e->name) {
+            tables++;
+            inside |= strcmp(e->name, "inside_table") == 0;
+            outside |= strcmp(e->name, "outside_table") == 0;
+        }
+    }
+    ASSERT_EQ(statements, 2);
+    ASSERT_EQ(tables, 2);
+    ASSERT_TRUE(inside);
+    ASSERT_TRUE(outside);
+    cbm_free_result(r);
+    PASS();
+}
+
+TEST(sql_dynamic_fragments_stay_inside_complete_identifiers) {
+    const char *src =
+        "SELECT $X, $X.Y.Z, ${X}, ${X.Y.Z}, ${$X} "
+        "FROM $X.$Y;\n";
+    CBMFileResult *r = extract(src, CBM_LANG_SQL, "t", "dynamic.sql");
+    ASSERT_NOT_NULL(r);
+    ASSERT_FALSE(r->has_error);
+    int tables = 0, columns = 0;
+    bool saw_source = false, saw_dynamic_entity = false;
+    for (int i = 0; i < r->sql_entities.count; i++) {
+        const CBMSqlEntity *e = &r->sql_entities.items[i];
+        saw_dynamic_entity |= e->syntax_type && strcmp(e->syntax_type, "dynamic_identifier") == 0;
+        if (e->kind == CBM_SQL_TABLE_REF) {
+            tables++;
+            saw_source |= e->name && strcmp(e->name, "$X.$Y") == 0 &&
+                          e->role == CBM_SQL_ROLE_SOURCE;
+        }
+        columns += e->kind == CBM_SQL_COLUMN_REF;
+    }
+    ASSERT_EQ(tables, 1);
+    ASSERT_EQ(columns, 0);
+    ASSERT_TRUE(saw_source);
+    ASSERT_FALSE(saw_dynamic_entity);
+    cbm_free_result(r);
+    PASS();
+}
+
+TEST(sql_dynamic_identifiers_cover_named_sql_positions) {
+    const char *src =
+        "WITH ${cte} AS (SELECT ${prefix}_id FROM $source) "
+        "SELECT orders_${suffix} AS ${alias} FROM ${cte};\n";
+    CBMFileResult *r = extract(src, CBM_LANG_SQL, "t", "dynamic_positions.sql");
+    ASSERT_NOT_NULL(r);
+    ASSERT_FALSE(r->has_error);
+    bool saw_source = false, saw_cte_ref = false, saw_prefix_column = false;
+    bool saw_suffix_column = false, saw_dynamic_entity = false;
+    for (int i = 0; i < r->sql_entities.count; i++) {
+        const CBMSqlEntity *e = &r->sql_entities.items[i];
+        saw_dynamic_entity |= e->syntax_type && strcmp(e->syntax_type, "dynamic_identifier") == 0;
+        if (e->kind == CBM_SQL_TABLE_REF && e->name) {
+            saw_source |= strcmp(e->name, "$source") == 0;
+            saw_cte_ref |= strcmp(e->name, "${cte}") == 0;
+        } else if (e->kind == CBM_SQL_COLUMN_REF && e->name) {
+            saw_prefix_column |= strcmp(e->name, "${prefix}_id") == 0;
+            saw_suffix_column |= strcmp(e->name, "orders_${suffix}") == 0;
+        }
+    }
+    ASSERT_TRUE(saw_source);
+    ASSERT_TRUE(saw_cte_ref);
+    ASSERT_TRUE(saw_prefix_column);
+    ASSERT_TRUE(saw_suffix_column);
+    ASSERT_FALSE(saw_dynamic_entity);
+    cbm_free_result(r);
+    PASS();
+}
+
 /* --- Dockerfile --- */
 TEST(dockerfile_stages) {
     CBMFileResult *r = extract(
@@ -13299,6 +13622,16 @@ SUITE(extraction) {
     RUN_TEST(yaml_variables);
     RUN_TEST(hcl_blocks);
     RUN_TEST(sql_create_table);
+    RUN_TEST(sql_create_table_like_keeps_source_and_next_statement_separate);
+    RUN_TEST(sql_structural_statements_are_top_level_segments);
+    RUN_TEST(sql_with_insert_is_one_statement_with_ctes);
+    RUN_TEST(sql_object_references_and_queries_preserve_insert_structure);
+    RUN_TEST(sql_semantic_fields_keep_only_lineage_identifiers);
+    RUN_TEST(sql_semantic_slots_survive_result_compaction);
+    RUN_TEST(sql_lineage_uses_field_roles_without_cst_wrappers);
+    RUN_TEST(sql_error_recovery_skips_junk_and_keeps_sql_segments);
+    RUN_TEST(sql_dynamic_fragments_stay_inside_complete_identifiers);
+    RUN_TEST(sql_dynamic_identifiers_cover_named_sql_positions);
     RUN_TEST(dockerfile_stages);
 
     /* Scientific */
