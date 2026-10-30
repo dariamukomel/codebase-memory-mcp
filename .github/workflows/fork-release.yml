@@ -1,0 +1,136 @@
+name: Fork Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (for example, v0.12.1-sql.1)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fork-release-${{ inputs.version }}
+  cancel-in-progress: false
+
+jobs:
+  release-linux-amd64:
+    name: Build and publish Linux amd64 portable
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+
+    steps:
+      - name: Check out selected ref
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Validate release version
+        env:
+          VERSION: ${{ inputs.version }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if [[ ! "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z][0-9A-Za-z.-]*)?$ ]]; then
+            echo "Invalid version '$VERSION'. Expected a value such as v0.12.1-sql.1." >&2
+            exit 2
+          fi
+          if git rev-parse --verify --quiet "refs/tags/$VERSION" >/dev/null; then
+            echo "Tag '$VERSION' already exists." >&2
+            exit 2
+          fi
+          if gh release view "$VERSION" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release '$VERSION' already exists." >&2
+            exit 2
+          fi
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y zlib1g-dev zip
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: graph-ui/package-lock.json
+
+      - name: Build static binary with UI
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          scripts/build.sh \
+            --with-ui \
+            --version "$VERSION" \
+            BUILD_DIR=build/fork-release \
+            CC=gcc \
+            CXX=g++ \
+            STATIC=1
+
+      - name: Verify static linking
+        run: |
+          set -euo pipefail
+          file build/fork-release/codebase-memory-mcp
+          ldd_output="$(ldd build/fork-release/codebase-memory-mcp 2>&1 || true)"
+          echo "$ldd_output"
+          grep -Eq 'not a dynamic executable|statically linked' <<<"$ldd_output"
+
+      - name: Package portable release
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          scripts/ci/prepare-release-candidates.sh \
+            linux amd64-portable \
+            --binary build/fork-release/codebase-memory-mcp \
+            --out-dir build/fork-release-candidates
+
+          mkdir -p release-output
+          scripts/gen-third-party-notices.sh release-output/THIRD_PARTY_NOTICES.md
+
+          selected_binary="build/fork-release-candidates/linux-amd64-portable/stripped/codebase-memory-mcp"
+          selected_sha256="$(sha256sum "$selected_binary" | awk '{print $1}')"
+
+          VERSION="$VERSION" scripts/package-release.sh \
+            linux amd64-portable \
+            --selected-binary "$selected_binary" \
+            --expected-sha256 "$selected_sha256" \
+            --third-party-notices release-output/THIRD_PARTY_NOTICES.md \
+            --out-dir release-output
+
+          cd release-output
+          sha256sum \
+            codebase-memory-mcp-linux-amd64-portable.tar.gz \
+            codebase-memory-mcp-linux-amd64-portable.mcpb \
+            > checksums.txt
+          sha256sum -c checksums.txt
+
+      - name: Preserve release files as workflow artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: codebase-memory-mcp-${{ inputs.version }}-linux-amd64-portable
+          path: |
+            release-output/codebase-memory-mcp-linux-amd64-portable.tar.gz
+            release-output/codebase-memory-mcp-linux-amd64-portable.mcpb
+            release-output/checksums.txt
+          if-no-files-found: error
+
+      - name: Create tag and GitHub release
+        env:
+          VERSION: ${{ inputs.version }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release create "$VERSION" \
+            release-output/codebase-memory-mcp-linux-amd64-portable.tar.gz \
+            release-output/codebase-memory-mcp-linux-amd64-portable.mcpb \
+            release-output/checksums.txt \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "Codebase Memory SQL Lineage $VERSION" \
+            --notes "Portable Linux x86_64 build with the SQL-lineage changes from commit $GITHUB_SHA." \
+            --latest
