@@ -680,6 +680,53 @@ static const tool_def_t TOOLS[] = {
      "\"default\":\"tree\"}},\"additionalProperties\":false,"
      "\"required\":[\"project\",\"file_path\"]}"},
 
+    {"get_sql_file_outline",
+     "Compact statement outline for one indexed SQL file, with exact structural counts and "
+     "source coordinates.",
+     "{\"type\":\"object\",\"properties\":{\"project\":{\"type\":\"string\"},"
+     "\"file_path\":{\"type\":\"string\"},\"limit\":{\"type\":\"integer\","
+     "\"minimum\":1,\"maximum\":200,\"default\":100},\"offset\":{\"type\":\"integer\","
+     "\"minimum\":0,\"default\":0},\"format\":{\"type\":\"string\","
+     "\"enum\":[\"tree\",\"json\"],\"default\":\"tree\"}},"
+     "\"required\":[\"project\",\"file_path\"],\"additionalProperties\":false}"},
+
+    {"get_sql_statement",
+     "Return one SQL statement and its compact lineage descendants with source, target, and "
+     "output roles.",
+     "{\"type\":\"object\",\"properties\":{\"project\":{\"type\":\"string\"},"
+     "\"statement_id\":{\"type\":\"integer\",\"minimum\":1},\"format\":{\"type\":"
+     "\"string\",\"enum\":[\"tree\",\"json\"],\"default\":\"tree\"}},"
+     "\"required\":[\"project\",\"statement_id\"],\"additionalProperties\":false}"},
+
+    {"get_sql_structure",
+     "Return the compact lineage structure of one SQL statement (scopes, relations, table and "
+     "output-column references, and error regions).",
+     "{\"type\":\"object\",\"properties\":{\"project\":{\"type\":\"string\"},"
+     "\"statement_id\":{\"type\":\"integer\",\"minimum\":1},\"format\":{\"type\":"
+     "\"string\",\"enum\":[\"tree\",\"json\"],\"default\":\"tree\"}},"
+     "\"required\":[\"project\",\"statement_id\"],\"additionalProperties\":false}"},
+
+    {"search_sql",
+     "Search indexed SQL statements by path, syntax type, table, status, or error presence; "
+     "results are compact and paginated.",
+     "{\"type\":\"object\",\"properties\":{\"project\":{\"type\":\"string\"},"
+     "\"path_pattern\":{\"type\":\"string\"},\"statement_type\":{\"type\":\"string\"},"
+     "\"table_name_pattern\":{\"type\":\"string\"},\"parse_status\":{\"type\":\"string\",\"enum\":["
+     "\"complete\",\"partial\"]},\"has_errors\":{\"type\":\"boolean\"},"
+     "\"limit\":{\"type\":\"integer\",\"minimum\":1,\"maximum\":200,\"default\":50},"
+     "\"offset\":{\"type\":\"integer\",\"minimum\":0,\"default\":0},\"format\":{"
+     "\"type\":\"string\",\"enum\":[\"tree\",\"json\"],\"default\":\"tree\"}},"
+     "\"required\":[\"project\"],\"additionalProperties\":false}"},
+
+    {"get_sql_snippet",
+     "Read the bounded source span for one indexed SQL entity. Coordinates are taken from the "
+     "indexed graph.",
+     "{\"type\":\"object\",\"properties\":{\"project\":{\"type\":\"string\"},"
+     "\"entity_id\":{\"type\":\"integer\",\"minimum\":1},\"context\":{\"type\":"
+     "\"integer\",\"minimum\":0,\"maximum\":50,\"default\":0},\"format\":{\"type\":"
+     "\"string\",\"enum\":[\"tree\",\"json\"],\"default\":\"tree\"}},"
+     "\"required\":[\"project\",\"entity_id\"],\"additionalProperties\":false}"},
+
     {"get_graph_schema",
      "Get node-label and edge-type counts. diagnostics=full also lists queryable properties.",
      "{\"type\":\"object\",\"properties\":{\"project\":{\"type\":\"string\"},"
@@ -909,6 +956,11 @@ static const tool_annotation_def_t TOOL_ANNOTATIONS[] = {
     {"query_graph", true, false, true, false, false},
     {"trace_path", true, false, true, false, true},
     {"get_code_snippet", true, false, true, false, true},
+    {"get_sql_file_outline", true, false, true, false, true},
+    {"get_sql_statement", true, false, true, false, true},
+    {"get_sql_structure", true, false, true, false, true},
+    {"search_sql", true, false, true, false, true},
+    {"get_sql_snippet", true, false, true, false, true},
     {"get_file_outline", true, false, true, false, false},
     {"get_graph_schema", true, false, true, false, false},
     {"compare_graphs", true, false, true, false, false},
@@ -982,7 +1034,9 @@ static void mcp_add_tool_def(yyjson_mut_doc *doc, yyjson_mut_val *tools, int i) 
 static bool mcp_tool_allowed(cbm_mcp_tool_profile_t profile, const char *name) {
     static const char *const analysis_tools[] = {
         "search_graph",     "query_graph",      "trace_path",     "get_code_snippet",
-        "get_file_outline", "get_graph_schema", "compare_graphs", "get_architecture",
+        "get_file_outline", "get_sql_file_outline", "get_sql_statement", "get_sql_structure",
+        "search_sql", "get_sql_snippet",
+        "get_graph_schema", "compare_graphs", "get_architecture",
         "search_code",      "list_projects",    "index_status",   "check_index_coverage",
         "detect_changes",
     };
@@ -1807,6 +1861,22 @@ int cbm_mcp_get_int_arg(const char *args_json, const char *key, int default_val)
         if (parsed <= (uint64_t)INT_MAX) {
             result = (int)parsed;
         }
+    }
+    yyjson_doc_free(doc);
+    return result;
+}
+
+static int64_t mcp_get_positive_id_arg(const char *args_json, const char *key) {
+    yyjson_doc *doc = yyjson_read(args_json, strlen(args_json), 0);
+    yyjson_val *root = doc ? yyjson_doc_get_root(doc) : NULL;
+    yyjson_val *value = root ? yyjson_obj_get(root, key) : NULL;
+    int64_t result = -1;
+    if (value && yyjson_is_sint(value)) {
+        int64_t parsed = yyjson_get_sint(value);
+        if (parsed > 0) result = parsed;
+    } else if (value && yyjson_is_uint(value)) {
+        uint64_t parsed = yyjson_get_uint(value);
+        if (parsed > 0 && parsed <= INT64_MAX) result = (int64_t)parsed;
     }
     yyjson_doc_free(doc);
     return result;
@@ -14057,6 +14127,346 @@ static char *handle_get_code_snippet(cbm_mcp_server_t *srv, const char *args) {
         true);
 }
 
+static bool mcp_sql_label(const char *label) {
+    return label && strncmp(label, "Sql", 3) == 0;
+}
+
+static yyjson_mut_val *mcp_sql_node_json(yyjson_mut_doc *doc, const cbm_node_t *node) {
+    yyjson_mut_val *out = yyjson_mut_obj(doc);
+    yyjson_mut_obj_add_sint(doc, out, "id", node->id);
+    yyjson_mut_obj_add_strcpy(doc, out, "kind", node->label ? node->label : "");
+    yyjson_mut_obj_add_strcpy(doc, out, "name", node->name ? node->name : "");
+    yyjson_mut_obj_add_strcpy(doc, out, "qualified_name",
+                              node->qualified_name ? node->qualified_name : "");
+    yyjson_mut_obj_add_strcpy(doc, out, "file_path", node->file_path ? node->file_path : "");
+    yyjson_mut_obj_add_int(doc, out, "start_line", node->start_line);
+    yyjson_mut_obj_add_int(doc, out, "end_line", node->end_line);
+    yyjson_doc *props = node->properties_json
+                            ? yyjson_read(node->properties_json, strlen(node->properties_json), 0)
+                            : NULL;
+    yyjson_val *root = props ? yyjson_doc_get_root(props) : NULL;
+    if (root && yyjson_is_obj(root)) {
+        yyjson_mut_val *copy = yyjson_val_mut_copy(doc, root);
+        if (copy) yyjson_mut_obj_add_val(doc, out, "properties", copy);
+    }
+    yyjson_doc_free(props);
+    return out;
+}
+
+static char *handle_get_sql_file_outline(cbm_mcp_server_t *srv, const char *args) {
+    char *project = get_project_arg(args);
+    char *file_path = cbm_mcp_get_string_arg(args, "file_path");
+    int limit = cbm_mcp_get_int_arg(args, "limit", 100);
+    int offset = cbm_mcp_get_int_arg(args, "offset", 0);
+    if (!project || !file_path || !file_path[0]) {
+        free(project); free(file_path);
+        return cbm_mcp_text_result("project and file_path are required", true);
+    }
+    if (limit < 1 || limit > 200 || offset < 0) {
+        free(project); free(file_path);
+        return cbm_mcp_text_result("limit must be 1..200 and offset must be non-negative", true);
+    }
+    char normalized[CBM_SZ_4K];
+    if (coverage_normalize_rel(file_path, false, normalized, sizeof(normalized)) !=
+        COVERAGE_PATH_OK) {
+        free(project); free(file_path);
+        return cbm_mcp_text_result("file_path must be repository-relative without '..'", true);
+    }
+    cbm_store_t *store = resolve_store(srv, project);
+    cbm_node_t *nodes = NULL;
+    int count = 0;
+    if (!store || cbm_store_find_nodes_by_file(store, project, normalized, &nodes, &count) !=
+                      CBM_STORE_OK) {
+        free(project); free(file_path);
+        return cbm_mcp_text_result("project/file not found or query failed", true);
+    }
+    int total = 0;
+    for (int i = 0; i < count; i++) total += nodes[i].label && strcmp(nodes[i].label, "SqlStatement") == 0;
+    yyjson_mut_doc *doc = yyjson_mut_doc_new(NULL);
+    yyjson_mut_val *root = yyjson_mut_obj(doc);
+    yyjson_mut_doc_set_root(doc, root);
+    yyjson_mut_obj_add_strcpy(doc, root, "file_path", normalized);
+    yyjson_mut_val *items = yyjson_mut_arr(doc);
+    int seen = 0, returned = 0;
+    for (int i = 0; i < count && returned < limit; i++) {
+        if (!nodes[i].label || strcmp(nodes[i].label, "SqlStatement") != 0) continue;
+        if (seen++ < offset) continue;
+        yyjson_mut_arr_add_val(items, mcp_sql_node_json(doc, &nodes[i]));
+        returned++;
+    }
+    yyjson_mut_obj_add_val(doc, root, "statements", items);
+    yyjson_mut_obj_add_int(doc, root, "total", total);
+    yyjson_mut_obj_add_int(doc, root, "offset", offset);
+    yyjson_mut_obj_add_int(doc, root, "returned", returned);
+    yyjson_mut_obj_add_bool(doc, root, "has_more", offset + returned < total);
+    char *json = yy_doc_to_str(doc);
+    yyjson_mut_doc_free(doc);
+    cbm_store_free_nodes(nodes, count);
+    free(project); free(file_path);
+    char *response = mcp_result_from_json(args, json);
+    free(json);
+    return response;
+}
+
+static char *handle_search_sql(cbm_mcp_server_t *srv, const char *args) {
+    char *project = get_project_arg(args);
+    char *path = cbm_mcp_get_string_arg(args, "path_pattern");
+    char *statement_type = cbm_mcp_get_string_arg(args, "statement_type");
+    char *table = cbm_mcp_get_string_arg(args, "table_name_pattern");
+    char *status = cbm_mcp_get_string_arg(args, "parse_status");
+    int limit = cbm_mcp_get_int_arg(args, "limit", 50);
+    int offset = cbm_mcp_get_int_arg(args, "offset", 0);
+    bool has_errors_present = search_graph_arg_present(args, "has_errors");
+    int has_errors = has_errors_present ? (cbm_mcp_get_bool_arg(args, "has_errors") ? 1 : 0) : -1;
+    if (!project || limit < 1 || limit > 200 || offset < 0) {
+        free(project); free(path); free(statement_type); free(table); free(status);
+        return cbm_mcp_text_result("project is required; limit must be 1..200 and offset >= 0",
+                                   true);
+    }
+    cbm_store_t *store = resolve_store(srv, project);
+    sqlite3 *db = store ? cbm_store_get_db(store) : NULL;
+    static const char sql[] =
+        "WITH RECURSIVE statements(id) AS ("
+        " SELECT id FROM nodes WHERE project=?1 AND label='SqlStatement'),"
+        " d(statement_id,node_id) AS ("
+        " SELECT id,id FROM statements UNION "
+        " SELECT d.statement_id,e.target_id FROM d JOIN edges e ON e.source_id=d.node_id "
+        " WHERE e.project=?1 AND (e.type LIKE 'CONTAINS_%' OR e.type IN "
+        " ('READS_FROM','WRITES_TO','REFERENCES_TABLE','READS_COLUMN'))),"
+        " matched(id) AS (SELECT s.id FROM nodes s WHERE s.id IN (SELECT id FROM statements) "
+        " AND (?2='' OR s.file_path LIKE ?2)"
+        " AND (?3='' OR json_extract(s.properties,'$.statement_type')=?3)"
+        " AND (?4='' OR json_extract(s.properties,'$.parse_status')=?4)"
+        " AND (?5='' OR EXISTS (SELECT 1 FROM d JOIN nodes n ON n.id=d.node_id "
+        "   WHERE d.statement_id=s.id AND n.label='SqlTableRef' AND n.name LIKE ?5))"
+        " AND (?6<0 OR (json_extract(s.properties,'$.error_count')>0)=?6))"
+        " SELECT n.id,n.project,n.label,n.name,n.qualified_name,n.file_path,n.start_line,"
+        " n.end_line,n.properties,(SELECT count(*) FROM matched)"
+        " FROM matched m JOIN nodes n ON n.id=m.id ORDER BY n.file_path,n.start_line,n.id"
+        " LIMIT ?7 OFFSET ?8";
+    sqlite3_stmt *query = NULL;
+    if (!db || sqlite3_prepare_v2(db, sql, -1, &query, NULL) != SQLITE_OK) {
+        free(project); free(path); free(statement_type); free(table); free(status);
+        return cbm_mcp_text_result("SQL structure query failed", true);
+    }
+    sqlite3_bind_text(query, 1, project, -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(query, 2, path ? path : "", -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(query, 3, statement_type ? statement_type : "", -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(query, 4, status ? status : "", -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(query, 5, table ? table : "", -1, SQLITE_TRANSIENT);
+    sqlite3_bind_int(query, 6, has_errors);
+    sqlite3_bind_int(query, 7, limit);
+    sqlite3_bind_int(query, 8, offset);
+    yyjson_mut_doc *doc = yyjson_mut_doc_new(NULL);
+    yyjson_mut_val *root = yyjson_mut_obj(doc);
+    yyjson_mut_doc_set_root(doc, root);
+    yyjson_mut_val *items = yyjson_mut_arr(doc);
+    int returned = 0, total = 0;
+    while (sqlite3_step(query) == SQLITE_ROW) {
+        cbm_node_t n = {
+            .id = sqlite3_column_int64(query, 0),
+            .project = (const char *)sqlite3_column_text(query, 1),
+            .label = (const char *)sqlite3_column_text(query, 2),
+            .name = (const char *)sqlite3_column_text(query, 3),
+            .qualified_name = (const char *)sqlite3_column_text(query, 4),
+            .file_path = (const char *)sqlite3_column_text(query, 5),
+            .start_line = sqlite3_column_int(query, 6),
+            .end_line = sqlite3_column_int(query, 7),
+            .properties_json = (const char *)sqlite3_column_text(query, 8),
+        };
+        total = sqlite3_column_int(query, 9);
+        yyjson_mut_arr_add_val(items, mcp_sql_node_json(doc, &n));
+        returned++;
+    }
+    sqlite3_finalize(query);
+    yyjson_mut_obj_add_val(doc, root, "statements", items);
+    yyjson_mut_obj_add_int(doc, root, "total", total);
+    yyjson_mut_obj_add_int(doc, root, "offset", offset);
+    yyjson_mut_obj_add_int(doc, root, "returned", returned);
+    yyjson_mut_obj_add_bool(doc, root, "has_more", offset + returned < total);
+    char *json = yy_doc_to_str(doc);
+    yyjson_mut_doc_free(doc);
+    free(project); free(path); free(statement_type); free(table); free(status);
+    char *response = mcp_result_from_json(args, json);
+    free(json);
+    return response;
+}
+
+static char *handle_get_sql_statement(cbm_mcp_server_t *srv, const char *args) {
+    char *project = get_project_arg(args);
+    int64_t statement_id = mcp_get_positive_id_arg(args, "statement_id");
+    if (!project || statement_id <= 0) {
+        free(project);
+        return cbm_mcp_text_result("project and positive statement_id are required", true);
+    }
+    cbm_store_t *store = resolve_store(srv, project);
+    cbm_node_t statement = {0};
+    if (!store || cbm_store_find_node_by_id(store, statement_id, &statement) != CBM_STORE_OK ||
+        !statement.project || strcmp(statement.project, project) != 0 ||
+        !statement.label || strcmp(statement.label, "SqlStatement") != 0) {
+        free_node_contents(&statement); free(project);
+        return cbm_mcp_text_result("SQL statement not found in project", true);
+    }
+    yyjson_mut_doc *doc = yyjson_mut_doc_new(NULL);
+    yyjson_mut_val *root = yyjson_mut_obj(doc);
+    yyjson_mut_doc_set_root(doc, root);
+    yyjson_mut_obj_add_val(doc, root, "statement", mcp_sql_node_json(doc, &statement));
+    yyjson_mut_val *entities = yyjson_mut_arr(doc);
+    sqlite3_stmt *query = NULL;
+    static const char sql[] =
+        "WITH RECURSIVE d(id,depth,parent_id,edge_type) AS "
+        "(SELECT ?1,0,NULL,NULL UNION ALL "
+        "SELECT e.target_id,d.depth+1,e.source_id,e.type FROM edges e "
+        "JOIN d ON e.source_id=d.id "
+        "WHERE e.project=?2 AND (e.type LIKE 'CONTAINS_%' OR e.type IN "
+        "('READS_FROM','WRITES_TO','REFERENCES_TABLE','READS_COLUMN'))) "
+        "SELECT n.id,n.project,n.label,n.name,n.qualified_name,n.file_path,n.start_line,"
+        "n.end_line,n.properties,d.depth,d.parent_id,d.edge_type FROM d "
+        "JOIN nodes n ON n.id=d.id "
+        "WHERE d.depth>0 ORDER BY d.depth,n.start_line,n.id LIMIT 5000";
+    sqlite3 *db = cbm_store_get_db(store);
+    if (db && sqlite3_prepare_v2(db, sql, -1, &query, NULL) == SQLITE_OK) {
+        sqlite3_bind_int64(query, 1, statement_id);
+        sqlite3_bind_text(query, 2, project, -1, SQLITE_TRANSIENT);
+        while (sqlite3_step(query) == SQLITE_ROW) {
+            cbm_node_t n = {
+                .id = sqlite3_column_int64(query, 0),
+                .project = (const char *)sqlite3_column_text(query, 1),
+                .label = (const char *)sqlite3_column_text(query, 2),
+                .name = (const char *)sqlite3_column_text(query, 3),
+                .qualified_name = (const char *)sqlite3_column_text(query, 4),
+                .file_path = (const char *)sqlite3_column_text(query, 5),
+                .start_line = sqlite3_column_int(query, 6),
+                .end_line = sqlite3_column_int(query, 7),
+                .properties_json = (const char *)sqlite3_column_text(query, 8),
+            };
+            if (mcp_sql_label(n.label)) {
+                yyjson_mut_val *item = mcp_sql_node_json(doc, &n);
+                yyjson_mut_obj_add_int(doc, item, "depth", sqlite3_column_int(query, 9));
+                if (sqlite3_column_type(query, 10) != SQLITE_NULL) {
+                    yyjson_mut_obj_add_sint(doc, item, "parent_id",
+                                           sqlite3_column_int64(query, 10));
+                }
+                yyjson_mut_obj_add_strcpy(doc, item, "edge_type",
+                    (const char *)sqlite3_column_text(query, 11));
+                yyjson_mut_arr_add_val(entities, item);
+            }
+        }
+    }
+    sqlite3_finalize(query);
+    yyjson_mut_obj_add_val(doc, root, "entities", entities);
+    char *json = yy_doc_to_str(doc);
+    yyjson_mut_doc_free(doc);
+    free_node_contents(&statement); free(project);
+    char *response = mcp_result_from_json(args, json);
+    free(json);
+    return response;
+}
+
+static bool mcp_sql_file_sha256(const char *path, char out[CBM_SHA256_HEX_LEN + 1]) {
+    FILE *fp = fopen(path, "rb");
+    if (!fp) return false;
+    cbm_sha256_ctx sha;
+    cbm_sha256_init(&sha);
+    unsigned char buffer[CBM_SZ_64K];
+    size_t count = 0;
+    while ((count = fread(buffer, 1, sizeof(buffer), fp)) > 0) {
+        cbm_sha256_update(&sha, buffer, count);
+    }
+    bool ok = !ferror(fp) && fclose(fp) == 0;
+    if (!ok) return false;
+    unsigned char digest[CBM_SHA256_DIGEST_LEN];
+    cbm_sha256_final(&sha, digest);
+    static const char hex[] = "0123456789abcdef";
+    for (size_t i = 0; i < sizeof(digest); i++) {
+        out[i * 2] = hex[digest[i] >> 4];
+        out[i * 2 + 1] = hex[digest[i] & 15];
+    }
+    out[CBM_SHA256_HEX_LEN] = '\0';
+    return true;
+}
+
+/* Exact freshness gate for source-addressed SQL entities. Metadata alone is
+ * intentionally insufficient: a file can be rewritten with the same length
+ * and restored timestamp, which would make indexed byte ranges unsafe. */
+static const char *mcp_sql_source_freshness(cbm_mcp_server_t *srv, cbm_store_t *store,
+                                            const char *project, const char *file_path) {
+    char *root = get_project_root(srv, project);
+    if (!root || !file_path) {
+        free(root);
+        return "unavailable";
+    }
+    size_t path_size = strlen(root) + strlen(file_path) + MCP_SEPARATOR;
+    char *path = malloc(path_size);
+    if (!path) {
+        free(root);
+        return "unavailable";
+    }
+    snprintf(path, path_size, "%s/%s", root, file_path);
+    if (!cbm_path_within_root(root, path)) {
+        free(path);
+        free(root);
+        return "outside_project";
+    }
+    cbm_file_hash_t indexed = {0};
+    int rc = cbm_store_get_file_hash(store, project, file_path, &indexed);
+    char actual[CBM_SHA256_HEX_LEN + 1];
+    bool read_ok = rc == CBM_STORE_OK && mcp_sql_file_sha256(path, actual);
+    bool matches = read_ok && indexed.sha256 && strcmp(indexed.sha256, actual) == 0;
+    cbm_store_clear_file_hash(&indexed);
+    free(path);
+    free(root);
+    if (rc == CBM_STORE_NOT_FOUND) return "not_tracked";
+    if (!read_ok) return "unavailable";
+    return matches ? "match" : "stale";
+}
+
+static char *mcp_sql_freshness_response(const char *args, const char *file_path,
+                                        const char *freshness) {
+    yyjson_mut_doc *doc = yyjson_mut_doc_new(NULL);
+    yyjson_mut_val *root = yyjson_mut_obj(doc);
+    yyjson_mut_doc_set_root(doc, root);
+    yyjson_mut_obj_add_str(doc, root, "status", "stale");
+    yyjson_mut_obj_add_strcpy(doc, root, "file_path", file_path ? file_path : "");
+    yyjson_mut_obj_add_strcpy(doc, root, "freshness", freshness ? freshness : "unavailable");
+    yyjson_mut_obj_add_str(doc, root, "message",
+                           "source no longer matches the indexed file hash; reindex before "
+                           "requesting a coordinate-based snippet");
+    char *json = yy_doc_to_str(doc);
+    yyjson_mut_doc_free(doc);
+    char *response = mcp_result_from_json(args, json);
+    free(json);
+    return response;
+}
+
+static char *handle_get_sql_snippet(cbm_mcp_server_t *srv, const char *args) {
+    char *project = get_project_arg(args);
+    int64_t entity_id = mcp_get_positive_id_arg(args, "entity_id");
+    int context = cbm_mcp_get_int_arg(args, "context", 0);
+    if (!project || entity_id <= 0 || context < 0 || context > 50) {
+        free(project);
+        return cbm_mcp_text_result("project, positive entity_id, and context 0..50 are required", true);
+    }
+    cbm_store_t *store = resolve_store(srv, project);
+    cbm_node_t node = {0};
+    if (!store || cbm_store_find_node_by_id(store, entity_id, &node) != CBM_STORE_OK ||
+        !node.project || strcmp(node.project, project) != 0 || !mcp_sql_label(node.label)) {
+        free_node_contents(&node); free(project);
+        return cbm_mcp_text_result("SQL entity not found in project", true);
+    }
+    const char *freshness = mcp_sql_source_freshness(srv, store, project, node.file_path);
+    if (strcmp(freshness, "match") != 0) {
+        char *response = mcp_sql_freshness_response(args, node.file_path, freshness);
+        free_node_contents(&node); free(project);
+        return response;
+    }
+    node.start_line = node.start_line > context ? node.start_line - context : 1;
+    node.end_line += context;
+    char *response = build_snippet_response(srv, &node, "sql_entity_id", false, NULL, 0, args);
+    free_node_contents(&node); free(project);
+    return response;
+}
+
 /* ── search_code v2: graph-augmented code search ─────────────── */
 
 /* Intermediate grep match */
@@ -20572,6 +20982,21 @@ static char *dispatch_tool(cbm_mcp_server_t *srv, const char *tool_name, const c
     if (strcmp(tool_name, "get_file_outline") == 0) {
         return handle_get_file_outline(srv, args_json);
     }
+    if (strcmp(tool_name, "get_sql_file_outline") == 0) {
+        return handle_get_sql_file_outline(srv, args_json);
+    }
+    if (strcmp(tool_name, "get_sql_statement") == 0) {
+        return handle_get_sql_statement(srv, args_json);
+    }
+    if (strcmp(tool_name, "get_sql_structure") == 0) {
+        return handle_get_sql_statement(srv, args_json);
+    }
+    if (strcmp(tool_name, "search_sql") == 0) {
+        return handle_search_sql(srv, args_json);
+    }
+    if (strcmp(tool_name, "get_sql_snippet") == 0) {
+        return handle_get_sql_snippet(srv, args_json);
+    }
     if (strcmp(tool_name, "search_code") == 0) {
         return handle_search_code(srv, args_json);
     }
@@ -20597,6 +21022,8 @@ static bool mcp_tool_reads_in_batch(const char *tool_name) {
     static const char *const batched[] = {
         "query_graph",      "trace_path",           "trace_call_path",  "search_graph",
         "get_architecture", "get_graph_schema",     "get_code_snippet", "get_file_outline",
+        "get_sql_file_outline", "get_sql_statement", "get_sql_structure", "search_sql",
+        "get_sql_snippet",
         "compare_graphs",   "check_index_coverage",
     };
     for (size_t i = 0; tool_name && i < sizeof(batched) / sizeof(batched[0]); i++) {

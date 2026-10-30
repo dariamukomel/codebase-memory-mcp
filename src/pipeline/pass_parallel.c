@@ -2032,6 +2032,8 @@ int cbm_build_registry_from_cache(cbm_pipeline_ctx_t *ctx, const cbm_file_info_t
             }
         }
 
+        (void)cbm_pipeline_sql_structure(ctx, result, rel);
+
         imports_edges += create_imports_edges(ctx, result, rel, namespace_map);
         create_channel_edges(ctx, result, rel);
         cbm_pipeline_diagram_arrows(ctx, result);

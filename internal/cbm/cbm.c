@@ -3881,6 +3881,7 @@ static CBMFileResult *extract_file_ex_body(const char *source, int source_len, C
     cbm_extract_imports(&ctx);
     cbm_extract_python_namespace_facts(&ctx);
     cbm_extract_unified(&ctx);
+    cbm_extract_sql_structure(&ctx);
     if (cbm_lang_needs_cpp_branch_views(language)) {
         extract_cpp_branch_views(&ctx, ts_lang, timeout_micros);
     }

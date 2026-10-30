@@ -58,8 +58,8 @@ static const char *ALWAYS_SKIP_DIRS[] = {
     /* Language caches */
     ".cargo", ".stack-work", ".dart_tool", "zig-cache", "zig-out", ".metals", ".bloop", ".bsp",
     ".ccls-cache", ".clangd", "elm-stuff", "_opam", ".cpcache", ".shadow-cljs",
-    /* Deploy */
-    ".vercel", ".netlify", "deploy", "deployed",
+    /* Unambiguous generated deployment output */
+    ".vercel", ".netlify",
     /* Misc */
     ".codebase-memory", ".qdrant_code_embeddings", ".tmp", "vendor", "vendored", NULL};
 
@@ -81,7 +81,8 @@ static const char *FAST_SKIP_DIRS[] = {
     "assets",    "static",        "public",         "media",        "third_party", "thirdparty",
     "3rdparty",  "external",      "migrations",     "seeds",        "e2e",         "integration",
     "locale",    "locales",       "i18n",           "l10n",         "scripts",     "tools",
-    "hack",      "bin",           "build",          "out",          NULL};
+    "hack",      "bin",           "build",          "out",          "deploy",      "deployed",
+    NULL};
 
 /* ── Ignored suffixes ───────────────────────────────── */
 

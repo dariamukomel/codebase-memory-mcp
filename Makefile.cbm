@@ -374,6 +374,7 @@ EXTRACTION_SRCS = \
     $(CBM_DIR)/extract_channels.c \
     $(CBM_DIR)/extract_k8s.c \
     $(CBM_DIR)/extract_dbt.c \
+    $(CBM_DIR)/extract_sql.c \
     $(CBM_DIR)/doclink.c \
     $(CBM_DIR)/doclink_cs.c \
     $(CBM_DIR)/doclink_md.c \
@@ -506,6 +507,7 @@ PIPELINE_SRCS = \
     src/pipeline/worker_pool.c \
     src/pipeline/pass_parallel.c \
     src/pipeline/pass_definitions.c \
+    src/pipeline/pass_sql.c \
     src/pipeline/pass_calls.c \
     src/pipeline/pass_spawns.c \
     src/pipeline/pass_lsp_cross.c \
