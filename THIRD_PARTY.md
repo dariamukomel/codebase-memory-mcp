@@ -96,6 +96,17 @@ License summary:
   `internal/cbm/vendored/grammars/MANIFEST.md`. PL/SQL support was originally
   contributed in PR #1033 by Oğuz (@ouzsrcm).
 
+### Tree-sitter SQL Polyglot
+
+- **Project:** [RelativelyUnknown/Tree-sitter-sql-polyglot](https://github.com/RelativelyUnknown/Tree-sitter-sql-polyglot)
+- **License:** MIT
+- **Pinned commit:** `af0fa43227ef3a94f390a76fb17ebd67040c676e`
+- **Vendored at:** `tools/tree-sitter-sql-polyglot/`
+- **Notes:** ANSI SQL base plus 22 compiled dialect extensions. Generated
+  parsers are stored as Brotli-compressed sources and inflated before the C
+  build. Local dynamic-identifier and semantic-lineage-field patches are
+  documented in `internal/cbm/vendored/grammars/MANIFEST.md`.
+
 ### tree-sitter-objectscript (UDL + routine)
 
 - **Project:** [intersystems/tree-sitter-objectscript](https://github.com/intersystems/tree-sitter-objectscript)

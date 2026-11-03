@@ -1,0 +1,241 @@
+================================================================================
+Unreserved type keywords as column names
+================================================================================
+
+SELECT date, time, timestamp, array, interval, top FROM t;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))
+        (term
+          value: (field
+            name: (identifier)))
+        (term
+          value: (field
+            name: (identifier)))
+        (term
+          value: (field
+            name: (identifier)))
+        (term
+          value: (field
+            name: (identifier)))
+        (term
+          value: (field
+            name: (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))))))
+
+================================================================================
+Keyword column names in a predicate and CLUSTER BY
+================================================================================
+
+SELECT a FROM t WHERE date = 1 AND time > 2;
+CREATE TABLE t2 (date TIMESTAMP_NTZ, id NUMBER) CLUSTER BY (date, id);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (where
+        (keyword_where)
+        predicate: (binary_expression
+          left: (binary_expression
+            left: (field
+              name: (identifier))
+            right: (literal))
+          operator: (keyword_and)
+          right: (binary_expression
+            left: (field
+              name: (identifier))
+            right: (literal))))))
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          custom_type: (object_reference
+            name: (identifier)))
+        (column_definition
+          name: (identifier)
+          custom_type: (object_reference
+            name: (identifier))))
+      (cluster_by_clause
+        (keyword_cluster)
+        (keyword_by)
+        (field
+          name: (identifier))
+        (field
+          name: (identifier))))))
+
+================================================================================
+Typed literals and functions named like column keywords
+================================================================================
+
+SELECT DATE '2020-01-01', DATE('2020-01-01'), ARRAY(SELECT 1), IDENTIFIER('t'), INTERVAL '1 day';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (typed_temporal_literal
+            type: (keyword_date)
+            value: (literal)))
+        (term
+          value: (date_function
+            name: (keyword_date)
+            (literal)))
+        (term
+          value: (array
+            (keyword_array)
+            (select
+              (keyword_select)
+              (select_expression
+                (term
+                  value: (literal))))))
+        (term
+          value: (field
+            name: (identifier
+              (identifier_function
+                (keyword_identifier)
+                (literal)))))
+        (term
+          value: (interval
+            (keyword_interval)))))))
+
+================================================================================
+EXECUTE IMMEDIATE with a concatenated expression
+================================================================================
+
+EXECUTE IMMEDIATE v2 || ',(80)';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (execute_immediate_statement
+      (keyword_execute)
+      (keyword_immediate)
+      (binary_expression
+        left: (field
+          name: (identifier))
+        operator: (op_other)
+        right: (literal)))))
+
+================================================================================
+Keywords that are not reserved as column names in CREATE TABLE and INSERT
+================================================================================
+
+CREATE TABLE t (index INT, primary INT, foreign INT, identifier INT);
+INSERT INTO t (index, identifier) VALUES (1, 2);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int)))
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int)))
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int)))
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int))))))
+  (statement
+    (insert
+      (keyword_insert)
+      (keyword_into)
+      (object_reference
+        name: (identifier))
+      (list
+        (column
+          (identifier))
+        (column
+          (identifier)))
+      (keyword_values)
+      (list
+        (literal)
+        (literal)))))
+
+================================================================================
+Table constraints still parse next to keyword-named columns
+================================================================================
+
+CREATE TABLE t (index INT, a INT, PRIMARY KEY (a), FOREIGN KEY (a) REFERENCES u (b), INDEX ix (a));
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int)))
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int)))
+        (table_constraint
+          (keyword_primary)
+          (keyword_key)
+          (identifier))
+        (table_constraint
+          (keyword_foreign)
+          (keyword_key)
+          (identifier)
+          (keyword_references)
+          (object_reference
+            name: (identifier))
+          (identifier))
+        (index_definition
+          (keyword_index)
+          (identifier)
+          (identifier))))))

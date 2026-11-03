@@ -1,0 +1,54 @@
+================================================================================
+Athena: MSCK REPAIR TABLE
+================================================================================
+
+MSCK REPAIR TABLE my_table;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (msck_repair_statement
+      (keyword_msck)
+      (keyword_repair)
+      (keyword_table)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+Athena: MSCK REPAIR TABLE ADD PARTITIONS
+================================================================================
+
+MSCK REPAIR TABLE my_table ADD PARTITIONS;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (msck_repair_statement
+      (keyword_msck)
+      (keyword_repair)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_add)
+      (keyword_partitions))))
+
+================================================================================
+Athena: MSCK REPAIR TABLE SYNC PARTITIONS
+================================================================================
+
+MSCK REPAIR TABLE my_table SYNC PARTITIONS;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (msck_repair_statement
+      (keyword_msck)
+      (keyword_repair)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_sync)
+      (keyword_partitions))))

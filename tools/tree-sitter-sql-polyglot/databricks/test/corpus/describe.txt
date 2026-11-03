@@ -1,0 +1,96 @@
+================================================================================
+Databricks: DESCRIBE TABLE
+================================================================================
+
+DESCRIBE my_table;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (describe_table
+      (keyword_describe)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+Databricks: DESCRIBE EXTENDED TABLE
+================================================================================
+
+DESCRIBE EXTENDED my_table;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (describe_table
+      (keyword_describe)
+      (keyword_extended)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+Databricks: DESCRIBE HISTORY
+================================================================================
+
+DESCRIBE HISTORY my_table LIMIT 10;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (describe_history
+      (keyword_describe)
+      (keyword_history)
+      (object_reference
+        name: (identifier))
+      (keyword_limit)
+      (literal))))
+
+================================================================================
+Databricks: DESCRIBE DETAIL
+================================================================================
+
+DESCRIBE DETAIL my_table;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (describe_detail
+      (keyword_describe)
+      (keyword_detail)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+Databricks: DESCRIBE CATALOG
+================================================================================
+
+DESCRIBE CATALOG my_catalog;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (describe_uc_object
+      (keyword_describe)
+      (keyword_catalog)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+Databricks: DESCRIBE VOLUME
+================================================================================
+
+DESCRIBE VOLUME my_volume;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (describe_uc_object
+      (keyword_describe)
+      (keyword_volume)
+      (object_reference
+        name: (identifier)))))

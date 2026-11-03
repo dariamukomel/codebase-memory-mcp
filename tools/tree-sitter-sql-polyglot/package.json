@@ -1,0 +1,135 @@
+{
+  "name": "@relativelyunknown/tree-sitter-sql-polyglot",
+  "version": "0.1.2",
+  "description": "Tree-sitter SQL grammar: ANSI base plus 22 independently compiled dialect extensions (PostgreSQL, MySQL, MariaDB, Oracle, Db2, T-SQL, BigQuery, Snowflake, Redshift, Databricks, Spark, Hive, DuckDB, SQLite, Trino, Athena, ClickHouse, Flink, CockroachDB, Spanner, Teradata, SAP HANA)",
+  "main": "bindings/node",
+  "types": "bindings/node",
+  "scripts": {
+    "install": "node scripts/inflate-parsers.js && node-gyp-build",
+    "generate": "node scripts/generate.js",
+    "generate:all": "node scripts/generate-all.js",
+    "generate:force": "npx tree-sitter generate",
+    "build": "node scripts/inflate-parsers.js && node-gyp-build",
+    "test:corpus": "npx tree-sitter test",
+    "test:keywords": "bash scripts/test-keywords.sh",
+    "coverage": "python tools/coverage.py",
+    "bench": "python tools/perf/parse_bench.py",
+    "coverage:setup": "pip install -r tools/requirements.txt && bash tools/antlr/setup.sh",
+    "test:node": "node --test bindings/node/*_test.js",
+    "test": "npm run test:corpus && npm run test:keywords && npm run test:node",
+    "parse": "npx tree-sitter parse",
+    "prestart": "npx tree-sitter build --wasm",
+    "start": "npx tree-sitter playground",
+    "release": "commit-and-tag-version",
+    "prebuildify": "prebuildify --napi --strip",
+    "docs:prep": "node scripts/docs-prep.js",
+    "docs:dev": "npm run docs:prep && vitepress dev docs",
+    "docs:build": "npm run docs:prep && vitepress build docs",
+    "docs:preview": "vitepress preview docs"
+  },
+  "author": "relativelyunknown",
+  "license": "MIT",
+  "dependencies": {
+    "node-addon-api": "^7.1.0",
+    "node-gyp-build": "^4.8.0"
+  },
+  "devDependencies": {
+    "commit-and-tag-version": "^12.0.0",
+    "node-gyp": "^12.0.0",
+    "prebuildify": "^6.0.0",
+    "tree-sitter-cli": "0.26.3",
+    "vitepress": "^1.6.4"
+  },
+  "peerDependencies": {
+    "tree-sitter": "^0.25.1"
+  },
+  "peerDependenciesMeta": {
+    "tree_sitter": {
+      "optional": true
+    }
+  },
+  "gypfile": true,
+  "directories": {
+    "test": "test"
+  },
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RelativelyUnknown/Tree-sitter-sql-polyglot.git"
+  },
+  "bugs": {
+    "url": "https://github.com/RelativelyUnknown/Tree-sitter-sql-polyglot/issues"
+  },
+  "homepage": "https://github.com/RelativelyUnknown/Tree-sitter-sql-polyglot#readme",
+  "commit-and-tag-version": {
+    "skip": {
+      "tag": true
+    },
+    "infile": "docs/changelog.md"
+  },
+  "keywords": [
+    "parser",
+    "sql"
+  ],
+  "files": [
+    "grammar.js",
+    "grammar/**",
+    "binding.gyp",
+    "prebuilds/**",
+    "bindings/node/*",
+    "scripts/inflate-parsers.js",
+    "scripts/bundle-highlights.js",
+    "queries/*",
+    "src/**",
+    "tree-sitter.json",
+    "spark/src/**",
+    "spark/queries/highlights.bundled.scm",
+    "postgres/src/**",
+    "postgres/queries/highlights.bundled.scm",
+    "mysql/src/**",
+    "mysql/queries/highlights.bundled.scm",
+    "databricks/src/**",
+    "databricks/queries/highlights.bundled.scm",
+    "snowflake/src/**",
+    "snowflake/queries/highlights.bundled.scm",
+    "bigquery/src/**",
+    "bigquery/queries/highlights.bundled.scm",
+    "mariadb/src/**",
+    "mariadb/queries/highlights.bundled.scm",
+    "sqlite/src/**",
+    "sqlite/queries/highlights.bundled.scm",
+    "hive/src/**",
+    "hive/queries/highlights.bundled.scm",
+    "oracle/src/**",
+    "oracle/queries/highlights.bundled.scm",
+    "db2/src/**",
+    "db2/queries/highlights.bundled.scm",
+    "tsql/src/**",
+    "tsql/queries/highlights.bundled.scm",
+    "duckdb/src/**",
+    "duckdb/queries/highlights.bundled.scm",
+    "trino/src/**",
+    "trino/queries/highlights.bundled.scm",
+    "athena/src/**",
+    "athena/queries/highlights.bundled.scm",
+    "redshift/src/**",
+    "redshift/queries/highlights.bundled.scm",
+    "clickhouse/src/**",
+    "clickhouse/queries/highlights.bundled.scm",
+    "flink/src/**",
+    "flink/queries/highlights.bundled.scm",
+    "cockroachdb/src/**",
+    "cockroachdb/queries/highlights.bundled.scm",
+    "spanner/src/**",
+    "spanner/queries/highlights.bundled.scm",
+    "teradata/src/**",
+    "teradata/queries/highlights.bundled.scm",
+    "hana/src/**",
+    "hana/queries/highlights.bundled.scm"
+  ],
+  "allowScripts": {
+    "esbuild@0.21.5": true,
+    "tree-sitter-cli@0.26.3": true,
+    "tree-sitter@0.25.1": true
+  }
+}

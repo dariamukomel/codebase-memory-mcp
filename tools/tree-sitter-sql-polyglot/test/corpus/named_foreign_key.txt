@@ -1,0 +1,33 @@
+================================================================================
+Named FOREIGN KEY constraint
+================================================================================
+
+CREATE TABLE t (a INT, CONSTRAINT fk FOREIGN KEY (a) REFERENCES p (id));
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int)))
+        (constraints
+          (constraint
+            (keyword_constraint)
+            name: (identifier)
+            (keyword_foreign)
+            (keyword_key)
+            (ordered_columns
+              (column
+                name: (identifier)))
+            (keyword_references)
+            (object_reference
+              name: (identifier))
+            (identifier)))))))

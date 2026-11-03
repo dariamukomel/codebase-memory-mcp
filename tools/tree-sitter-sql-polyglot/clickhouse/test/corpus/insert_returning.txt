@@ -1,0 +1,103 @@
+================================================================================
+INSERT RETURNING
+================================================================================
+
+INSERT INTO t (id, val) VALUES (1, 'a') RETURNING id;
+INSERT INTO t SELECT * FROM src RETURNING *;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (insert
+      (keyword_insert)
+      (keyword_into)
+      (object_reference
+        (identifier))
+      (list
+        (column
+          (identifier))
+        (column
+          (identifier)))
+      (keyword_values)
+      (list
+        (literal)
+        (literal)))
+    (returning
+      (keyword_returning)
+      (select_expression
+        (term
+          (field
+            (identifier))))))
+  (statement
+    (insert
+      (keyword_insert)
+      (keyword_into)
+      (object_reference
+        (identifier))
+      (select
+        (keyword_select)
+        (select_expression
+          (term
+            (all_fields))))
+      (from
+        (keyword_from)
+        (relation
+          (object_reference
+            (identifier)))))
+    (returning
+      (keyword_returning)
+      (select_expression
+        (term
+          (all_fields))))))
+
+==================
+INSERT with FORMAT clause
+==================
+
+INSERT INTO t (a, b) FORMAT JSONEachRow
+
+---
+
+(program
+  (statement
+    (insert
+      (keyword_insert)
+      (keyword_into)
+      (object_reference
+        name: (identifier))
+      (list
+        (column
+          (identifier))
+        (column
+          (identifier)))
+      (keyword_format)
+      format: (identifier))))
+
+==================
+INSERT INTO FUNCTION
+==================
+
+INSERT INTO FUNCTION remote('host', db.t) VALUES (1)
+
+---
+
+(program
+  (statement
+    (insert
+      (keyword_insert)
+      (keyword_into)
+      (keyword_function)
+      (invocation
+        (object_reference
+          name: (identifier))
+        parameter: (term
+          value: (literal))
+        parameter: (term
+          value: (field
+            (object_reference
+              name: (identifier))
+            name: (identifier))))
+      (keyword_values)
+      (list
+        (literal)))))

@@ -1,0 +1,88 @@
+================================================================================
+MariaDB: CREATE OR REPLACE PACKAGE
+================================================================================
+
+CREATE OR REPLACE PACKAGE emp_pkg AS
+  FUNCTION get_name(p_id INT) RETURN VARCHAR(100);
+  PROCEDURE hire(p_name VARCHAR(100));
+END emp_pkg;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_package
+      (keyword_create)
+      (keyword_or)
+      (keyword_replace)
+      (keyword_package)
+      (object_reference
+        name: (identifier))
+      (package_spec
+        (keyword_as)
+        (package_item
+          (package_function_decl
+            (keyword_function)
+            (object_reference
+              name: (identifier))
+            (function_arguments
+              (function_argument
+                (identifier)
+                (int
+                  (keyword_int))))
+            (keyword_return)
+            (varchar
+              (keyword_varchar)
+              size: (literal))))
+        (package_item
+          (package_procedure_decl
+            (keyword_procedure)
+            (object_reference
+              name: (identifier))
+            (function_arguments
+              (function_argument
+                (identifier)
+                (varchar
+                  (keyword_varchar)
+                  size: (literal))))))
+        (keyword_end)
+        (identifier)))))
+
+================================================================================
+MariaDB: CREATE OR REPLACE PACKAGE BODY
+================================================================================
+
+CREATE OR REPLACE PACKAGE BODY emp_pkg AS
+  FUNCTION get_name(p_id INT) RETURN VARCHAR(100);
+END emp_pkg;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_package_body
+      (keyword_create)
+      (keyword_or)
+      (keyword_replace)
+      (keyword_package)
+      (keyword_body)
+      (object_reference
+        name: (identifier))
+      (package_spec
+        (keyword_as)
+        (package_item
+          (package_function_decl
+            (keyword_function)
+            (object_reference
+              name: (identifier))
+            (function_arguments
+              (function_argument
+                (identifier)
+                (int
+                  (keyword_int))))
+            (keyword_return)
+            (varchar
+              (keyword_varchar)
+              size: (literal))))
+        (keyword_end)
+        (identifier)))))

@@ -1,0 +1,22 @@
+================================================================================
+CREATE OR REPLACE TABLE
+================================================================================
+
+CREATE OR REPLACE TABLE t (id INT);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_or)
+      (keyword_replace)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int)))))))

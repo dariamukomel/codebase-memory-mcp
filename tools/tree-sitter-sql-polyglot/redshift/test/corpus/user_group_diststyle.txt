@@ -1,0 +1,153 @@
+================================================================================
+Redshift: ALTER GROUP ADD USER
+================================================================================
+
+ALTER GROUP data_team ADD USER analyst, engineer;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_group_statement
+      (keyword_alter)
+      (keyword_group)
+      (identifier)
+      (keyword_add)
+      (keyword_user)
+      (identifier)
+      (identifier))))
+
+================================================================================
+Redshift: ALTER GROUP DROP USER
+================================================================================
+
+ALTER GROUP data_team DROP USER former_employee;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_group_statement
+      (keyword_alter)
+      (keyword_group)
+      (identifier)
+      (keyword_drop)
+      (keyword_user)
+      (identifier))))
+
+================================================================================
+Redshift: ALTER TABLE ALTER DISTSTYLE KEY DISTKEY
+================================================================================
+
+ALTER TABLE orders ALTER DISTSTYLE KEY DISTKEY customer_id;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (alter_diststyle_clause
+        (keyword_alter)
+        (keyword_diststyle)
+        (keyword_key)
+        (keyword_distkey)
+        (identifier)))))
+
+================================================================================
+Redshift: ALTER TABLE ALTER DISTSTYLE EVEN
+================================================================================
+
+ALTER TABLE orders ALTER DISTSTYLE EVEN;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (alter_diststyle_clause
+        (keyword_alter)
+        (keyword_diststyle)
+        (keyword_even)))))
+
+================================================================================
+Redshift: ALTER TABLE ALTER SORTKEY
+================================================================================
+
+ALTER TABLE orders ALTER SORTKEY (order_date, customer_id);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (alter_sortkey_clause
+        (keyword_alter)
+        (keyword_sortkey)
+        (identifier)
+        (identifier)))))
+
+================================================================================
+Redshift: ALTER TABLE ALTER COMPOUND SORTKEY
+================================================================================
+
+ALTER TABLE orders ALTER COMPOUND SORTKEY (order_date);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (alter_sortkey_clause
+        (keyword_alter)
+        (keyword_compound)
+        (keyword_sortkey)
+        (identifier)))))
+
+================================================================================
+Redshift: SET session variable
+================================================================================
+
+SET search_path TO myschema;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (set_session_variable_statement
+      (keyword_set)
+      (object_reference
+        name: (identifier))
+      (keyword_to)
+      (field
+        name: (identifier)))))
+
+================================================================================
+Redshift: RESET session variable
+================================================================================
+
+RESET search_path;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (reset_statement
+      (keyword_reset)
+      (object_reference
+        name: (identifier)))))

@@ -1,0 +1,122 @@
+================================================================================
+DuckDB: FROM-first bare query
+================================================================================
+
+FROM t;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (from_first_select
+      (keyword_from)
+      relation: (relation
+        (object_reference
+          name: (identifier))))))
+
+================================================================================
+DuckDB: FROM-first with WHERE
+================================================================================
+
+FROM t WHERE id > 1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (from_first_select
+      (keyword_from)
+      relation: (relation
+        (object_reference
+          name: (identifier)))
+      (where
+        (keyword_where)
+        predicate: (binary_expression
+          left: (field
+            name: (identifier))
+          right: (literal))))))
+
+================================================================================
+DuckDB: FROM-first with SELECT projection
+================================================================================
+
+FROM t WHERE id > 1 SELECT name;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (from_first_select
+      (keyword_from)
+      relation: (relation
+        (object_reference
+          name: (identifier)))
+      (where
+        (keyword_where)
+        predicate: (binary_expression
+          left: (field
+            name: (identifier))
+          right: (literal)))
+      (keyword_select)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))))))
+
+================================================================================
+DuckDB: GROUP BY ALL
+================================================================================
+
+SELECT category, SUM(amount) FROM t GROUP BY ALL;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))
+        (term
+          value: (invocation
+            (object_reference
+              name: (identifier))
+            parameter: (term
+              value: (field
+                name: (identifier)))))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (group_by
+        (keyword_group)
+        (keyword_by)
+        (keyword_all)))))
+
+================================================================================
+DuckDB: ORDER BY ALL
+================================================================================
+
+SELECT * FROM t ORDER BY ALL;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (order_by
+        (keyword_order)
+        (keyword_by)
+        (keyword_all)))))

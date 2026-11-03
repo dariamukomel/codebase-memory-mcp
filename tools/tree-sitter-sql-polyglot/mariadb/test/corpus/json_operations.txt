@@ -1,0 +1,116 @@
+================================================================================
+MariaDB: JSON_EXTRACT in SELECT and WHERE
+================================================================================
+
+SELECT id, JSON_EXTRACT(attrs, '$.color') AS color, JSON_EXTRACT(attrs, '$.size') AS size
+FROM products
+WHERE JSON_EXTRACT(attrs, '$.active') = 'true';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))
+        (term
+          value: (invocation
+            (object_reference
+              name: (identifier))
+            parameter: (term
+              value: (field
+                name: (identifier)))
+            parameter: (term
+              value: (literal)))
+          (keyword_as)
+          alias: (identifier))
+        (term
+          value: (invocation
+            (object_reference
+              name: (identifier))
+            parameter: (term
+              value: (field
+                name: (identifier)))
+            parameter: (term
+              value: (literal)))
+          (keyword_as)
+          alias: (identifier))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (where
+        (keyword_where)
+        predicate: (binary_expression
+          left: (invocation
+            (object_reference
+              name: (identifier))
+            parameter: (term
+              value: (field
+                name: (identifier)))
+            parameter: (term
+              value: (literal)))
+          right: (literal))))))
+
+================================================================================
+MariaDB: JSON -> operator
+================================================================================
+
+SELECT data->'$.name' FROM t;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (binary_expression
+            left: (field
+              name: (identifier))
+            operator: (op_other)
+            right: (literal)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))))))
+
+================================================================================
+MariaDB: JSON ->> operator in SELECT and WHERE
+================================================================================
+
+SELECT data->>'$.price' FROM products WHERE data->>'$.active' = 'true';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (binary_expression
+            left: (field
+              name: (identifier))
+            operator: (op_other)
+            right: (literal)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (where
+        (keyword_where)
+        predicate: (binary_expression
+          left: (binary_expression
+            left: (field
+              name: (identifier))
+            operator: (op_other)
+            right: (literal))
+          right: (literal))))))

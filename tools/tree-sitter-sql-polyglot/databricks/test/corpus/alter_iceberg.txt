@@ -1,0 +1,470 @@
+================================================================================
+ALTER TABLE Iceberg: CREATE TAG
+================================================================================
+
+ALTER TABLE my_table CREATE TAG v1 AS OF '2024-01-01';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_create)
+      (keyword_tag)
+      tag_name: (identifier)
+      (keyword_as)
+      (keyword_of)
+      (literal))))
+
+================================================================================
+ALTER TABLE Iceberg: CREATE TAG without AS OF
+================================================================================
+
+ALTER TABLE my_catalog.my_schema.my_table CREATE TAG v1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        database: (identifier)
+        schema: (identifier)
+        name: (identifier))
+      (keyword_create)
+      (keyword_tag)
+      tag_name: (identifier))))
+
+================================================================================
+ALTER TABLE Iceberg: CREATE TAG IF NOT EXISTS
+================================================================================
+
+ALTER TABLE my_table CREATE TAG IF NOT EXISTS v1 AS OF '2024-01-01';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_create)
+      (keyword_tag)
+      (keyword_if)
+      (keyword_not)
+      (keyword_exists)
+      tag_name: (identifier)
+      (keyword_as)
+      (keyword_of)
+      (literal))))
+
+================================================================================
+ALTER TABLE Iceberg: CREATE BRANCH
+================================================================================
+
+ALTER TABLE my_table CREATE BRANCH dev_branch AS OF 1234567890;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_create)
+      (keyword_branch)
+      branch_name: (identifier)
+      (keyword_as)
+      (keyword_of)
+      (literal))))
+
+================================================================================
+ALTER TABLE Iceberg: CREATE BRANCH IF NOT EXISTS
+================================================================================
+
+ALTER TABLE my_table CREATE BRANCH IF NOT EXISTS dev_branch;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_create)
+      (keyword_branch)
+      (keyword_if)
+      (keyword_not)
+      (keyword_exists)
+      branch_name: (identifier))))
+
+================================================================================
+ALTER TABLE Iceberg: DROP TAG
+================================================================================
+
+ALTER TABLE my_table DROP TAG v1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_drop)
+      (keyword_tag)
+      tag_name: (identifier))))
+
+================================================================================
+ALTER TABLE Iceberg: DROP TAG IF EXISTS
+================================================================================
+
+ALTER TABLE my_table DROP TAG IF EXISTS v1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_drop)
+      (keyword_tag)
+      (keyword_if)
+      (keyword_exists)
+      tag_name: (identifier))))
+
+================================================================================
+ALTER TABLE Iceberg: DROP BRANCH
+================================================================================
+
+ALTER TABLE my_table DROP BRANCH dev_branch;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_drop)
+      (keyword_branch)
+      branch_name: (identifier))))
+
+================================================================================
+ALTER TABLE Iceberg: DROP BRANCH IF EXISTS
+================================================================================
+
+ALTER TABLE my_table DROP BRANCH IF EXISTS dev_branch;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_drop)
+      (keyword_branch)
+      (keyword_if)
+      (keyword_exists)
+      branch_name: (identifier))))
+
+================================================================================
+ALTER TABLE Iceberg: ALTER TAG
+================================================================================
+
+ALTER TABLE my_table ALTER TAG v1 AS OF '2024-06-01' REPLACE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_alter)
+      (keyword_tag)
+      tag_name: (identifier)
+      (keyword_as)
+      (keyword_of)
+      (literal)
+      (keyword_replace))))
+
+================================================================================
+ALTER TABLE Iceberg: ALTER BRANCH
+================================================================================
+
+ALTER TABLE my_table ALTER BRANCH dev_branch REPLACE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_alter)
+      (keyword_branch)
+      branch_name: (identifier)
+      (keyword_replace))))
+
+================================================================================
+ALTER TABLE Iceberg: SET LOCATION
+================================================================================
+
+ALTER TABLE my_table SET LOCATION 's3://bucket/path';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_set)
+      (keyword_location)
+      location: (literal))))
+
+================================================================================
+ALTER TABLE Iceberg: SET TBLPROPERTIES
+================================================================================
+
+ALTER TABLE my_table SET TBLPROPERTIES ('key1' = 'value1', 'key2' = 'value2');
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_set)
+      (keyword_tblproperties)
+      (list
+        (binary_expression
+          left: (literal)
+          right: (literal))
+        (binary_expression
+          left: (literal)
+          right: (literal))))))
+
+================================================================================
+ALTER TABLE Iceberg: UNSET TBLPROPERTIES
+================================================================================
+
+ALTER TABLE my_table UNSET TBLPROPERTIES ('key1', 'key2');
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_unset)
+      (keyword_tblproperties)
+      (list
+        (literal)
+        (literal)))))
+
+================================================================================
+ALTER TABLE Iceberg: UNSET TBLPROPERTIES IF EXISTS
+================================================================================
+
+ALTER TABLE my_table UNSET TBLPROPERTIES ('key1') IF EXISTS;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_unset)
+      (keyword_tblproperties)
+      (list
+        (literal))
+      (keyword_if)
+      (keyword_exists))))
+
+================================================================================
+ALTER TABLE Iceberg: ALTER COLUMN POSITION AFTER
+================================================================================
+
+ALTER TABLE my_table ALTER COLUMN col1 POSITION AFTER col2;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_alter)
+      (keyword_column)
+      column: (identifier)
+      (keyword_position)
+      (keyword_after)
+      after_column: (identifier))))
+
+================================================================================
+ALTER TABLE Iceberg: ALTER COLUMN POSITION FIRST
+================================================================================
+
+ALTER TABLE my_table ALTER COLUMN col1 POSITION FIRST;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_alter)
+      (keyword_column)
+      column: (identifier)
+      (keyword_position)
+      (keyword_first))))
+
+================================================================================
+ALTER TABLE Iceberg: ALTER COLUMN FIRST (no POSITION keyword)
+================================================================================
+
+ALTER TABLE my_table ALTER COLUMN col1 FIRST;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_alter)
+      (keyword_column)
+      column: (identifier)
+      (keyword_first))))
+
+================================================================================
+ALTER TABLE Iceberg: SET WRITE mode APPENDS
+================================================================================
+
+ALTER TABLE my_table SET WRITE APPENDS;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_set)
+      (keyword_write)
+      (keyword_appends))))
+
+================================================================================
+ALTER TABLE Iceberg: SET WRITE mode OVERWRITE
+================================================================================
+
+ALTER TABLE my_table SET WRITE OVERWRITE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_set)
+      (keyword_write)
+      (keyword_overwrite))))
+
+================================================================================
+ALTER TABLE Iceberg: COMMIT SNAPSHOT
+================================================================================
+
+ALTER TABLE my_table ALTER TABLE my_other_table COMMIT SNAPSHOT;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_commit)
+      (keyword_snapshot))))
+
+================================================================================
+ALTER TABLE Iceberg: WRITE ORDERED BY (regression; must not be dropped by Databricks override)
+================================================================================
+
+ALTER TABLE my_table WRITE ORDERED BY (ts, id);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (write_order
+        (keyword_write)
+        (keyword_ordered)
+        (keyword_by)
+        (order_target
+          (list
+            (field
+              name: (identifier))
+            (field
+              name: (identifier))))))))

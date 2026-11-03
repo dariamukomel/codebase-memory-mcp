@@ -1,0 +1,51 @@
+================================================================================
+SELECT TOP n
+================================================================================
+
+SELECT TOP 10 * FROM t ORDER BY id;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (keyword_top)
+      (literal)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (order_by
+        (keyword_order)
+        (keyword_by)
+        (order_target
+          (field
+            name: (identifier)))))))
+
+================================================================================
+ALTER TABLE ADD parenthesized column list
+================================================================================
+
+ALTER TABLE t ADD (phone NVARCHAR(10));
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (add_column
+        (keyword_add)
+        (column_definition
+          name: (identifier)
+          type: (nvarchar
+            (keyword_nvarchar)
+            size: (literal)))))))

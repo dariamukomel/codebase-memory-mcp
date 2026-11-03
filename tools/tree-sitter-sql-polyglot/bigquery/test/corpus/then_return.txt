@@ -1,0 +1,130 @@
+================================================================================
+BigQuery: INSERT THEN RETURN columns
+================================================================================
+
+INSERT INTO t1 (col) VALUES (1) THEN RETURN id, name;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (insert
+      (keyword_insert)
+      (keyword_into)
+      (object_reference
+        (identifier))
+      (list
+        (column
+          (identifier)))
+      (keyword_values)
+      (list
+        (literal)))
+    (then_return_clause
+      (keyword_then)
+      (keyword_return)
+      (select_expression
+        (term
+          (field
+            (identifier)))
+        (term
+          (field
+            (identifier)))))))
+
+================================================================================
+BigQuery: UPDATE THEN RETURN *
+================================================================================
+
+UPDATE t1 SET col = 2 WHERE id = 1 THEN RETURN *;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (update
+      (keyword_update)
+      (relation
+        (object_reference
+          (identifier)))
+      (keyword_set)
+      (assignment
+        (field
+          (identifier))
+        (literal))
+      (where
+        (keyword_where)
+        (binary_expression
+          (field
+            (identifier))
+          (literal))))
+    (then_return_clause
+      (keyword_then)
+      (keyword_return)
+      (select_expression
+        (term
+          (all_fields))))))
+
+================================================================================
+BigQuery: DELETE THEN RETURN column
+================================================================================
+
+DELETE FROM t1 WHERE id = 1 THEN RETURN id;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (delete
+      (keyword_delete))
+    (from
+      (keyword_from)
+      (object_reference
+        (identifier))
+      (where
+        (keyword_where)
+        (binary_expression
+          (field
+            (identifier))
+          (literal))))
+    (then_return_clause
+      (keyword_then)
+      (keyword_return)
+      (select_expression
+        (term
+          (field
+            (identifier)))))))
+
+================================================================================
+BigQuery: INSERT THEN RETURN WITH ACTION
+================================================================================
+
+INSERT INTO t1 (col) VALUES (1) THEN RETURN WITH ACTION AS act id, name;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (insert
+      (keyword_insert)
+      (keyword_into)
+      (object_reference
+        (identifier))
+      (list
+        (column
+          (identifier)))
+      (keyword_values)
+      (list
+        (literal)))
+    (then_return_clause
+      (keyword_then)
+      (keyword_return)
+      (keyword_with)
+      (keyword_action)
+      (keyword_as)
+      (identifier)
+      (select_expression
+        (term
+          (field
+            (identifier)))
+        (term
+          (field
+            (identifier)))))))

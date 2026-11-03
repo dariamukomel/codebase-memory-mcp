@@ -1,0 +1,30 @@
+================================================================================
+CALL procedure
+================================================================================
+
+CALL my_catalog.my_db.expire_snapshots('my_table')
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (call_statement
+      (keyword_call)
+      (object_reference (identifier) (identifier) (identifier))
+      (literal))))
+
+================================================================================
+CALL with named arguments
+================================================================================
+
+CALL system.rewrite_data_files(table => 'db.orders', strategy => 'sort')
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (call_statement
+      (keyword_call)
+      (object_reference (identifier) (identifier))
+      (identifier) (literal)
+      (identifier) (literal))))

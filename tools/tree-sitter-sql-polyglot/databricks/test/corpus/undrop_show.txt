@@ -1,0 +1,61 @@
+================================================================================
+Databricks: UNDROP TABLE
+================================================================================
+
+UNDROP TABLE my_table
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (undrop_statement
+      (keyword_undrop)
+      (keyword_table)
+      name: (object_reference
+        name: (identifier)))))
+
+================================================================================
+Databricks: SHOW USERS
+================================================================================
+
+SHOW USERS
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (keyword_show)
+    (keyword_users)))
+
+================================================================================
+Databricks: SHOW TABLES DROPPED
+================================================================================
+
+SHOW TABLES DROPPED
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (keyword_show)
+    (keyword_tables)
+    (keyword_dropped)))
+
+================================================================================
+Databricks: DROP BLOOMFILTER INDEX
+================================================================================
+
+DROP BLOOMFILTER INDEX ON TABLE my_table
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_bloomfilter_index
+      (keyword_drop)
+      (keyword_bloomfilter)
+      (keyword_index)
+      (keyword_on)
+      (keyword_table)
+      table: (object_reference
+        name: (identifier)))))

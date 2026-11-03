@@ -24,6 +24,7 @@
 #include "lsp/lsp_work.h"
 #include "preprocessor.h"
 #include "sql_values.h" // #1735: literal INSERT rows kept out of the SQL parse
+#include "sql_dialect.h"
 #include "cpp_branch_views.h"
 #include "foundation/compat.h"
 #include "foundation/compat_fs.h"  // cbm_fopen — crash-supervisor per-file marker write
@@ -674,6 +675,7 @@ static bool cbm_timeout_cb(TSParseState *state) {
 
 static CBM_TLS TSParser *tl_parser = NULL;
 static CBM_TLS CBMLanguage tl_parser_lang = CBM_LANG_COUNT; // invalid sentinel
+static CBM_TLS const TSLanguage *tl_parser_ts_lang = NULL;
 
 // Get or create a thread-local parser configured for the given language.
 static TSParser *get_thread_parser(const TSLanguage *ts_lang, CBMLanguage lang) {
@@ -683,10 +685,13 @@ static TSParser *get_thread_parser(const TSLanguage *ts_lang, CBMLanguage lang) 
             return NULL;
         }
         tl_parser_lang = CBM_LANG_COUNT;
+        tl_parser_ts_lang = NULL;
     }
-    if (tl_parser_lang != lang) {
-        ts_parser_set_language(tl_parser, ts_lang);
+    /* SQL dialects share CBM_LANG_SQL but have different TSLanguage objects. */
+    if (tl_parser_lang != lang || tl_parser_ts_lang != ts_lang) {
+        if (!ts_parser_set_language(tl_parser, ts_lang)) return NULL;
         tl_parser_lang = lang;
+        tl_parser_ts_lang = ts_lang;
     }
     return tl_parser;
 }
@@ -1037,6 +1042,7 @@ void cbm_destroy_thread_parser(void) {
         ts_parser_delete(tl_parser);
         tl_parser = NULL;
         tl_parser_lang = CBM_LANG_COUNT;
+        tl_parser_ts_lang = NULL;
     }
     if (tl_cursor_live) {
         ts_tree_cursor_delete(&tl_cursor);
@@ -3726,6 +3732,11 @@ static CBMFileResult *extract_file_ex_body(const char *source, int source_len, C
 
     // Get tree-sitter language
     const TSLanguage *ts_lang = cbm_ts_language(language);
+    if (language == CBM_LANG_SQL) {
+        CBMSqlDialectChoice sql_dialect =
+            cbm_sql_dialect_choose(source, (size_t)source_len, rel_path);
+        ts_lang = sql_dialect.language;
+    }
     if (!ts_lang) {
         result->has_error = true;
         result->error_msg = cbm_arena_strdup(a, "no tree-sitter grammar");

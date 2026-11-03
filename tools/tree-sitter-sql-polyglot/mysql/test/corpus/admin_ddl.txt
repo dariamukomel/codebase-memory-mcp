@@ -1,0 +1,337 @@
+================================================================================
+MySQL: CREATE SERVER
+================================================================================
+
+CREATE SERVER s FOREIGN DATA WRAPPER mysql OPTIONS (HOST 'localhost', PORT 3306)
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_server
+      (keyword_create)
+      (keyword_server)
+      name: (identifier)
+      (keyword_foreign)
+      (keyword_data)
+      (identifier)
+      wrapper: (identifier)
+      (keyword_options)
+      (mysql_option
+        name: (identifier)
+        value: (literal))
+      (mysql_option
+        name: (identifier)
+        value: (literal)))))
+
+================================================================================
+MySQL: DROP SERVER
+================================================================================
+
+DROP SERVER IF EXISTS s
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_server
+      (keyword_drop)
+      (keyword_server)
+      (keyword_if)
+      (keyword_exists)
+      name: (identifier))))
+
+================================================================================
+MySQL: DROP EVENT
+================================================================================
+
+DROP EVENT IF EXISTS cleanup
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_event
+      (keyword_drop)
+      (keyword_event)
+      (keyword_if)
+      (keyword_exists)
+      name: (object_reference
+        name: (identifier)))))
+
+================================================================================
+MySQL: DROP UNDO TABLESPACE
+================================================================================
+
+DROP UNDO TABLESPACE ts1
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_tablespace
+      (keyword_drop)
+      (keyword_undo)
+      (keyword_tablespace)
+      name: (identifier))))
+
+================================================================================
+MySQL: DO
+================================================================================
+
+DO 1, 2
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (do_statement
+      (keyword_do)
+      (literal)
+      (literal))))
+
+================================================================================
+MySQL: HANDLER OPEN and CLOSE
+================================================================================
+
+HANDLER t1 OPEN AS h1
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (handler_statement
+      (keyword_handler)
+      table: (object_reference
+        name: (identifier))
+      (keyword_open)
+      (keyword_as)
+      alias: (identifier))))
+
+================================================================================
+MySQL: LOCK TABLES
+================================================================================
+
+LOCK TABLES t1 READ, t2 WRITE
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (lock_tables_statement
+      (keyword_lock)
+      (keyword_tables)
+      (lock_table_spec
+        table: (object_reference
+          name: (identifier))
+        (keyword_read))
+      (lock_table_spec
+        table: (object_reference
+          name: (identifier))
+        (keyword_write)))))
+
+================================================================================
+MySQL: UNLOCK TABLES
+================================================================================
+
+UNLOCK TABLES
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (unlock_tables_statement
+      (keyword_unlock)
+      (keyword_tables))))
+
+================================================================================
+MySQL: LOCK INSTANCE FOR BACKUP
+================================================================================
+
+LOCK INSTANCE FOR BACKUP
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (lock_instance_statement
+      (keyword_lock)
+      (keyword_instance)
+      (keyword_for)
+      (keyword_backup))))
+
+================================================================================
+MySQL: FLUSH PRIVILEGES
+================================================================================
+
+FLUSH PRIVILEGES
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (flush_statement
+      (keyword_flush)
+      (flush_option
+        (keyword_privileges)))))
+
+================================================================================
+MySQL: FLUSH BINARY LOGS
+================================================================================
+
+FLUSH BINARY LOGS
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (flush_statement
+      (keyword_flush)
+      (flush_option
+        (keyword_binary)
+        kind: (identifier)))))
+
+================================================================================
+MySQL: KILL QUERY
+================================================================================
+
+KILL QUERY 42
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (kill_statement
+      (keyword_kill)
+      (keyword_query)
+      process_id: (literal))))
+
+================================================================================
+MySQL: CHECKSUM TABLE
+================================================================================
+
+CHECKSUM TABLE t1, t2 QUICK
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (checksum_table_statement
+      (keyword_checksum)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (object_reference
+        name: (identifier))
+      (keyword_quick))))
+
+================================================================================
+MySQL: INSTALL PLUGIN
+================================================================================
+
+INSTALL PLUGIN my_plugin SONAME 'my_plugin.so'
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (install_statement
+      (keyword_install)
+      (keyword_plugin)
+      name: (identifier)
+      (keyword_soname)
+      (literal))))
+
+================================================================================
+MySQL: UNINSTALL COMPONENT
+================================================================================
+
+UNINSTALL COMPONENT 'file://component_log_sink_json'
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (uninstall_statement
+      (keyword_uninstall)
+      (keyword_component)
+      (literal))))
+
+================================================================================
+MySQL: HELP
+================================================================================
+
+HELP 'contents'
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (help_statement
+      (keyword_help)
+      (literal))))
+
+================================================================================
+MySQL: RESTART
+================================================================================
+
+RESTART
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (restart_statement
+      (keyword_restart))))
+
+================================================================================
+MySQL: IMPORT TABLE
+================================================================================
+
+IMPORT TABLE FROM '/tmp/t1.sdi'
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (import_table_statement
+      (keyword_import)
+      (keyword_table)
+      (keyword_from)
+      (literal))))
+
+================================================================================
+MySQL: DROP SPATIAL REFERENCE SYSTEM
+================================================================================
+
+DROP SPATIAL REFERENCE SYSTEM IF EXISTS 4326
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_spatial_reference_system
+      (keyword_drop)
+      (keyword_spatial)
+      (keyword_reference)
+      (keyword_system)
+      (keyword_if)
+      (keyword_exists)
+      srid: (literal))))
+
+================================================================================
+MySQL: DROP RESOURCE GROUP
+================================================================================
+
+DROP RESOURCE GROUP rg1 FORCE
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_resource_group
+      (keyword_drop)
+      (keyword_resource)
+      (keyword_group)
+      name: (identifier)
+      (keyword_force))))

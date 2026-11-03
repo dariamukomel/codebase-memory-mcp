@@ -1,0 +1,24 @@
+================================================================================
+CREATE DOMAIN
+================================================================================
+
+CREATE DOMAIN us_zip AS TEXT CHECK (VALUE ~ '00000');
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_domain
+      (keyword_create)
+      (keyword_domain)
+      (object_reference
+        name: (identifier))
+      (keyword_as)
+      custom_type: (object_reference
+        name: (identifier))
+      (keyword_check)
+      (binary_expression
+        left: (field
+          name: (identifier))
+        operator: (op_other)
+        right: (literal)))))

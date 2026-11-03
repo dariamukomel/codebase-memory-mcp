@@ -1,0 +1,45 @@
+================================================================================
+GRANT ON ALL TABLES IN SCHEMA
+================================================================================
+
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO analyst;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (grant_statement
+      (keyword_grant)
+      (keyword_select)
+      (keyword_on)
+      (keyword_all)
+      (keyword_tables)
+      (keyword_in)
+      (keyword_schema)
+      (object_reference
+        (identifier))
+      (keyword_to)
+      (identifier))))
+
+================================================================================
+REVOKE ON ALL FUNCTIONS IN SCHEMA
+================================================================================
+
+REVOKE EXECUTE ON ALL FUNCTIONS IN SCHEMA util FROM PUBLIC;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (revoke_statement
+      (keyword_revoke)
+      (keyword_execute)
+      (keyword_on)
+      (keyword_all)
+      (keyword_functions)
+      (keyword_in)
+      (keyword_schema)
+      (object_reference
+        (identifier))
+      (keyword_from)
+      (keyword_public))))

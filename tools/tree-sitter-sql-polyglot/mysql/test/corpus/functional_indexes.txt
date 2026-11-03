@@ -1,0 +1,25 @@
+================================================================================
+MySQL: Functional index with expression
+================================================================================
+
+CREATE INDEX idx_lower ON customers ((LOWER(email)));
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_index
+      (keyword_create)
+      (keyword_index)
+      column: (identifier)
+      (keyword_on)
+      (object_reference
+        name: (identifier))
+      (index_fields
+        (field
+          expression: (invocation
+            (object_reference
+              name: (identifier))
+            parameter: (term
+              value: (field
+                name: (identifier)))))))))

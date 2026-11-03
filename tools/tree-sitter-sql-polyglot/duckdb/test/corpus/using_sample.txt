@@ -1,0 +1,24 @@
+================================================================================
+USING SAMPLE
+================================================================================
+
+SELECT * FROM t USING SAMPLE 10%;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (using_sample
+        (keyword_using)
+        (keyword_sample)
+        (literal)))))

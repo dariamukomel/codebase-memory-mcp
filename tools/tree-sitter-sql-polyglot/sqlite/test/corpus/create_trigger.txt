@@ -1,0 +1,88 @@
+==================
+CREATE TRIGGER with BEGIN END body
+==================
+
+CREATE TRIGGER trg AFTER INSERT ON t BEGIN UPDATE u SET x=1; END
+
+---
+
+(program
+  (statement
+    (create_trigger
+      (keyword_create)
+      (keyword_trigger)
+      (object_reference
+        name: (identifier))
+      (keyword_after)
+      (keyword_insert)
+      (keyword_on)
+      (object_reference
+        name: (identifier))
+      (keyword_begin)
+      (update
+        (keyword_update)
+        (relation
+          (object_reference
+            name: (identifier)))
+        (keyword_set)
+        (assignment
+          left: (field
+            name: (identifier))
+          right: (literal)))
+      (keyword_end))))
+
+==================
+CREATE TRIGGER FOR EACH ROW WHEN with multiple statements
+==================
+
+CREATE TRIGGER trg BEFORE DELETE ON t FOR EACH ROW WHEN old.x > 0 BEGIN INSERT INTO log VALUES (1); DELETE FROM tmp WHERE id = old.id; END
+
+---
+
+(program
+  (statement
+    (create_trigger
+      (keyword_create)
+      (keyword_trigger)
+      (object_reference
+        name: (identifier))
+      (keyword_before)
+      (keyword_delete)
+      (keyword_on)
+      (object_reference
+        name: (identifier))
+      (keyword_for)
+      (keyword_each)
+      (keyword_row)
+      (keyword_when)
+      (binary_expression
+        left: (field
+          (object_reference
+            name: (identifier))
+          name: (identifier))
+        right: (literal))
+      (keyword_begin)
+      (insert
+        (keyword_insert)
+        (keyword_into)
+        (object_reference
+          name: (identifier))
+        (keyword_values)
+        (list
+          (literal)))
+      (delete
+        (keyword_delete))
+      (from
+        (keyword_from)
+        (object_reference
+          name: (identifier))
+        (where
+          (keyword_where)
+          predicate: (binary_expression
+            left: (field
+              name: (identifier))
+            right: (field
+              (object_reference
+                name: (identifier))
+              name: (identifier)))))
+      (keyword_end))))

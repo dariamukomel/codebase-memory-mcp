@@ -1,0 +1,219 @@
+================================================================================
+TUMBLE window TVF
+================================================================================
+
+SELECT window_start, window_end, COUNT(*)
+FROM TABLE(
+  TUMBLE(TABLE orders, DESCRIPTOR(order_time), INTERVAL '10' MINUTES)
+)
+GROUP BY window_start, window_end
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (field
+            (identifier)))
+        (term
+          (field
+            (identifier)))
+        (term
+          (invocation
+            (object_reference
+              (identifier))
+            (term
+              (all_fields))))))
+    (from
+      (keyword_from)
+      (relation
+        (keyword_table)
+        (window_tvf
+          (tumble_tvf
+            (keyword_tumble)
+            (keyword_table)
+            (object_reference
+              (identifier))
+            (descriptor_call
+              (keyword_descriptor)
+              (identifier))
+            (interval
+              (keyword_interval)
+              (identifier)))))
+      (group_by
+        (keyword_group)
+        (keyword_by)
+        (field
+          (identifier))
+        (field
+          (identifier))))))
+
+================================================================================
+HOP window TVF
+================================================================================
+
+SELECT window_start, window_end, SUM(amount)
+FROM TABLE(
+  HOP(TABLE bids, DESCRIPTOR(bid_time), INTERVAL '5' MINUTES, INTERVAL '10' MINUTES)
+)
+GROUP BY window_start, window_end
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (field
+            (identifier)))
+        (term
+          (field
+            (identifier)))
+        (term
+          (invocation
+            (object_reference
+              (identifier))
+            (term
+              (field
+                (identifier)))))))
+    (from
+      (keyword_from)
+      (relation
+        (keyword_table)
+        (window_tvf
+          (hop_tvf
+            (keyword_hop)
+            (keyword_table)
+            (object_reference
+              (identifier))
+            (descriptor_call
+              (keyword_descriptor)
+              (identifier))
+            (interval
+              (keyword_interval)
+              (identifier))
+            (interval
+              (keyword_interval)
+              (identifier)))))
+      (group_by
+        (keyword_group)
+        (keyword_by)
+        (field
+          (identifier))
+        (field
+          (identifier))))))
+
+================================================================================
+CUMULATE window TVF
+================================================================================
+
+SELECT window_start, window_end, SUM(price)
+FROM TABLE(
+  CUMULATE(TABLE orders, DESCRIPTOR(order_time), INTERVAL '1' MINUTE, INTERVAL '1' HOUR)
+)
+GROUP BY window_start, window_end
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (field
+            (identifier)))
+        (term
+          (field
+            (identifier)))
+        (term
+          (invocation
+            (object_reference
+              (identifier))
+            (term
+              (field
+                (identifier)))))))
+    (from
+      (keyword_from)
+      (relation
+        (keyword_table)
+        (window_tvf
+          (cumulate_tvf
+            (keyword_cumulate)
+            (keyword_table)
+            (object_reference
+              (identifier))
+            (descriptor_call
+              (keyword_descriptor)
+              (identifier))
+            (interval
+              (keyword_interval)
+              (identifier))
+            (interval
+              (keyword_interval)
+              (identifier)))))
+      (group_by
+        (keyword_group)
+        (keyword_by)
+        (field
+          (identifier))
+        (field
+          (identifier))))))
+
+================================================================================
+SESSION window TVF
+================================================================================
+
+SELECT window_start, window_end, COUNT(*)
+FROM TABLE(
+  SESSION(TABLE events, DESCRIPTOR(event_time), INTERVAL '10' SECOND)
+)
+GROUP BY window_start, window_end
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (field
+            (identifier)))
+        (term
+          (field
+            (identifier)))
+        (term
+          (invocation
+            (object_reference
+              (identifier))
+            (term
+              (all_fields))))))
+    (from
+      (keyword_from)
+      (relation
+        (keyword_table)
+        (window_tvf
+          (session_tvf
+            (keyword_session)
+            (keyword_table)
+            (object_reference
+              (identifier))
+            (descriptor_call
+              (keyword_descriptor)
+              (identifier))
+            (interval
+              (keyword_interval)
+              (identifier)))))
+      (group_by
+        (keyword_group)
+        (keyword_by)
+        (field
+          (identifier))
+        (field
+          (identifier))))))

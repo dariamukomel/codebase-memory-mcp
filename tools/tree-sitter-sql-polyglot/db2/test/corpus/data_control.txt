@@ -1,0 +1,60 @@
+================================================================================
+Create mask
+================================================================================
+
+CREATE MASK col_mask ON employees FOR COLUMN salary RETURN CASE WHEN role = 'HR' THEN salary ELSE NULL END ENABLE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_mask
+      (keyword_create)
+      (keyword_mask)
+      (object_reference
+        (identifier))
+      (keyword_on)
+      (object_reference
+        (identifier))
+      (keyword_for)
+      (keyword_column)
+      (identifier)
+      (keyword_return)
+      (case
+        (keyword_case)
+        (keyword_when)
+        (binary_expression
+          (field
+            (identifier))
+          (literal))
+        (keyword_then)
+        (field
+          (identifier))
+        (keyword_else)
+        (literal
+          (keyword_null))
+        (keyword_end))
+      (keyword_enable))))
+
+================================================================================
+Transfer ownership
+================================================================================
+
+TRANSFER OWNERSHIP OF TABLE t TO USER newowner PRESERVE PRIVILEGES;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (transfer_ownership
+      (keyword_transfer)
+      (keyword_ownership)
+      (keyword_of)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (keyword_to)
+      (keyword_user)
+      (identifier)
+      (keyword_preserve)
+      (keyword_privileges))))

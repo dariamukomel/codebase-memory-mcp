@@ -1,0 +1,209 @@
+================================================================================
+DROP generic objects
+================================================================================
+
+DROP TASK IF EXISTS t2;
+DROP FUNCTION IF EXISTS f(NUMBER, VARCHAR);
+DROP SCHEMA IF EXISTS db.s CASCADE;
+DROP FILE FORMAT ff;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_object
+      (keyword_drop)
+      (keyword_task)
+      (keyword_if)
+      (keyword_exists)
+      (object_reference
+        (identifier))))
+  (statement
+    (drop_object
+      (keyword_drop)
+      (keyword_function)
+      (keyword_if)
+      (keyword_exists)
+      (object_reference
+        (identifier))
+      (object_reference
+        (identifier))
+      (varchar
+        (keyword_varchar))))
+  (statement
+    (drop_object
+      (keyword_drop)
+      (keyword_schema)
+      (keyword_if)
+      (keyword_exists)
+      (object_reference
+        (identifier)
+        (identifier))
+      (keyword_cascade)))
+  (statement
+    (drop_object
+      (keyword_drop)
+      (keyword_file)
+      (keyword_format)
+      (object_reference
+        (identifier)))))
+
+================================================================================
+DESCRIBE objects
+================================================================================
+
+DESC DATABASE db;
+DESCRIBE TABLE t TYPE = COLUMNS;
+DESC FUNCTION f();
+DESC MATERIALIZED VIEW v;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (describe_statement
+      (keyword_desc)
+      (keyword_database)
+      (object_reference
+        (identifier))))
+  (statement
+    (describe_statement
+      (keyword_describe)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (keyword_type)
+      (keyword_columns)))
+  (statement
+    (describe_statement
+      (keyword_desc)
+      (keyword_function)
+      (object_reference
+        (identifier))))
+  (statement
+    (describe_statement
+      (keyword_desc)
+      (keyword_materialized)
+      (keyword_view)
+      (object_reference
+        (identifier)))))
+
+================================================================================
+SHOW objects with scope and filters
+================================================================================
+
+SHOW TERSE OBJECTS LIKE '%t%' IN SCHEMA db.s STARTS WITH 't' LIMIT 10 FROM 'x';
+SHOW PRIMARY KEYS IN TABLE t;
+SHOW TABLES HISTORY;
+SHOW VIEWS IN APPLICATION a;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (show_statement
+      (keyword_show)
+      (keyword_terse)
+      (keyword_objects)
+      (keyword_like)
+      (literal)
+      (keyword_in)
+      (keyword_schema)
+      (object_reference
+        (identifier)
+        (identifier))
+      (keyword_starts)
+      (keyword_with)
+      (literal)
+      (keyword_limit)
+      (literal)
+      (keyword_from)
+      (literal)))
+  (statement
+    (show_statement
+      (keyword_show)
+      (keyword_primary)
+      (keyword_keys)
+      (keyword_in)
+      (keyword_table)
+      (object_reference
+        (identifier))))
+  (statement
+    (show_statement
+      (keyword_show)
+      (keyword_tables)
+      (keyword_history)))
+  (statement
+    (show_statement
+      (keyword_show)
+      (keyword_views)
+      (keyword_in)
+      (keyword_application)
+      (object_reference
+        (identifier)))))
+
+================================================================================
+SHOW GRANTS forms
+================================================================================
+
+SHOW GRANTS TO ROLE r LIMIT 10;
+SHOW FUTURE GRANTS IN SCHEMA d.s;
+SHOW GRANTS ON ACCOUNT;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (show_statement
+      (keyword_show)
+      (keyword_grants)
+      (keyword_to)
+      (keyword_role)
+      (object_reference
+        (identifier))
+      (keyword_limit)
+      (literal)))
+  (statement
+    (show_statement
+      (keyword_show)
+      (keyword_future)
+      (keyword_grants)
+      (keyword_in)
+      (keyword_schema)
+      (object_reference
+        (identifier)
+        (identifier))))
+  (statement
+    (show_statement
+      (keyword_show)
+      (keyword_grants)
+      (keyword_on)
+      (keyword_account))))
+
+================================================================================
+UNDROP objects
+================================================================================
+
+UNDROP DYNAMIC TABLE dt;
+UNDROP SCHEMA IDENTIFIER(798);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (undrop_statement
+      (keyword_undrop)
+      (keyword_dynamic)
+      (keyword_table)
+      (object_reference
+        (identifier))))
+  (statement
+    (undrop_statement
+      (keyword_undrop)
+      (keyword_schema)
+      (object_reference
+        (identifier
+          (identifier_function
+            (keyword_identifier)
+            (literal)))))))
+

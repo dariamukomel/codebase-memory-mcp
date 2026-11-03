@@ -1,0 +1,63 @@
+================================================================================
+MariaDB: CREATE TABLE WITH SYSTEM VERSIONING
+================================================================================
+
+CREATE TABLE t (id INT) WITH SYSTEM VERSIONING;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int))))
+      (keyword_with)
+      (keyword_system)
+      (keyword_versioning))))
+
+================================================================================
+MariaDB: CREATE TABLE PERIOD FOR SYSTEM_TIME WITH SYSTEM VERSIONING
+================================================================================
+
+CREATE TABLE t (id INT, s TIMESTAMP(6), e TIMESTAMP(6), PERIOD FOR SYSTEM_TIME(s, e)) WITH SYSTEM VERSIONING;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int)))
+        (column_definition
+          name: (identifier)
+          type: (timestamp
+            (keyword_timestamp)
+            size: (literal)))
+        (column_definition
+          name: (identifier)
+          type: (timestamp
+            (keyword_timestamp)
+            size: (literal)))
+        (period_for_system_time
+          (keyword_period)
+          (keyword_for)
+          (keyword_system_time)
+          start_col: (identifier)
+          end_col: (identifier)))
+      (keyword_with)
+      (keyword_system)
+      (keyword_versioning))))

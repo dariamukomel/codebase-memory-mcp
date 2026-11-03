@@ -1,0 +1,530 @@
+================================================================================
+APPLY CHANGES INTO simple
+================================================================================
+
+APPLY CHANGES INTO my_table
+FROM source_table
+KEYS (id);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (apply_changes_statement
+      (keyword_apply)
+      (keyword_changes)
+      (keyword_into)
+      (object_reference
+        name: (identifier))
+      (keyword_from)
+      (object_reference
+        name: (identifier))
+      (keyword_keys)
+      (list
+        (column
+          (identifier))))))
+
+================================================================================
+APPLY CHANGES INTO with table keyword
+================================================================================
+
+APPLY CHANGES INTO TABLE my_catalog.my_schema.my_table
+FROM source_table
+KEYS (id, name);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (apply_changes_statement
+      (keyword_apply)
+      (keyword_changes)
+      (keyword_into)
+      (keyword_table)
+      (object_reference
+        database: (identifier)
+        schema: (identifier)
+        name: (identifier))
+      (keyword_from)
+      (object_reference
+        name: (identifier))
+      (keyword_keys)
+      (list
+        (column
+          (identifier))
+        (column
+          (identifier))))))
+
+================================================================================
+APPLY CHANGES INTO with SELECT source
+================================================================================
+
+APPLY CHANGES INTO my_table
+FROM (SELECT * FROM source WHERE active = true)
+KEYS (id);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (apply_changes_statement
+      (keyword_apply)
+      (keyword_changes)
+      (keyword_into)
+      (object_reference
+        name: (identifier))
+      (keyword_from)
+      (subquery
+        (select
+          (keyword_select)
+          (select_expression
+            (term
+              value: (all_fields))))
+        (from
+          (keyword_from)
+          (relation
+            (object_reference
+              name: (identifier)))
+          (where
+            (keyword_where)
+            predicate: (binary_expression
+              left: (field
+                name: (identifier))
+              right: (literal
+                (keyword_true))))))
+      (keyword_keys)
+      (list
+        (column
+          (identifier))))))
+
+================================================================================
+APPLY CHANGES INTO with SEQUENCE BY
+================================================================================
+
+APPLY CHANGES INTO my_table
+FROM source_table
+KEYS (id)
+SEQUENCE BY seq_col;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (apply_changes_statement
+      (keyword_apply)
+      (keyword_changes)
+      (keyword_into)
+      (object_reference
+        name: (identifier))
+      (keyword_from)
+      (object_reference
+        name: (identifier))
+      (keyword_keys)
+      (list
+        (column
+          (identifier)))
+      (keyword_sequence)
+      (keyword_by)
+      (identifier))))
+
+================================================================================
+APPLY CHANGES INTO with COLUMNS
+================================================================================
+
+APPLY CHANGES INTO my_table
+FROM source_table
+KEYS (id)
+COLUMNS (id, name AS source_name, ts AS source_ts);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (apply_changes_statement
+      (keyword_apply)
+      (keyword_changes)
+      (keyword_into)
+      (object_reference
+        name: (identifier))
+      (keyword_from)
+      (object_reference
+        name: (identifier))
+      (keyword_keys)
+      (list
+        (column
+          (identifier)))
+      (keyword_columns)
+      (list
+        (column
+          (identifier))
+        (column_mapping
+          target: (identifier)
+          (keyword_as)
+          source: (field
+            name: (identifier)))
+        (column_mapping
+          target: (identifier)
+          (keyword_as)
+          source: (field
+            name: (identifier)))))))
+
+================================================================================
+APPLY CHANGES INTO with COLUMNS *
+================================================================================
+
+APPLY CHANGES INTO my_table
+FROM source_table
+KEYS (id)
+COLUMNS ALL;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (apply_changes_statement
+      (keyword_apply)
+      (keyword_changes)
+      (keyword_into)
+      (object_reference
+        name: (identifier))
+      (keyword_from)
+      (object_reference
+        name: (identifier))
+      (keyword_keys)
+      (list
+        (column
+          (identifier)))
+      (keyword_columns)
+      (keyword_all))))
+
+================================================================================
+APPLY CHANGES INTO with WHEN MATCHED DELETE
+================================================================================
+
+APPLY CHANGES INTO my_table
+FROM source_table
+KEYS (id)
+WHEN MATCHED THEN DELETE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (apply_changes_statement
+      (keyword_apply)
+      (keyword_changes)
+      (keyword_into)
+      (object_reference
+        name: (identifier))
+      (keyword_from)
+      (object_reference
+        name: (identifier))
+      (keyword_keys)
+      (list
+        (column
+          (identifier)))
+      (keyword_when)
+      (keyword_matched)
+      (keyword_then)
+      (keyword_delete))))
+
+================================================================================
+APPLY CHANGES INTO with WHEN MATCHED UPDATE
+================================================================================
+
+APPLY CHANGES INTO my_table
+FROM source_table
+KEYS (id)
+WHEN MATCHED THEN UPDATE SET name = source.name, ts = source.ts;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (apply_changes_statement
+      (keyword_apply)
+      (keyword_changes)
+      (keyword_into)
+      (object_reference
+        name: (identifier))
+      (keyword_from)
+      (object_reference
+        name: (identifier))
+      (keyword_keys)
+      (list
+        (column
+          (identifier)))
+      (keyword_when)
+      (keyword_matched)
+      (keyword_then)
+      (keyword_update)
+      (keyword_set)
+      (assignment_list
+        (assignment
+          left: (field
+            name: (identifier))
+          right: (field
+            (object_reference
+              name: (identifier))
+            name: (identifier)))
+        (assignment
+          left: (field
+            name: (identifier))
+          right: (field
+            (object_reference
+              name: (identifier))
+            name: (identifier)))))))
+
+================================================================================
+APPLY CHANGES INTO with WHEN MATCHED UPSERT
+================================================================================
+
+APPLY CHANGES INTO my_table
+FROM source_table
+KEYS (id)
+WHEN MATCHED THEN UPSERT SET name = source.name;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (apply_changes_statement
+      (keyword_apply)
+      (keyword_changes)
+      (keyword_into)
+      (object_reference
+        name: (identifier))
+      (keyword_from)
+      (object_reference
+        name: (identifier))
+      (keyword_keys)
+      (list
+        (column
+          (identifier)))
+      (keyword_when)
+      (keyword_matched)
+      (keyword_then)
+      (keyword_upsert)
+      (keyword_set)
+      (assignment_list
+        (assignment
+          left: (field
+            name: (identifier))
+          right: (field
+            (object_reference
+              name: (identifier))
+            name: (identifier)))))))
+
+================================================================================
+APPLY CHANGES INTO with WHEN NOT MATCHED INSERT
+================================================================================
+
+APPLY CHANGES INTO my_table
+FROM source_table
+KEYS (id)
+WHEN NOT MATCHED THEN INSERT;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (apply_changes_statement
+      (keyword_apply)
+      (keyword_changes)
+      (keyword_into)
+      (object_reference
+        name: (identifier))
+      (keyword_from)
+      (object_reference
+        name: (identifier))
+      (keyword_keys)
+      (list
+        (column
+          (identifier)))
+      (keyword_when)
+      (keyword_not)
+      (keyword_matched)
+      (keyword_then)
+      (keyword_insert))))
+
+================================================================================
+APPLY CHANGES INTO with WHEN NOT MATCHED INSERT with columns
+================================================================================
+
+APPLY CHANGES INTO my_table
+FROM source_table
+KEYS (id)
+WHEN NOT MATCHED THEN INSERT (id, name, ts);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (apply_changes_statement
+      (keyword_apply)
+      (keyword_changes)
+      (keyword_into)
+      (object_reference
+        name: (identifier))
+      (keyword_from)
+      (object_reference
+        name: (identifier))
+      (keyword_keys)
+      (list
+        (column
+          (identifier)))
+      (keyword_when)
+      (keyword_not)
+      (keyword_matched)
+      (keyword_then)
+      (keyword_insert)
+      (list
+        (column
+          (identifier))
+        (column
+          (identifier))
+        (column
+          (identifier))))))
+
+================================================================================
+APPLY CHANGES INTO with VIEW keyword
+================================================================================
+
+APPLY CHANGES INTO my_table
+FROM source_table
+VIEW
+KEYS (id);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (apply_changes_statement
+      (keyword_apply)
+      (keyword_changes)
+      (keyword_into)
+      (object_reference
+        name: (identifier))
+      (keyword_from)
+      (object_reference
+        name: (identifier))
+      (keyword_view)
+      (keyword_keys)
+      (list
+        (column
+          (identifier))))))
+
+================================================================================
+APPLY CHANGES INTO with FLOW keyword
+================================================================================
+
+APPLY CHANGES INTO my_table
+FROM source_table
+FLOW
+KEYS (id);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (apply_changes_statement
+      (keyword_apply)
+      (keyword_changes)
+      (keyword_into)
+      (object_reference
+        name: (identifier))
+      (keyword_from)
+      (object_reference
+        name: (identifier))
+      (keyword_flow)
+      (keyword_keys)
+      (list
+        (column
+          (identifier))))))
+
+================================================================================
+APPLY CHANGES INTO full DLT syntax
+================================================================================
+
+APPLY CHANGES INTO my_table
+FROM source_table
+KEYS (id)
+SEQUENCE BY seq_col
+COLUMNS (id, name, ts)
+WHEN MATCHED THEN UPDATE SET name = source.name, ts = source.ts
+WHEN NOT MATCHED THEN INSERT (id, name, ts) VALUES (source.id, source.name, source.ts);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (apply_changes_statement
+      (keyword_apply)
+      (keyword_changes)
+      (keyword_into)
+      (object_reference
+        name: (identifier))
+      (keyword_from)
+      (object_reference
+        name: (identifier))
+      (keyword_keys)
+      (list
+        (column
+          (identifier)))
+      (keyword_sequence)
+      (keyword_by)
+      (identifier)
+      (keyword_columns)
+      (list
+        (column
+          (identifier))
+        (column
+          (identifier))
+        (column
+          (identifier)))
+      (keyword_when)
+      (keyword_matched)
+      (keyword_then)
+      (keyword_update)
+      (keyword_set)
+      (assignment_list
+        (assignment
+          left: (field
+            name: (identifier))
+          right: (field
+            (object_reference
+              name: (identifier))
+            name: (identifier)))
+        (assignment
+          left: (field
+            name: (identifier))
+          right: (field
+            (object_reference
+              name: (identifier))
+            name: (identifier))))
+      (keyword_when)
+      (keyword_not)
+      (keyword_matched)
+      (keyword_then)
+      (keyword_insert)
+      (list
+        (column
+          (identifier))
+        (column
+          (identifier))
+        (column
+          (identifier)))
+      (keyword_values)
+      (list
+        (field
+          (object_reference
+            name: (identifier))
+          name: (identifier))
+        (field
+          (object_reference
+            name: (identifier))
+          name: (identifier))
+        (field
+          (object_reference
+            name: (identifier))
+          name: (identifier))))))

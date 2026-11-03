@@ -1,0 +1,105 @@
+================================================================================
+MariaDB: CREATE TABLE with CHECK constraint on column
+================================================================================
+
+CREATE TABLE employees (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  email VARCHAR(255) NOT NULL,
+  age INT CHECK (age >= 18),
+  UNIQUE KEY uk_email (email)
+);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int))
+          (keyword_auto_increment)
+          (keyword_primary)
+          (keyword_key))
+        (column_definition
+          name: (identifier)
+          type: (varchar
+            (keyword_varchar)
+            size: (literal))
+          (keyword_not)
+          (keyword_null))
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int))
+          (keyword_check)
+          (binary_expression
+            left: (field
+              name: (identifier))
+            right: (literal)))
+        (constraint
+          (keyword_unique)
+          (keyword_key)
+          name: (identifier)
+          (ordered_columns
+            (column
+              name: (identifier))))))))
+
+================================================================================
+MariaDB: CREATE TABLE with named CONSTRAINT CHECK
+================================================================================
+
+CREATE TABLE payments (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  amount DECIMAL(10,2) NOT NULL,
+  status ENUM('pending', 'completed', 'failed') DEFAULT 'pending',
+  CONSTRAINT chk_amount CHECK (amount > 0)
+);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int))
+          (keyword_auto_increment)
+          (keyword_primary)
+          (keyword_key))
+        (column_definition
+          name: (identifier)
+          type: (decimal
+            (keyword_decimal)
+            precision: (literal)
+            scale: (literal))
+          (keyword_not)
+          (keyword_null))
+        (column_definition
+          name: (identifier)
+          type: (enum
+            (keyword_enum)
+            value: (literal)
+            value: (literal)
+            value: (literal))
+          (keyword_default)
+          (literal))
+        (constraint
+          (keyword_constraint)
+          name: (identifier)
+          (keyword_check)
+          (binary_expression
+            left: (field
+              name: (identifier))
+            right: (literal)))))))

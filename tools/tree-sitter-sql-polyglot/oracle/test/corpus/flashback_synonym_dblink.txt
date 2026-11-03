@@ -1,0 +1,197 @@
+================================================================================
+SELECT with FLASHBACK AS OF SCN
+================================================================================
+
+SELECT * FROM employees AS OF SCN 1234567;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))
+        (flashback_clause
+          (keyword_as)
+          (keyword_of)
+          (keyword_scn)
+          (literal))))))
+
+================================================================================
+SELECT with FLASHBACK AS OF TIMESTAMP
+================================================================================
+
+SELECT * FROM orders AS OF TIMESTAMP SYSDATE - 1/24;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))
+        (flashback_clause
+          (keyword_as)
+          (keyword_of)
+          (keyword_timestamp)
+          (binary_expression
+            left: (field
+              name: (identifier))
+            right: (binary_expression
+              left: (literal)
+              right: (literal))))))))
+
+================================================================================
+CREATE SYNONYM
+================================================================================
+
+CREATE SYNONYM emp FOR hr.employees;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_synonym_statement
+      (keyword_create)
+      (keyword_synonym)
+      (object_reference
+        name: (identifier))
+      (keyword_for)
+      (object_reference
+        schema: (identifier)
+        name: (identifier)))))
+
+================================================================================
+CREATE PUBLIC SYNONYM
+================================================================================
+
+CREATE PUBLIC SYNONYM emp FOR hr.employees;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_synonym_statement
+      (keyword_create)
+      (keyword_public)
+      (keyword_synonym)
+      (object_reference
+        name: (identifier))
+      (keyword_for)
+      (object_reference
+        schema: (identifier)
+        name: (identifier)))))
+
+================================================================================
+CREATE OR REPLACE SYNONYM
+================================================================================
+
+CREATE OR REPLACE SYNONYM emp FOR hr.employees;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_synonym_statement
+      (keyword_create)
+      (keyword_or)
+      (keyword_replace)
+      (keyword_synonym)
+      (object_reference
+        name: (identifier))
+      (keyword_for)
+      (object_reference
+        schema: (identifier)
+        name: (identifier)))))
+
+================================================================================
+DROP SYNONYM
+================================================================================
+
+DROP SYNONYM emp;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_synonym_statement
+      (keyword_drop)
+      (keyword_synonym)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+DROP PUBLIC SYNONYM
+================================================================================
+
+DROP PUBLIC SYNONYM emp;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_synonym_statement
+      (keyword_drop)
+      (keyword_public)
+      (keyword_synonym)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+CREATE DATABASE LINK simple
+================================================================================
+
+CREATE DATABASE LINK mylink USING 'orcl';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_database_link_statement
+      (keyword_create)
+      (keyword_database)
+      (keyword_link)
+      (object_reference
+        name: (identifier))
+      (keyword_using)
+      (literal))))
+
+================================================================================
+CREATE DATABASE LINK with connect
+================================================================================
+
+CREATE DATABASE LINK mylink CONNECT TO scott IDENTIFIED BY tiger USING 'orcl';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_database_link_statement
+      (keyword_create)
+      (keyword_database)
+      (keyword_link)
+      (object_reference
+        name: (identifier))
+      (keyword_connect)
+      (keyword_to)
+      (identifier)
+      (keyword_identified)
+      (keyword_by)
+      (field
+        name: (identifier))
+      (keyword_using)
+      (literal))))

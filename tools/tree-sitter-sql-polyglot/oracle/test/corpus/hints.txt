@@ -1,0 +1,155 @@
+================================================================================
+Oracle hint: FULL table scan
+================================================================================
+
+SELECT /*+ FULL(t) */ * FROM t
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (optimizer_hint)
+      (select_expression
+        (term
+          (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier))))))
+
+================================================================================
+Oracle hint: multiple directives
+================================================================================
+
+SELECT /*+ FULL(e) USE_NL(e d) INDEX(d dept_idx) */ e.last_name, d.department_name FROM employees e, departments d WHERE e.department_id = d.department_id
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (optimizer_hint)
+      (select_expression
+        (term
+          (field
+            (object_reference
+              (identifier))
+            (identifier)))
+        (term
+          (field
+            (object_reference
+              (identifier))
+            (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier))
+        (identifier))
+      (relation
+        (object_reference
+          (identifier))
+        (identifier))
+      (where
+        (keyword_where)
+        (binary_expression
+          (field
+            (object_reference
+              (identifier))
+            (identifier))
+          (field
+            (object_reference
+              (identifier))
+            (identifier)))))))
+
+================================================================================
+Oracle hint: PARALLEL
+================================================================================
+
+SELECT /*+ PARALLEL(sales, 4) */ COUNT(*) FROM sales
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (optimizer_hint)
+      (select_expression
+        (term
+          (invocation
+            (object_reference
+              (identifier))
+            (term
+              (all_fields))))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier))))))
+
+================================================================================
+Oracle hint: USE_HASH join
+================================================================================
+
+SELECT /*+ LEADING(e) USE_HASH(d) */ * FROM employees e JOIN departments d ON e.dept_id = d.dept_id
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (optimizer_hint)
+      (select_expression
+        (term
+          (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier))
+        (identifier))
+      (join
+        (keyword_join)
+        (relation
+          (object_reference
+            (identifier))
+          (identifier))
+        (keyword_on)
+        (binary_expression
+          (field
+            (object_reference
+              (identifier))
+            (identifier))
+          (field
+            (object_reference
+              (identifier))
+            (identifier)))))))
+
+================================================================================
+Oracle hint: no hint - regular block comment is still marginalia
+================================================================================
+
+SELECT /* not a hint */ col FROM t
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (marginalia)
+      (select_expression
+        (term
+          (field
+            (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier))))))

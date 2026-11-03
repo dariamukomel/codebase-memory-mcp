@@ -1,0 +1,26 @@
+; Intent-based tests: expected trees derived from reading the grammar rules,
+; not copied from parser output.
+;
+; athena/grammar/statements.js defines:
+;   msck_repair_statement: keyword_msck + keyword_repair + keyword_table
+;                          + object_reference + optional(ADD|DROP|SYNC PARTITIONS)
+;
+; MSCK REPAIR TABLE t uses just the table reference with no partition clause.
+; keyword_msck and keyword_repair are Athena-specific (defined in athena/grammar.js).
+
+================================================================================
+Athena: MSCK REPAIR TABLE
+================================================================================
+
+MSCK REPAIR TABLE my_table;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (msck_repair_statement
+      (keyword_msck)
+      (keyword_repair)
+      (keyword_table)
+      (object_reference
+        name: (identifier)))))

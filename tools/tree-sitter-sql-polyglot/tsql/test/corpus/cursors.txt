@@ -1,0 +1,199 @@
+================================================================================
+DECLARE basic cursor
+================================================================================
+
+DECLARE myCursor CURSOR FOR SELECT id, name FROM employees;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (declare_cursor_statement
+      (keyword_declare)
+      name: (identifier)
+      (keyword_cursor)
+      (keyword_for)
+      (select
+        (keyword_select)
+        (select_expression
+          (term
+            value: (field
+              name: (identifier)))
+          (term
+            value: (field
+              name: (identifier)))))
+      (from
+        (keyword_from)
+        (relation
+          (object_reference
+            name: (identifier)))))))
+
+================================================================================
+DECLARE SCROLL cursor
+================================================================================
+
+DECLARE myCursor SCROLL CURSOR FOR SELECT id FROM t;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (declare_cursor_statement
+      (keyword_declare)
+      name: (identifier)
+      (keyword_scroll)
+      (keyword_cursor)
+      (keyword_for)
+      (select
+        (keyword_select)
+        (select_expression
+          (term
+            value: (field
+              name: (identifier)))))
+      (from
+        (keyword_from)
+        (relation
+          (object_reference
+            name: (identifier)))))))
+
+================================================================================
+DECLARE INSENSITIVE SCROLL cursor
+================================================================================
+
+DECLARE myCursor INSENSITIVE SCROLL CURSOR FOR SELECT id FROM t;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (declare_cursor_statement
+      (keyword_declare)
+      name: (identifier)
+      (keyword_insensitive)
+      (keyword_scroll)
+      (keyword_cursor)
+      (keyword_for)
+      (select
+        (keyword_select)
+        (select_expression
+          (term
+            value: (field
+              name: (identifier)))))
+      (from
+        (keyword_from)
+        (relation
+          (object_reference
+            name: (identifier)))))))
+
+================================================================================
+OPEN cursor
+================================================================================
+
+OPEN myCursor;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (open_cursor_statement
+      (keyword_open)
+      name: (identifier))))
+
+================================================================================
+FETCH NEXT from cursor
+================================================================================
+
+FETCH NEXT FROM myCursor INTO @id, @name;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (fetch_cursor_statement
+      (keyword_fetch)
+      (keyword_next)
+      (keyword_from)
+      name: (identifier)
+      (keyword_into)
+      (variable)
+      (variable))))
+
+================================================================================
+FETCH PRIOR from cursor
+================================================================================
+
+FETCH PRIOR FROM myCursor INTO @id;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (fetch_cursor_statement
+      (keyword_fetch)
+      (keyword_prior)
+      (keyword_from)
+      name: (identifier)
+      (keyword_into)
+      (variable))))
+
+================================================================================
+FETCH ABSOLUTE from cursor
+================================================================================
+
+FETCH ABSOLUTE 5 FROM myCursor INTO @id;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (fetch_cursor_statement
+      (keyword_fetch)
+      (keyword_absolute)
+      (literal)
+      (keyword_from)
+      name: (identifier)
+      (keyword_into)
+      (variable))))
+
+================================================================================
+CLOSE cursor
+================================================================================
+
+CLOSE myCursor;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (close_cursor_statement
+      (keyword_close)
+      name: (identifier))))
+
+================================================================================
+DEALLOCATE cursor
+================================================================================
+
+DEALLOCATE myCursor;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (deallocate_cursor_statement
+      (keyword_deallocate)
+      name: (identifier))))
+
+================================================================================
+DEALLOCATE CURSOR keyword
+================================================================================
+
+DEALLOCATE CURSOR myCursor;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (deallocate_cursor_statement
+      (keyword_deallocate)
+      (keyword_cursor)
+      name: (identifier))))

@@ -1,0 +1,211 @@
+================================================================================
+Create table with column-level DISTKEY
+================================================================================
+
+CREATE TABLE orders (
+  id INT DISTKEY,
+  name VARCHAR(100),
+  ts TIMESTAMP SORTKEY
+)
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (column_definitions
+        (column_definition
+          (identifier)
+          (int
+            (keyword_int))
+          (keyword_distkey))
+        (column_definition
+          (identifier)
+          (varchar
+            (keyword_varchar)
+            (literal)))
+        (column_definition
+          (identifier)
+          (timestamp
+            (keyword_timestamp))
+          (keyword_sortkey))))))
+
+================================================================================
+Create table with ENCODE column option
+================================================================================
+
+CREATE TABLE sales (
+  id BIGINT,
+  amount DECIMAL(10,2) ENCODE lzo,
+  region VARCHAR(50) ENCODE zstd
+)
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (column_definitions
+        (column_definition
+          (identifier)
+          (bigint
+            (keyword_bigint)))
+        (column_definition
+          (identifier)
+          (decimal
+            (keyword_decimal)
+            (literal)
+            (literal))
+          (keyword_encode)
+          (identifier))
+        (column_definition
+          (identifier)
+          (varchar
+            (keyword_varchar)
+            (literal))
+          (keyword_encode)
+          (identifier))))))
+
+================================================================================
+Create table with DISTSTYLE KEY and DISTKEY
+================================================================================
+
+CREATE TABLE events (
+  id INT,
+  user_id INT
+)
+DISTSTYLE KEY
+DISTKEY(user_id)
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (column_definitions
+        (column_definition
+          (identifier)
+          (int
+            (keyword_int)))
+        (column_definition
+          (identifier)
+          (int
+            (keyword_int))))
+      (keyword_diststyle)
+      (keyword_key)
+      (keyword_distkey)
+      (identifier))))
+
+================================================================================
+Create table with DISTSTYLE EVEN
+================================================================================
+
+CREATE TABLE staging (
+  id INT,
+  val VARCHAR(200)
+)
+DISTSTYLE EVEN
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (column_definitions
+        (column_definition
+          (identifier)
+          (int
+            (keyword_int)))
+        (column_definition
+          (identifier)
+          (varchar
+            (keyword_varchar)
+            (literal))))
+      (keyword_diststyle)
+      (keyword_even))))
+
+================================================================================
+Create table with COMPOUND SORTKEY
+================================================================================
+
+CREATE TABLE pageviews (
+  id BIGINT,
+  ts TIMESTAMP,
+  user_id INT
+)
+COMPOUND SORTKEY(ts, user_id)
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (column_definitions
+        (column_definition
+          (identifier)
+          (bigint
+            (keyword_bigint)))
+        (column_definition
+          (identifier)
+          (timestamp
+            (keyword_timestamp)))
+        (column_definition
+          (identifier)
+          (int
+            (keyword_int))))
+      (keyword_compound)
+      (keyword_sortkey)
+      (identifier)
+      (identifier))))
+
+================================================================================
+Create table with DISTSTYLE ALL
+================================================================================
+
+CREATE TABLE dim_region (
+  id INT,
+  name VARCHAR(100)
+)
+DISTSTYLE ALL
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (column_definitions
+        (column_definition
+          (identifier)
+          (int
+            (keyword_int)))
+        (column_definition
+          (identifier)
+          (varchar
+            (keyword_varchar)
+            (literal))))
+      (keyword_diststyle)
+      (keyword_all))))

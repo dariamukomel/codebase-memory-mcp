@@ -1,0 +1,180 @@
+================================================================================
+MySQL: Joins with USE INDEX hint
+================================================================================
+
+SELECT a.id, b.id
+FROM my_table a
+JOIN my_other_table b USE INDEX FOR JOIN (idx_a)
+ON a.id = b.a_id;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (field
+            (object_reference
+              name: (identifier))
+            name: (identifier)))
+        (term
+          value: (field
+            (object_reference
+              name: (identifier))
+            name: (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))
+        alias: (identifier))
+      (join
+        (keyword_join)
+        (relation
+          (object_reference
+            name: (identifier))
+          alias: (identifier))
+        (index_hint
+          (keyword_use)
+          (keyword_index)
+          (keyword_for)
+          (keyword_join)
+          index_name: (identifier))
+        (keyword_on)
+        predicate: (binary_expression
+          left: (field
+            (object_reference
+              name: (identifier))
+            name: (identifier))
+          right: (field
+            (object_reference
+              name: (identifier))
+            name: (identifier)))))))
+
+================================================================================
+MySQL: FROM with FORCE INDEX hint
+================================================================================
+
+SELECT id
+FROM my_table FORCE INDEX (long_index_identifier)
+LIMIT 1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (index_hint
+        (keyword_force)
+        (keyword_index)
+        index_name: (identifier))
+      (limit
+        (keyword_limit)
+        (literal)))))
+
+================================================================================
+STRAIGHT_JOIN
+================================================================================
+
+SELECT * FROM t1 STRAIGHT_JOIN t2 ON t1.id = t2.id;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (join
+        (keyword_straight_join)
+        (relation
+          (object_reference
+            name: (identifier)))
+        (keyword_on)
+        predicate: (binary_expression
+          left: (field
+            (object_reference
+              name: (identifier))
+            name: (identifier))
+          right: (field
+            (object_reference
+              name: (identifier))
+            name: (identifier)))))))
+
+==================
+SELECT INTO OUTFILE with FIELDS and LINES
+==================
+
+SELECT a FROM t INTO OUTFILE '/x' FIELDS TERMINATED BY ',' LINES TERMINATED BY '|'
+
+---
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (into_outfile
+        (keyword_into)
+        (keyword_outfile)
+        (literal)
+        (keyword_fields)
+        (keyword_terminated)
+        (keyword_by)
+        (literal)
+        (keyword_lines)
+        (keyword_terminated)
+        (keyword_by)
+        (literal)))))
+
+==================
+SELECT INTO DUMPFILE
+==================
+
+SELECT * FROM t INTO DUMPFILE '/tmp/x.bin'
+
+---
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (into_outfile
+        (keyword_into)
+        (keyword_dumpfile)
+        (literal)))))

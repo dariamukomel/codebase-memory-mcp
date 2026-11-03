@@ -1,0 +1,71 @@
+; Intent-based tests: expected trees derived from reading the grammar rules,
+; not copied from parser output.
+;
+; hive/grammar.js (parent of Spark) defines distribute_by:
+;   distribute_by: keyword_distribute + keyword_by + comma_list(_expression)
+;
+; hive/grammar.js adds distribute_by as an alternative inside the from rule's
+; repeat(choice(...)) block alongside cluster_by, sort_by.
+; It appears after ORDER BY / GROUP BY / HAVING as an alternative.
+;
+; SELECT * FROM t DISTRIBUTE BY region must produce a distribute_by node
+; as a child of from, containing keyword_distribute, keyword_by, and the
+; field expression for 'region'.
+
+================================================================================
+Spark/Hive: DISTRIBUTE BY
+================================================================================
+
+SELECT * FROM t DISTRIBUTE BY region;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (distribute_by
+        (keyword_distribute)
+        (keyword_by)
+        (field
+          name: (identifier))))))
+
+; hive/grammar.js defines cluster_by:
+;   cluster_by: keyword_cluster + keyword_by + comma_list(_expression)
+;
+; CLUSTER BY is equivalent to DISTRIBUTE BY + SORT BY together.
+; SELECT * FROM t CLUSTER BY id must produce a cluster_by node inside from.
+
+================================================================================
+Spark/Hive: CLUSTER BY
+================================================================================
+
+SELECT * FROM t CLUSTER BY id;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (cluster_by
+        (keyword_cluster)
+        (keyword_by)
+        (field
+          name: (identifier))))))

@@ -1,0 +1,35 @@
+================================================================================
+Column FAMILY
+================================================================================
+
+CREATE TABLE t (a INT, b INT, FAMILY f1 (a), FAMILY f2 (b));
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int)))
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int)))
+        (constraints
+          (constraint
+            (family_def
+              (keyword_family)
+              (identifier)
+              (identifier)))
+          (constraint
+            (family_def
+              (keyword_family)
+              (identifier)
+              (identifier))))))))

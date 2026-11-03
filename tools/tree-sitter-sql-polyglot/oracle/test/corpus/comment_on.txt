@@ -1,0 +1,58 @@
+================================================================================
+COMMENT ON TABLE
+================================================================================
+
+COMMENT ON TABLE employees IS 'Main employee table';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (comment_statement
+      (keyword_comment)
+      (keyword_on)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (keyword_is)
+      (literal))))
+
+================================================================================
+COMMENT ON COLUMN
+================================================================================
+
+COMMENT ON COLUMN employees.salary IS 'Annual salary in USD';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (comment_statement
+      (keyword_comment)
+      (keyword_on)
+      (keyword_column)
+      (object_reference
+        (object_reference
+          (identifier))
+        (identifier))
+      (keyword_is)
+      (literal))))
+
+================================================================================
+COMMENT ON VIEW with NULL
+================================================================================
+
+COMMENT ON VIEW v_active IS NULL;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (comment_statement
+      (keyword_comment)
+      (keyword_on)
+      (keyword_view)
+      (object_reference
+        (identifier))
+      (keyword_is)
+      (keyword_null))))

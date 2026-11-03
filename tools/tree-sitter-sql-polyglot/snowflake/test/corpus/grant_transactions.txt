@@ -1,0 +1,197 @@
+================================================================================
+GRANT privileges on objects
+================================================================================
+
+GRANT SELECT, INSERT ON FUTURE TABLES IN SCHEMA db.s TO ROLE r;
+GRANT USAGE ON PROCEDURE db.s.p(NUMBER) TO USER u1 WITH GRANT OPTION;
+GRANT CREATE DATABASE, CREATE WAREHOUSE ON ACCOUNT TO ROLE r;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (grant_statement
+      (keyword_grant)
+      (keyword_select)
+      (keyword_insert)
+      (keyword_on)
+      (keyword_future)
+      (keyword_tables)
+      (keyword_in)
+      (keyword_schema)
+      (object_reference
+        (identifier)
+        (identifier))
+      (keyword_to)
+      (keyword_role)
+      (object_reference
+        (identifier))))
+  (statement
+    (grant_statement
+      (keyword_grant)
+      (keyword_usage)
+      (keyword_on)
+      (keyword_procedure)
+      (object_reference
+        (identifier)
+        (identifier)
+        (identifier))
+      (object_reference
+        (identifier))
+      (keyword_to)
+      (keyword_user)
+      (object_reference
+        (identifier))
+      (keyword_with)
+      (keyword_grant)
+      (keyword_option)))
+  (statement
+    (grant_statement
+      (keyword_grant)
+      (keyword_create)
+      (keyword_database)
+      (keyword_create)
+      (keyword_warehouse)
+      (keyword_on)
+      (keyword_account)
+      (keyword_to)
+      (keyword_role)
+      (object_reference
+        (identifier)))))
+
+================================================================================
+GRANT roles and ownership
+================================================================================
+
+GRANT ROLE analyst TO USER user1;
+GRANT DATABASE ROLE dr1 TO SHARE sh;
+GRANT OWNERSHIP ON TABLE db.s.t TO ROLE r COPY CURRENT GRANTS;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (grant_statement
+      (keyword_grant)
+      (keyword_role)
+      (object_reference
+        (identifier))
+      (keyword_to)
+      (keyword_user)
+      (object_reference
+        (identifier))))
+  (statement
+    (grant_statement
+      (keyword_grant)
+      (keyword_database)
+      (keyword_role)
+      (object_reference
+        (identifier))
+      (keyword_to)
+      (keyword_share)
+      (object_reference
+        (identifier))))
+  (statement
+    (grant_statement
+      (keyword_grant)
+      (keyword_ownership)
+      (keyword_on)
+      (keyword_table)
+      (object_reference
+        (identifier)
+        (identifier)
+        (identifier))
+      (keyword_to)
+      (keyword_role)
+      (object_reference
+        (identifier))
+      (copy_grants_clause
+        (keyword_copy)
+        (keyword_current)
+        (keyword_grants)))))
+
+================================================================================
+REVOKE forms
+================================================================================
+
+REVOKE GRANT OPTION FOR OPERATE ON WAREHOUSE wh FROM ROLE r;
+REVOKE SELECT ON FUTURE TABLES IN SCHEMA db.s FROM ROLE r CASCADE;
+REVOKE ROLE analyst FROM USER user1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (revoke_statement
+      (keyword_revoke)
+      (keyword_grant)
+      (keyword_option)
+      (keyword_for)
+      (keyword_operate)
+      (keyword_on)
+      (keyword_warehouse)
+      (object_reference
+        (identifier))
+      (keyword_from)
+      (keyword_role)
+      (object_reference
+        (identifier))))
+  (statement
+    (revoke_statement
+      (keyword_revoke)
+      (keyword_select)
+      (keyword_on)
+      (keyword_future)
+      (keyword_tables)
+      (keyword_in)
+      (keyword_schema)
+      (object_reference
+        (identifier)
+        (identifier))
+      (keyword_from)
+      (keyword_role)
+      (object_reference
+        (identifier))
+      (keyword_cascade)))
+  (statement
+    (revoke_statement
+      (keyword_revoke)
+      (keyword_role)
+      (object_reference
+        (identifier))
+      (keyword_from)
+      (keyword_user)
+      (object_reference
+        (identifier)))))
+
+================================================================================
+Transactions: BEGIN with name
+================================================================================
+
+BEGIN TRANSACTION NAME t1;
+START TRANSACTION NAME t2;
+COMMIT WORK;
+ROLLBACK;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (begin_statement
+      (keyword_begin)
+      (keyword_transaction)
+      (keyword_name)
+      (identifier)))
+  (statement
+    (start_transaction_statement
+      (keyword_start)
+      (keyword_transaction)
+      (keyword_name)
+      (identifier)))
+  (statement
+    (commit_statement
+      (keyword_commit)
+      (keyword_work)))
+  (statement
+    (rollback_statement
+      (keyword_rollback))))

@@ -1,0 +1,17 @@
+================================================================================
+Drop table and cascade through
+================================================================================
+
+DROP TABLE my_table CASCADE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_table
+      (keyword_drop)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_cascade))))
+

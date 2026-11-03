@@ -1,0 +1,319 @@
+================================================================================
+HANA: LOCK TABLE IN EXCLUSIVE MODE
+================================================================================
+
+LOCK TABLE t1 IN EXCLUSIVE MODE NOWAIT;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (lock_table_statement
+      (keyword_lock)
+      (keyword_table)
+      table: (object_reference
+        name: (identifier))
+      (keyword_in)
+      mode: (keyword_exclusive)
+      (keyword_mode)
+      (keyword_nowait))))
+
+================================================================================
+HANA: MERGE DELTA
+================================================================================
+
+MERGE DELTA OF t1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (merge_delta_statement
+      (keyword_merge)
+      (keyword_delta)
+      (keyword_of)
+      table: (object_reference
+        name: (identifier)))))
+
+================================================================================
+HANA: UNLOAD
+================================================================================
+
+UNLOAD t1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (load_unload_statement
+      (keyword_unload)
+      table: (object_reference
+        name: (identifier)))))
+
+================================================================================
+HANA: REFRESH VIEW
+================================================================================
+
+REFRESH VIEW v1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (refresh_object_statement
+      (keyword_refresh)
+      (keyword_view)
+      name: (object_reference
+        name: (identifier)))))
+
+================================================================================
+HANA: RENAME INDEX
+================================================================================
+
+RENAME INDEX i1 TO i2;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (rename_object_statement
+      (keyword_rename)
+      (keyword_index)
+      name: (object_reference
+        name: (identifier))
+      (keyword_to)
+      new_name: (object_reference
+        name: (identifier)))))
+
+================================================================================
+HANA: SET SCHEMA
+================================================================================
+
+SET SCHEMA my_schema;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (set_schema_statement
+      (keyword_set)
+      (keyword_schema)
+      name: (object_reference
+        name: (identifier)))))
+
+================================================================================
+HANA: ALTER SYSTEM CLEAR CACHE
+================================================================================
+
+ALTER SYSTEM CLEAR CACHE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_system_statement
+      (keyword_alter)
+      (keyword_system)
+      (system_option
+        name: (identifier))
+      (keyword_cache))))
+
+================================================================================
+HANA: DROP AUDIT POLICY
+================================================================================
+
+DROP AUDIT POLICY p1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (hana_object_statement
+      (keyword_drop)
+      (keyword_audit)
+      (keyword_policy)
+      name: (object_reference
+        name: (identifier)))))
+
+================================================================================
+HANA: CREATE SYNONYM
+================================================================================
+
+CREATE SYNONYM s1 FOR t1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (hana_object_statement
+      (keyword_create)
+      (keyword_synonym)
+      name: (object_reference
+        name: (identifier))
+      (keyword_for)
+      target: (object_reference
+        name: (identifier)))))
+
+================================================================================
+HANA: VALIDATE USER
+================================================================================
+
+VALIDATE USER u1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (validate_statement
+      (keyword_validate)
+      (keyword_user)
+      name: (object_reference
+        name: (identifier)))))
+
+================================================================================
+HANA: CANCEL ASYNC CALL
+================================================================================
+
+CANCEL ASYNC CALL 42;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (cancel_async_call_statement
+      (keyword_cancel)
+      (keyword_async)
+      (keyword_call)
+      id: (literal))))
+
+================================================================================
+HANA: CALL procedure
+================================================================================
+
+CALL my_proc(1);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (call_statement
+      (keyword_call)
+      procedure: (object_reference
+        name: (identifier))
+      (literal))))
+
+================================================================================
+HANA: EXPORT
+================================================================================
+
+EXPORT t1 AS BINARY INTO '/tmp/exp' WITH REPLACE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (export_statement
+      (keyword_export)
+      (object_reference
+        name: (identifier))
+      (keyword_as)
+      format: (identifier)
+      (keyword_into)
+      path: (literal)
+      (keyword_with)
+      (identifier))))
+
+================================================================================
+HANA: EXPORT INTO
+================================================================================
+
+EXPORT INTO CSV FILE '/tmp/e.csv' FROM t1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (export_statement
+      (keyword_export)
+      (keyword_into)
+      format: (identifier)
+      (keyword_file)
+      path: (literal)
+      (keyword_from)
+      source: (object_reference
+        name: (identifier)))))
+
+================================================================================
+HANA: IMPORT FROM
+================================================================================
+
+IMPORT FROM CSV FILE '/tmp/e.csv' INTO t1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (import_statement
+      (keyword_import)
+      (keyword_from)
+      file_type: (identifier)
+      (keyword_file)
+      path: (literal)
+      (keyword_into)
+      target: (object_reference
+        name: (identifier)))))
+
+================================================================================
+HANA: IMPORT SCAN
+================================================================================
+
+IMPORT SCAN '/tmp/scan' WITH CREDENTIAL 'cred';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (import_statement
+      (keyword_import)
+      (keyword_scan)
+      path: (literal)
+      (keyword_with)
+      (identifier)
+      (literal))))
+
+================================================================================
+HANA: UNSET SESSION
+================================================================================
+
+UNSET SESSION 'MY_VAR';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (unset_statement
+      (keyword_unset)
+      (keyword_session)
+      key: (literal))))
+
+================================================================================
+HANA: DO BEGIN END
+================================================================================
+
+DO BEGIN SELECT 1; END;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (do_statement
+      (keyword_do)
+      (compound_statement
+        (keyword_begin)
+        (statement
+          (select
+            (keyword_select)
+            (select_expression
+              (term
+                value: (literal)))))
+        (keyword_end)))))

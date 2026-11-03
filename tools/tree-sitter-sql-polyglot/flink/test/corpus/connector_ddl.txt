@@ -1,0 +1,199 @@
+================================================================================
+CREATE TABLE with connector options
+================================================================================
+
+CREATE TABLE kafka_source (
+  id BIGINT,
+  name STRING,
+  ts TIMESTAMP(3) METADATA FROM 'timestamp',
+  WATERMARK FOR ts AS ts - INTERVAL '5' SECOND
+) WITH (
+  'connector' = 'kafka',
+  'topic' = 'my-topic',
+  'properties.bootstrap.servers' = 'localhost:9092',
+  'format' = 'json'
+)
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (column_definitions
+        (column_definition
+          (identifier)
+          (bigint
+            (keyword_bigint)))
+        (column_definition
+          (identifier)
+          (keyword_string))
+        (metadata_column
+          (identifier)
+          (timestamp
+            (keyword_timestamp)
+            (literal))
+          (keyword_metadata)
+          (keyword_from)
+          (literal))
+        (watermark_definition
+          (keyword_watermark)
+          (keyword_for)
+          (identifier)
+          (keyword_as)
+          (binary_expression
+            (field
+              (identifier))
+            (interval
+              (keyword_interval)
+              (identifier)))))
+      (with_properties
+        (keyword_with)
+        (literal)
+        (literal)
+        (literal)
+        (literal)
+        (literal)
+        (literal)
+        (literal)
+        (literal)))))
+
+================================================================================
+CREATE TABLE with PARTITIONED BY
+================================================================================
+
+CREATE TABLE orders (
+  order_id BIGINT,
+  product STRING,
+  amount DOUBLE,
+  order_date DATE
+) PARTITIONED BY (order_date)
+WITH (
+  'connector' = 'filesystem',
+  'path' = '/data/orders',
+  'format' = 'parquet'
+)
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (column_definitions
+        (column_definition
+          (identifier)
+          (bigint
+            (keyword_bigint)))
+        (column_definition
+          (identifier)
+          (keyword_string))
+        (column_definition
+          (identifier)
+          (double
+            (keyword_double)))
+        (column_definition
+          (identifier)
+          (keyword_date)))
+      (keyword_partitioned)
+      (keyword_by)
+      (identifier)
+      (with_properties
+        (keyword_with)
+        (literal)
+        (literal)
+        (literal)
+        (literal)
+        (literal)
+        (literal)))))
+
+================================================================================
+CREATE TABLE AS SELECT (CTAS)
+================================================================================
+
+CREATE TABLE my_summary
+WITH (
+  'connector' = 'blackhole'
+)
+AS SELECT product, SUM(amount) AS total FROM orders GROUP BY product
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (with_properties
+        (keyword_with)
+        (literal)
+        (literal))
+      (keyword_as)
+      (create_query
+        (select
+          (keyword_select)
+          (select_expression
+            (term
+              (field
+                (identifier)))
+            (term
+              (invocation
+                (object_reference
+                  (identifier))
+                (term
+                  (field
+                    (identifier))))
+              (keyword_as)
+              (identifier))))
+        (from
+          (keyword_from)
+          (relation
+            (object_reference
+              (identifier)))
+          (group_by
+            (keyword_group)
+            (keyword_by)
+            (field
+              (identifier))))))))
+
+================================================================================
+CREATE TEMPORARY TABLE
+================================================================================
+
+CREATE TEMPORARY TABLE tmp_staging (
+  id INT,
+  val STRING
+) WITH (
+  'connector' = 'datagen'
+)
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_temporary)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (column_definitions
+        (column_definition
+          (identifier)
+          (int
+            (keyword_int)))
+        (column_definition
+          (identifier)
+          (keyword_string)))
+      (with_properties
+        (keyword_with)
+        (literal)
+        (literal)))))

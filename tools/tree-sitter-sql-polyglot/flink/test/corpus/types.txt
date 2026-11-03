@@ -1,0 +1,151 @@
+================================================================================
+Flink primitive types: TINYINT, BYTES, STRING
+================================================================================
+
+CREATE TABLE t (
+  a TINYINT,
+  b BYTES,
+  c STRING
+) WITH ('connector' = 'blackhole')
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference (identifier))
+      (column_definitions
+        (column_definition (identifier) (keyword_tinyint))
+        (column_definition (identifier) (keyword_bytes))
+        (column_definition (identifier) (keyword_string)))
+      (with_properties (keyword_with) (literal) (literal)))))
+
+================================================================================
+TIMESTAMP_LTZ type
+================================================================================
+
+CREATE TABLE t (
+  ts TIMESTAMP_LTZ(3)
+) WITH ('connector' = 'blackhole')
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference (identifier))
+      (column_definitions
+        (column_definition (identifier) (timestamp_ltz (keyword_timestamp_ltz) (literal))))
+      (with_properties (keyword_with) (literal) (literal)))))
+
+================================================================================
+ROW type angle-bracket form
+================================================================================
+
+CREATE TABLE t (
+  nested ROW<id BIGINT, name STRING>
+) WITH ('connector' = 'blackhole')
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference (identifier))
+      (column_definitions
+        (column_definition (identifier)
+          (row_type
+            (keyword_row)
+            (identifier) (bigint (keyword_bigint))
+            (identifier) (keyword_string))))
+      (with_properties (keyword_with) (literal) (literal)))))
+
+================================================================================
+ARRAY type
+================================================================================
+
+CREATE TABLE t (
+  tags ARRAY<STRING>
+) WITH ('connector' = 'blackhole')
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference (identifier))
+      (column_definitions
+        (column_definition (identifier)
+          (array_type (keyword_array) (keyword_string))))
+      (with_properties (keyword_with) (literal) (literal)))))
+
+================================================================================
+MAP type
+================================================================================
+
+CREATE TABLE t (
+  properties MAP<STRING, INT>
+) WITH ('connector' = 'blackhole')
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference (identifier))
+      (column_definitions
+        (column_definition (identifier)
+          (map_type (keyword_map) (keyword_string) (int (keyword_int)))))
+      (with_properties (keyword_with) (literal) (literal)))))
+
+================================================================================
+MULTISET type
+================================================================================
+
+CREATE TABLE t (
+  tags MULTISET<STRING>
+) WITH ('connector' = 'blackhole')
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference (identifier))
+      (column_definitions
+        (column_definition (identifier)
+          (multiset_type (keyword_multiset) (keyword_string))))
+      (with_properties (keyword_with) (literal) (literal)))))
+
+================================================================================
+RAW type
+================================================================================
+
+CREATE TABLE t (
+  custom RAW('com.example.MyClass', '')
+) WITH ('connector' = 'blackhole')
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference (identifier))
+      (column_definitions
+        (column_definition (identifier)
+          (raw_type (keyword_raw) (literal) (literal))))
+      (with_properties (keyword_with) (literal) (literal)))))

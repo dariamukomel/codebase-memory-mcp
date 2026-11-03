@@ -1,0 +1,372 @@
+================================================================================
+Athena: SET SESSION with string value (inherited from Trino)
+================================================================================
+
+SET SESSION query_max_memory = '10GB';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (set_session_statement
+      (keyword_set)
+      (keyword_session)
+      property: (object_reference
+        name: (identifier))
+      value: (literal))))
+
+================================================================================
+Athena: SET SESSION with boolean value (inherited from Trino)
+================================================================================
+
+SET SESSION optimize_hash_generation = true;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (set_session_statement
+      (keyword_set)
+      (keyword_session)
+      property: (object_reference
+        name: (identifier))
+      value: (literal
+        (keyword_true)))))
+
+================================================================================
+Athena: RESET SESSION (inherited from Trino)
+================================================================================
+
+RESET SESSION query_max_memory;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (reset_session_statement
+      (keyword_reset)
+      (keyword_session)
+      property: (object_reference
+        name: (identifier)))))
+
+================================================================================
+Athena: TABLESAMPLE BERNOULLI (inherited from Trino)
+================================================================================
+
+SELECT * FROM orders TABLESAMPLE BERNOULLI(10);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))
+        (tablesample
+          (keyword_tablesample)
+          (keyword_bernoulli)
+          (literal))))))
+
+================================================================================
+Athena: TABLESAMPLE SYSTEM (inherited from Trino)
+================================================================================
+
+SELECT * FROM orders TABLESAMPLE SYSTEM(5);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))
+        (tablesample
+          (keyword_tablesample)
+          (keyword_system)
+          (literal))))))
+
+================================================================================
+Athena: EXPLAIN basic (inherited from Trino)
+================================================================================
+
+EXPLAIN SELECT * FROM t;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (keyword_explain)
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))))))
+
+================================================================================
+Athena: EXPLAIN with TYPE LOGICAL (inherited from Trino)
+================================================================================
+
+EXPLAIN (TYPE LOGICAL) SELECT * FROM t;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (keyword_explain)
+    (explain_options
+      (keyword_type)
+      (keyword_logical))
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))))))
+
+================================================================================
+Athena: EXPLAIN with TYPE and FORMAT (inherited from Trino)
+================================================================================
+
+EXPLAIN (TYPE DISTRIBUTED, FORMAT JSON) SELECT id FROM orders;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (keyword_explain)
+    (explain_options
+      (keyword_type)
+      (keyword_distributed)
+      (keyword_format)
+      (keyword_json))
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))))))
+
+================================================================================
+Athena: PREPARE with SELECT (inherited from Trino)
+================================================================================
+
+PREPARE my_query FROM SELECT * FROM orders WHERE id = ?;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (prepare_statement
+      (keyword_prepare)
+      name: (identifier)
+      (keyword_from)
+      (select
+        (keyword_select)
+        (select_expression
+          (term
+            value: (all_fields))))
+      (from
+        (keyword_from)
+        (relation
+          (object_reference
+            name: (identifier)))
+        (where
+          (keyword_where)
+          predicate: (binary_expression
+            left: (field
+              name: (identifier))
+            right: (parameter)))))))
+
+================================================================================
+Athena: EXECUTE with USING (inherited from Trino)
+================================================================================
+
+EXECUTE my_query USING 42, 'foo';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (execute_statement
+      (keyword_execute)
+      name: (identifier)
+      (keyword_using)
+      (literal)
+      (literal))))
+
+================================================================================
+Athena: DEALLOCATE PREPARE (inherited from Trino)
+================================================================================
+
+DEALLOCATE PREPARE my_query;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (deallocate_statement
+      (keyword_deallocate)
+      (keyword_prepare)
+      name: (identifier))))
+
+================================================================================
+Athena: lambda transform (inherited from Trino)
+================================================================================
+
+SELECT transform(ARRAY[1, 2, 3], x -> x * 2);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (invocation
+            (object_reference
+              name: (identifier))
+            parameter: (term
+              value: (array
+                (keyword_array)
+                (literal)
+                (literal)
+                (literal)))
+            parameter: (term
+              value: (lambda_expression
+                param: (identifier)
+                body: (binary_expression
+                  left: (field
+                    name: (identifier))
+                  right: (literal))))))))))
+
+================================================================================
+Athena: lambda filter (inherited from Trino)
+================================================================================
+
+SELECT filter(arr, x -> x > 0);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (invocation
+            (object_reference
+              name: (identifier))
+            parameter: (term
+              value: (field
+                name: (identifier)))
+            parameter: (term
+              value: (lambda_expression
+                param: (identifier)
+                body: (binary_expression
+                  left: (field
+                    name: (identifier))
+                  right: (literal))))))))))
+
+================================================================================
+Athena: MATCH_RECOGNIZE simple (inherited from Trino)
+================================================================================
+
+SELECT * FROM orders
+MATCH_RECOGNIZE (
+  ORDER BY order_date
+  PATTERN (A B+)
+  DEFINE
+    A AS amount < 100,
+    B AS amount > 200
+);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))
+        (match_recognize_clause
+          (keyword_match_recognize)
+          (order_by
+            (keyword_order)
+            (keyword_by)
+            (order_target
+              (field
+                name: (identifier))))
+          (pattern_clause
+            (keyword_pattern)
+            (pattern_term
+              (identifier))
+            (pattern_term
+              (identifier)))
+          (define_clause
+            (keyword_define)
+            (define_item
+              (identifier)
+              (keyword_as)
+              (binary_expression
+                left: (field
+                  name: (identifier))
+                right: (literal)))
+            (define_item
+              (identifier)
+              (keyword_as)
+              (binary_expression
+                left: (field
+                  name: (identifier))
+                right: (literal)))))))))
+
+================================================================================
+Athena: SHOW STATS FOR table (inherited from Trino)
+================================================================================
+
+SHOW STATS FOR my_table;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (show_stats_statement
+      (keyword_show)
+      (keyword_stats)
+      (keyword_for)
+      (object_reference
+        name: (identifier)))))

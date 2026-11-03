@@ -1,0 +1,100 @@
+================================================================================
+SQLite: Generated column GENERATED ALWAYS AS STORED
+================================================================================
+
+CREATE TABLE t (id INT, full_name TEXT GENERATED ALWAYS AS (first || ' ' || last) STORED);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int)))
+        (column_definition
+          name: (identifier)
+          custom_type: (object_reference
+            name: (identifier))
+          (keyword_generated)
+          (keyword_always)
+          (keyword_as)
+          (binary_expression
+            left: (binary_expression
+              left: (field
+                name: (identifier))
+              operator: (op_other)
+              right: (literal))
+            operator: (op_other)
+            right: (field
+              name: (identifier)))
+          (keyword_stored))))))
+
+================================================================================
+SQLite: Generated column AS (expr) VIRTUAL
+================================================================================
+
+CREATE TABLE t (id INT, area REAL AS (width * height) VIRTUAL);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int)))
+        (column_definition
+          name: (identifier)
+          type: (double
+            (keyword_real))
+          (keyword_as)
+          (binary_expression
+            left: (field
+              name: (identifier))
+            right: (field
+              name: (identifier)))
+          (keyword_virtual))))))
+
+================================================================================
+SQLite: Generated column bare AS (expr)
+================================================================================
+
+CREATE TABLE t (id INT, area REAL AS (width * height));
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int)))
+        (column_definition
+          name: (identifier)
+          type: (double
+            (keyword_real))
+          (keyword_as)
+          (binary_expression
+            left: (field
+              name: (identifier))
+            right: (field
+              name: (identifier))))))))

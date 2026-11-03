@@ -1,0 +1,104 @@
+================================================================================
+ALTER TABLE EXECUTE
+================================================================================
+
+ALTER TABLE t EXECUTE optimize(file_size_threshold => '128MB');
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_execute)
+      (identifier)
+      (identifier)
+      (literal))))
+
+================================================================================
+SET ROLE
+================================================================================
+
+SET ROLE admin;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (set_role_statement
+      (keyword_set)
+      (keyword_role)
+      (identifier))))
+
+================================================================================
+SET TIME ZONE
+================================================================================
+
+SET TIME ZONE 'UTC';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (set_time_zone_statement
+      (keyword_set)
+      (keyword_time)
+      (keyword_zone)
+      (literal))))
+
+================================================================================
+DENY
+================================================================================
+
+DENY SELECT ON t TO u;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (deny_statement
+      (keyword_deny)
+      (keyword_select)
+      (keyword_on)
+      (object_reference
+        name: (identifier))
+      (keyword_to)
+      (identifier))))
+
+================================================================================
+SET PATH
+================================================================================
+
+SET PATH a.b, c;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (set_path_statement
+      (keyword_set)
+      (keyword_path)
+      (object_reference
+        schema: (identifier)
+        name: (identifier))
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+SET SESSION AUTHORIZATION
+================================================================================
+
+SET SESSION AUTHORIZATION 'bob';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (set_session_authorization_statement
+      (keyword_set)
+      (keyword_session)
+      (keyword_authorization)
+      (literal))))

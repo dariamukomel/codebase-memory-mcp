@@ -1,0 +1,62 @@
+================================================================================
+PIVOT
+================================================================================
+
+SELECT * FROM t PIVOT (SUM(sales) FOR q IN ('Q1','Q2'));
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))
+        (pivot_clause
+          (keyword_pivot)
+          (invocation
+            (object_reference
+              name: (identifier))
+            parameter: (term
+              value: (field
+                name: (identifier))))
+          (keyword_for)
+          (identifier)
+          (keyword_in)
+          (literal)
+          (literal))))))
+
+================================================================================
+UNPIVOT
+================================================================================
+
+SELECT * FROM t UNPIVOT (v FOR c IN (a, b));
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))
+        (unpivot_clause
+          (keyword_unpivot)
+          (identifier)
+          (keyword_for)
+          (identifier)
+          (keyword_in)
+          (identifier)
+          (identifier))))))

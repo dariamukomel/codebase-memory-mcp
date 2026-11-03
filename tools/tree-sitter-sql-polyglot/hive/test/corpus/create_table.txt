@@ -1,0 +1,64 @@
+================================================================================
+Hive: CREATE TABLE with STORED AS PARQUET
+================================================================================
+
+CREATE TABLE sales (id INT, amount DECIMAL(10,2))
+STORED AS PARQUET;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int)))
+        (column_definition
+          name: (identifier)
+          type: (decimal
+            (keyword_decimal)
+            precision: (literal)
+            scale: (literal))))
+      (stored_as
+        (keyword_stored)
+        (keyword_as)
+        (keyword_parquet)))))
+
+================================================================================
+Hive: CREATE TABLE CLUSTERED BY INTO BUCKETS
+================================================================================
+
+CREATE TABLE t (id INT, val STRING)
+CLUSTERED BY (id) INTO 8 BUCKETS;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int)))
+        (column_definition
+          name: (identifier)
+          type: (keyword_string)))
+      (table_cluster
+        (keyword_clustered)
+        (keyword_by)
+        (field
+          name: (identifier))
+        (keyword_into)
+        (literal)
+        (keyword_buckets)))))

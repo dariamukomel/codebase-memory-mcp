@@ -1,0 +1,72 @@
+================================================================================
+Trino: CREATE TABLE with WITH properties
+================================================================================
+
+CREATE TABLE orders (id BIGINT, name VARCHAR) WITH (format = 'PARQUET');
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (bigint
+            (keyword_bigint)))
+        (column_definition
+          name: (identifier)
+          type: (varchar
+            (keyword_varchar))))
+      (with_properties
+        (keyword_with)
+        key: (identifier)
+        value: (literal)))))
+
+================================================================================
+Trino: CREATE TABLE with multiple WITH properties
+================================================================================
+
+CREATE TABLE events WITH (format = 'ORC', partitioning = ARRAY['dt']);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (with_properties
+        (keyword_with)
+        key: (identifier)
+        value: (literal)
+        key: (identifier)
+        value: (array
+          (keyword_array)
+          (literal))))))
+
+================================================================================
+Trino: CREATE SCHEMA with WITH properties
+================================================================================
+
+CREATE SCHEMA analytics WITH (location = 's3://my-bucket/analytics/');
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_schema
+      (keyword_create)
+      (keyword_schema)
+      (object_reference
+        name: (identifier))
+      (with_properties
+        (keyword_with)
+        key: (identifier)
+        value: (literal)))))

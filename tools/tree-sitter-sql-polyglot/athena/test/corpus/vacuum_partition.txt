@@ -1,0 +1,80 @@
+================================================================================
+VACUUM table
+================================================================================
+
+VACUUM iceberg_t;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (vacuum_statement
+      (keyword_vacuum)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+ALTER TABLE ADD PARTITION with LOCATION
+================================================================================
+
+ALTER TABLE t ADD PARTITION (dt='2024') LOCATION 's3://b/p';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_add)
+      (keyword_partition)
+      (identifier)
+      (literal)
+      (keyword_location)
+      (literal))))
+
+==================
+OPTIMIZE REWRITE DATA USING BIN_PACK
+==================
+
+OPTIMIZE t REWRITE DATA USING BIN_PACK
+
+---
+
+(program
+  (statement
+    (optimize_statement
+      (keyword_optimize)
+      (object_reference
+        name: (identifier))
+      (keyword_rewrite)
+      (keyword_data)
+      (keyword_using)
+      (keyword_bin_pack))))
+
+==================
+OPTIMIZE REWRITE with WHERE
+==================
+
+OPTIMIZE t REWRITE DATA USING BIN_PACK WHERE k = 1
+
+---
+
+(program
+  (statement
+    (optimize_statement
+      (keyword_optimize)
+      (object_reference
+        name: (identifier))
+      (keyword_rewrite)
+      (keyword_data)
+      (keyword_using)
+      (keyword_bin_pack)
+      (where
+        (keyword_where)
+        predicate: (binary_expression
+          left: (field
+            name: (identifier))
+          right: (literal))))))

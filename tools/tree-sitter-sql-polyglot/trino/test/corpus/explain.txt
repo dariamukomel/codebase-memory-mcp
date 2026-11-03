@@ -1,0 +1,165 @@
+================================================================================
+Trino: EXPLAIN basic
+================================================================================
+
+EXPLAIN SELECT * FROM t;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (keyword_explain)
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))))))
+
+================================================================================
+Trino: EXPLAIN with TYPE LOGICAL
+================================================================================
+
+EXPLAIN (TYPE LOGICAL) SELECT * FROM t;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (keyword_explain)
+    (explain_options
+      (keyword_type)
+      (keyword_logical))
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))))))
+
+================================================================================
+Trino: EXPLAIN with TYPE and FORMAT
+================================================================================
+
+EXPLAIN (TYPE DISTRIBUTED, FORMAT JSON) SELECT id FROM orders;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (keyword_explain)
+    (explain_options
+      (keyword_type)
+      (keyword_distributed)
+      (keyword_format)
+      (keyword_json))
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))))))
+
+================================================================================
+Trino: EXPLAIN with FORMAT GRAPHVIZ
+================================================================================
+
+EXPLAIN (FORMAT GRAPHVIZ) SELECT 1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (keyword_explain)
+    (explain_options
+      (keyword_format)
+      (keyword_graphviz))
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (literal))))))
+
+================================================================================
+Trino: EXPLAIN with TYPE IO
+================================================================================
+
+EXPLAIN (TYPE IO) SELECT 1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (keyword_explain)
+    (explain_options
+      (keyword_type)
+      (keyword_io))
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (literal))))))
+
+================================================================================
+Trino: EXPLAIN with TYPE VALIDATE
+================================================================================
+
+EXPLAIN (TYPE VALIDATE) SELECT * FROM t;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (keyword_explain)
+    (explain_options
+      (keyword_type)
+      (keyword_validate))
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))))))
+
+================================================================================
+Trino: EXPLAIN with FORMAT TEXT
+================================================================================
+
+EXPLAIN (FORMAT TEXT) SELECT id FROM t;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (keyword_explain)
+    (explain_options
+      (keyword_format)
+      (keyword_text))
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))))))

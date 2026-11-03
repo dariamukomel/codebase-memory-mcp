@@ -1,0 +1,70 @@
+================================================================================
+Oracle: CREATE PACKAGE with procedure and function declarations
+================================================================================
+
+CREATE OR REPLACE PACKAGE emp_pkg AS PROCEDURE hire_employee(name VARCHAR2); FUNCTION get_salary(id NUMBER) RETURN NUMBER; END emp_pkg;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_package
+      (keyword_create)
+      (keyword_or)
+      (keyword_replace)
+      (keyword_package)
+      name: (object_reference
+        name: (identifier))
+      (keyword_as)
+      (package_subprogram_declaration
+        (keyword_procedure)
+        name: (identifier)
+        (function_argument
+          (identifier)
+          (varchar2
+            (keyword_varchar2))))
+      (package_subprogram_declaration
+        (keyword_function)
+        name: (identifier)
+        (function_argument
+          (identifier)
+          (number_type
+            (keyword_number)))
+        (keyword_return)
+        return_type: (number_type
+          (keyword_number)))
+      (keyword_end)
+      end_name: (identifier))))
+
+================================================================================
+Oracle: DROP PACKAGE
+================================================================================
+
+DROP PACKAGE emp_pkg;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_package
+      (keyword_drop)
+      (keyword_package)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+Oracle: DROP PACKAGE BODY
+================================================================================
+
+DROP PACKAGE BODY emp_pkg;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_package
+      (keyword_drop)
+      (keyword_package)
+      (keyword_body)
+      (object_reference
+        name: (identifier)))))

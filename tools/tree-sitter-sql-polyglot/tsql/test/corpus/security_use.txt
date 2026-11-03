@@ -1,0 +1,248 @@
+================================================================================
+USE database
+================================================================================
+
+USE MyDatabase;
+USE [My Database With Spaces];
+USE master;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (use_statement
+      (keyword_use)
+      (object_reference
+        (identifier))))
+  (statement
+    (use_statement
+      (keyword_use)
+      (object_reference
+        (identifier))))
+  (statement
+    (use_statement
+      (keyword_use)
+      (object_reference
+        (identifier)))))
+
+================================================================================
+CREATE SYNONYM
+================================================================================
+
+CREATE SYNONYM dbo.Orders FOR OtherDatabase.dbo.Orders;
+CREATE SYNONYM sales.Product FOR AdventureWorks.Production.Product;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_synonym_statement
+      (keyword_create)
+      (keyword_synonym)
+      (object_reference
+        (identifier)
+        (identifier))
+      (keyword_for)
+      (object_reference
+        (identifier)
+        (identifier)
+        (identifier))))
+  (statement
+    (create_synonym_statement
+      (keyword_create)
+      (keyword_synonym)
+      (object_reference
+        (identifier)
+        (identifier))
+      (keyword_for)
+      (object_reference
+        (identifier)
+        (identifier)
+        (identifier)))))
+
+================================================================================
+DROP SYNONYM
+================================================================================
+
+DROP SYNONYM IF EXISTS dbo.Orders;
+DROP SYNONYM dbo.Orders;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_synonym_statement
+      (keyword_drop)
+      (keyword_synonym)
+      (keyword_if)
+      (keyword_exists)
+      (object_reference
+        (identifier)
+        (identifier))))
+  (statement
+    (drop_synonym_statement
+      (keyword_drop)
+      (keyword_synonym)
+      (object_reference
+        (identifier)
+        (identifier)))))
+
+================================================================================
+CREATE LOGIN
+================================================================================
+
+CREATE LOGIN alice WITH PASSWORD = 'P@ssw0rd';
+CREATE LOGIN alice WITH PASSWORD = 'P@ssw0rd' MUST_CHANGE, CHECK_POLICY = ON;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_login_statement
+      (keyword_create)
+      (keyword_login)
+      (identifier)
+      (keyword_with)
+      (login_option
+        (keyword_password)
+        (literal))))
+  (statement
+    (create_login_statement
+      (keyword_create)
+      (keyword_login)
+      (identifier)
+      (keyword_with)
+      (login_option
+        (keyword_password)
+        (literal)
+        (keyword_must_change))
+      (login_option
+        (identifier)
+        (keyword_on)))))
+
+================================================================================
+ALTER and DROP LOGIN
+================================================================================
+
+ALTER LOGIN alice WITH PASSWORD = 'New$ecret';
+ALTER LOGIN alice DISABLE;
+DROP LOGIN alice;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_login_statement
+      (keyword_alter)
+      (keyword_login)
+      (identifier)
+      (keyword_with)
+      (login_option
+        (keyword_password)
+        (literal))))
+  (statement
+    (alter_login_statement
+      (keyword_alter)
+      (keyword_login)
+      (identifier)
+      (keyword_disable)))
+  (statement
+    (drop_login_statement
+      (keyword_drop)
+      (keyword_login)
+      (identifier))))
+
+================================================================================
+CREATE USER forms
+================================================================================
+
+CREATE USER alice FOR LOGIN alice;
+CREATE USER alice FOR LOGIN alice WITH DEFAULT_SCHEMA = dbo;
+CREATE USER guest WITHOUT LOGIN;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_user_statement
+      (keyword_create)
+      (keyword_user)
+      (identifier)
+      (keyword_for)
+      (keyword_login)
+      (identifier)))
+  (statement
+    (create_user_statement
+      (keyword_create)
+      (keyword_user)
+      (identifier)
+      (keyword_for)
+      (keyword_login)
+      (identifier)
+      (keyword_with)
+      (user_option
+        (identifier)
+        (identifier))))
+  (statement
+    (create_user_statement
+      (keyword_create)
+      (keyword_user)
+      (identifier)
+      (keyword_without)
+      (keyword_login))))
+
+================================================================================
+ALTER and DROP USER
+================================================================================
+
+ALTER USER alice WITH NAME = alicia;
+ALTER USER alice WITH DEFAULT_SCHEMA = sales;
+DROP USER IF EXISTS alice;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_user_statement
+      (keyword_alter)
+      (keyword_user)
+      (identifier)
+      (keyword_with)
+      (user_option
+        (identifier)
+        (identifier))))
+  (statement
+    (alter_user_statement
+      (keyword_alter)
+      (keyword_user)
+      (identifier)
+      (keyword_with)
+      (user_option
+        (identifier)
+        (identifier))))
+  (statement
+    (drop_user_statement
+      (keyword_drop)
+      (keyword_user)
+      (keyword_if)
+      (keyword_exists)
+      (identifier))))
+
+================================================================================
+COMMENT ON TABLE (inherited base rule)
+================================================================================
+
+COMMENT ON TABLE employees IS 'Main employee table';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (comment_statement
+      (keyword_comment)
+      (keyword_on)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (keyword_is)
+      (literal))))

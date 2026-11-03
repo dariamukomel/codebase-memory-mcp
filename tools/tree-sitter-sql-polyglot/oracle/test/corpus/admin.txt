@@ -1,0 +1,389 @@
+================================================================================
+SELECT FOR UPDATE variants
+================================================================================
+
+SELECT * FROM t FOR UPDATE;
+SELECT * FROM t FOR UPDATE OF col NOWAIT;
+SELECT * FROM t FOR UPDATE WAIT 5;
+SELECT * FROM t FOR UPDATE SKIP LOCKED;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier))))
+    (locking_clause
+      (keyword_for)
+      (keyword_update)))
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier))))
+    (locking_clause
+      (keyword_for)
+      (keyword_update)
+      (keyword_of)
+      (object_reference
+        (identifier))
+      (keyword_nowait)))
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier))))
+    (locking_clause
+      (keyword_for)
+      (keyword_update)
+      (keyword_wait)
+      (literal)))
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier))))
+    (locking_clause
+      (keyword_for)
+      (keyword_update)
+      (keyword_skip)
+      (keyword_locked))))
+
+================================================================================
+ANALYZE TABLE and INDEX
+================================================================================
+
+ANALYZE TABLE t COMPUTE STATISTICS;
+ANALYZE TABLE t ESTIMATE STATISTICS SAMPLE 20 PERCENT;
+ANALYZE TABLE t VALIDATE STRUCTURE;
+ANALYZE INDEX idx VALIDATE STRUCTURE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (analyze_statement
+      (keyword_analyze)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (keyword_compute)
+      (keyword_statistics)))
+  (statement
+    (analyze_statement
+      (keyword_analyze)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (keyword_estimate)
+      (keyword_statistics)
+      (keyword_sample)
+      (literal)
+      (keyword_percent)))
+  (statement
+    (analyze_statement
+      (keyword_analyze)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (keyword_validate)
+      (keyword_structure)))
+  (statement
+    (analyze_statement
+      (keyword_analyze)
+      (keyword_index)
+      (object_reference
+        (identifier))
+      (keyword_validate)
+      (keyword_structure))))
+
+================================================================================
+MODEL clause basic
+================================================================================
+
+SELECT country, year, sales
+FROM sales_data
+MODEL
+  PARTITION BY (country)
+  DIMENSION BY (year)
+  MEASURES (sales)
+  RULES (
+    sales[2025] = sales[2024] * 1.1,
+    sales[2026] = sales[2025] * 1.05
+  );
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (field
+            (identifier)))
+        (term
+          (field
+            (identifier)))
+        (term
+          (field
+            (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier)))
+      (model_clause
+        (keyword_model)
+        (keyword_partition)
+        (keyword_by)
+        (term
+          (field
+            (identifier)))
+        (keyword_dimension)
+        (keyword_by)
+        (term
+          (field
+            (identifier)))
+        (keyword_measures)
+        (term
+          (field
+            (identifier)))
+        (keyword_rules)
+        (model_rule
+          (model_cell
+            (identifier)
+            (literal))
+          (binary_expression
+            (subscript
+              (field
+                (identifier))
+              (literal))
+            (literal)))
+        (model_rule
+          (model_cell
+            (identifier)
+            (literal))
+          (binary_expression
+            (subscript
+              (field
+                (identifier))
+              (literal))
+            (literal)))))))
+
+================================================================================
+MODEL clause with options
+================================================================================
+
+SELECT * FROM t
+MODEL
+  IGNORE NAV
+  RETURN UPDATED ROWS
+  DIMENSION BY (year)
+  MEASURES (sales)
+  RULES UPSERT ALL SEQUENTIAL ORDER ITERATE (10)
+  ( sales[1] = 0 );
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier)))
+      (model_clause
+        (keyword_model)
+        (keyword_ignore)
+        (keyword_nav)
+        (keyword_return)
+        (keyword_updated)
+        (keyword_rows)
+        (keyword_dimension)
+        (keyword_by)
+        (term
+          (field
+            (identifier)))
+        (keyword_measures)
+        (term
+          (field
+            (identifier)))
+        (keyword_rules)
+        (keyword_upsert)
+        (keyword_all)
+        (keyword_sequential)
+        (keyword_order)
+        (keyword_iterate)
+        (literal)
+        (model_rule
+          (model_cell
+            (identifier)
+            (literal))
+          (literal))))))
+
+================================================================================
+ALTER SESSION forms
+================================================================================
+
+ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD HH24:MI:SS';
+ALTER SESSION SET CURRENT_SCHEMA = myschema;
+ALTER SESSION ENABLE PARALLEL DML;
+ALTER SESSION DISABLE PARALLEL DML;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_session_statement
+      (keyword_alter)
+      (keyword_session)
+      (keyword_set)
+      (identifier)
+      (literal)))
+  (statement
+    (alter_session_statement
+      (keyword_alter)
+      (keyword_session)
+      (keyword_set)
+      (identifier)
+      (field
+        (identifier))))
+  (statement
+    (alter_session_statement
+      (keyword_alter)
+      (keyword_session)
+      (keyword_enable)
+      (keyword_parallel)
+      (identifier)))
+  (statement
+    (alter_session_statement
+      (keyword_alter)
+      (keyword_session)
+      (keyword_disable)
+      (keyword_parallel)
+      (identifier))))
+
+================================================================================
+ALTER SYSTEM forms
+================================================================================
+
+ALTER SYSTEM SET nls_date_format = 'YYYY-MM-DD' SCOPE = BOTH;
+ALTER SYSTEM FLUSH SHARED_POOL;
+ALTER SYSTEM KILL SESSION '12,34' IMMEDIATE;
+ALTER SYSTEM CHECKPOINT;
+ALTER SYSTEM SWITCH LOGFILE;
+ALTER SYSTEM ARCHIVE LOG CURRENT;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_system_statement
+      (keyword_alter)
+      (keyword_system)
+      (keyword_set)
+      (identifier)
+      (literal)
+      (keyword_scope)
+      (keyword_both)))
+  (statement
+    (alter_system_statement
+      (keyword_alter)
+      (keyword_system)
+      (keyword_flush)
+      (identifier)))
+  (statement
+    (alter_system_statement
+      (keyword_alter)
+      (keyword_system)
+      (keyword_kill)
+      (keyword_session)
+      (literal)
+      (keyword_immediate)))
+  (statement
+    (alter_system_statement
+      (keyword_alter)
+      (keyword_system)
+      (keyword_checkpoint)))
+  (statement
+    (alter_system_statement
+      (keyword_alter)
+      (keyword_system)
+      (keyword_switch)
+      (keyword_logfile)))
+  (statement
+    (alter_system_statement
+      (keyword_alter)
+      (keyword_system)
+      (keyword_archive)
+      (keyword_log)
+      (keyword_current))))
+
+================================================================================
+CREATE and DROP DIRECTORY, GRANT ON DIRECTORY
+================================================================================
+
+CREATE OR REPLACE DIRECTORY data_dir AS '/data/oracle/files';
+DROP DIRECTORY data_dir;
+GRANT READ, WRITE ON DIRECTORY data_dir TO app_user;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_directory_statement
+      (keyword_create)
+      (keyword_or)
+      (keyword_replace)
+      (keyword_directory)
+      (identifier)
+      (keyword_as)
+      (literal)))
+  (statement
+    (drop_directory_statement
+      (keyword_drop)
+      (keyword_directory)
+      (identifier)))
+  (statement
+    (grant_statement
+      (keyword_grant)
+      (keyword_read)
+      (keyword_write)
+      (keyword_on)
+      (keyword_directory)
+      (object_reference
+        (identifier))
+      (keyword_to)
+      (identifier))))

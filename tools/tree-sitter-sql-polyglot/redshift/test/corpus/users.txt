@@ -1,0 +1,136 @@
+================================================================================
+CREATE USER with Redshift options
+================================================================================
+
+CREATE USER alice PASSWORD 'P@ssword1';
+CREATE USER alice PASSWORD 'P@ssword1' CREATEDB NOCREATEUSER IN GROUP analysts SYSLOG ACCESS UNRESTRICTED CONNECTION LIMIT 10 SESSION TIMEOUT 3600 VALID UNTIL '2025-12-31';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_role
+      (keyword_create)
+      (keyword_user)
+      (identifier)
+      (keyword_password)
+      (literal)))
+  (statement
+    (create_role
+      (keyword_create)
+      (keyword_user)
+      (identifier)
+      (keyword_password)
+      (literal)
+      (identifier)
+      (keyword_nocreateuser)
+      (keyword_in)
+      (keyword_group)
+      (identifier)
+      (keyword_syslog)
+      (keyword_access)
+      (keyword_unrestricted)
+      (keyword_connection)
+      (keyword_limit)
+      (literal)
+      (keyword_session)
+      (keyword_timeout)
+      (literal)
+      (keyword_valid)
+      (keyword_until)
+      (literal))))
+
+================================================================================
+ALTER USER forms
+================================================================================
+
+ALTER USER alice PASSWORD 'NewP@ss2';
+ALTER USER alice RENAME TO alicia;
+ALTER USER alice CONNECTION LIMIT 20;
+ALTER USER alice SYSLOG ACCESS RESTRICTED;
+ALTER USER alice SET search_path TO myschema;
+ALTER USER alice RESET search_path;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_role
+      (keyword_alter)
+      (keyword_user)
+      (identifier)
+      (keyword_password)
+      (literal)))
+  (statement
+    (alter_role
+      (keyword_alter)
+      (keyword_user)
+      (identifier)
+      (rename_object
+        (keyword_rename)
+        (keyword_to)
+        (object_reference
+          (identifier)))))
+  (statement
+    (alter_role
+      (keyword_alter)
+      (keyword_user)
+      (identifier)
+      (keyword_connection)
+      (keyword_limit)
+      (literal)))
+  (statement
+    (alter_role
+      (keyword_alter)
+      (keyword_user)
+      (identifier)
+      (keyword_syslog)
+      (keyword_access)
+      (keyword_restricted)))
+  (statement
+    (alter_role
+      (keyword_alter)
+      (keyword_user)
+      (identifier)
+      (keyword_set)
+      (set_configuration
+        (identifier)
+        (keyword_to)
+        (identifier))))
+  (statement
+    (alter_role
+      (keyword_alter)
+      (keyword_user)
+      (identifier)
+      (keyword_reset)
+      (identifier))))
+
+================================================================================
+DROP USER forms
+================================================================================
+
+DROP USER alice;
+DROP USER IF EXISTS alice;
+DROP USER alice, bob;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_role
+      (keyword_drop)
+      (keyword_user)
+      (identifier)))
+  (statement
+    (drop_role
+      (keyword_drop)
+      (keyword_user)
+      (keyword_if)
+      (keyword_exists)
+      (identifier)))
+  (statement
+    (drop_role
+      (keyword_drop)
+      (keyword_user)
+      (identifier)
+      (identifier))))

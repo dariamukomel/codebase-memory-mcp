@@ -1,0 +1,80 @@
+================================================================================
+Trino: MAP type with BIGINT value type
+================================================================================
+
+CREATE TABLE t (counts MAP(VARCHAR, BIGINT));
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (map_type
+            (keyword_map)
+            key_type: (varchar
+              (keyword_varchar))
+            value_type: (bigint
+              (keyword_bigint))))))))
+
+================================================================================
+Trino: ROW type with integer and varchar fields
+================================================================================
+
+CREATE TABLE t (r ROW(id INTEGER, name VARCHAR));
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (row_type
+            (keyword_row)
+            (row_type_field
+              field_name: (identifier)
+              field_type: (int
+                (keyword_int)))
+            (row_type_field
+              field_name: (identifier)
+              field_type: (varchar
+                (keyword_varchar)))))))))
+
+================================================================================
+Trino: ARRAY type with nested MAP element type
+================================================================================
+
+CREATE TABLE t (data ARRAY(MAP(VARCHAR, INTEGER)));
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (array_type
+            (keyword_array)
+            element: (map_type
+              (keyword_map)
+              key_type: (varchar
+                (keyword_varchar))
+              value_type: (int
+                (keyword_int)))))))))

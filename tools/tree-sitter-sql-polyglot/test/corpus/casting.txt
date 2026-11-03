@@ -1,0 +1,46 @@
+================================================================================
+Standard cast
+================================================================================
+
+SELECT CAST(1 AS VARCHAR(10));
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (cast
+            name: (keyword_cast)
+            parameter: (literal)
+            (keyword_as)
+            (varchar
+              (keyword_varchar)
+              size: (literal))))))))
+
+================================================================================
+Aliased
+================================================================================
+
+SELECT CAST(1 AS VARCHAR(10)) AS fieldname;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (cast
+            name: (keyword_cast)
+            parameter: (literal)
+            (keyword_as)
+            (varchar
+              (keyword_varchar)
+              size: (literal)))
+          (keyword_as)
+          alias: (identifier))))))
+

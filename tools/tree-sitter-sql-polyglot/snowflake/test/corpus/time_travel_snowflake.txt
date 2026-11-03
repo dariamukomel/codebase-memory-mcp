@@ -1,0 +1,77 @@
+================================================================================
+Time travel AT TIMESTAMP
+================================================================================
+
+SELECT * FROM my_table AT (TIMESTAMP => '2024-01-01 00:00:00');
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))
+        (time_travel_clause
+          (keyword_at)
+          (time_travel_spec
+            (keyword_timestamp)
+            (literal)))))))
+
+================================================================================
+Time travel AT OFFSET
+================================================================================
+
+SELECT * FROM my_table AT (OFFSET => -60);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))
+        (time_travel_clause
+          (keyword_at)
+          (time_travel_spec
+            (keyword_offset)
+            (literal)))))))
+
+================================================================================
+Time travel BEFORE STATEMENT
+================================================================================
+
+SELECT * FROM my_table BEFORE (STATEMENT => '8e5d0ca9-005e-44e6-b858-a8f5b37c5726');
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))
+        (time_travel_clause
+          (keyword_before)
+          (time_travel_spec
+            (keyword_statement)
+            (literal)))))))

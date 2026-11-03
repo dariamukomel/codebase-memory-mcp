@@ -1,0 +1,245 @@
+================================================================================
+HANA: CREATE COLUMN TABLE
+================================================================================
+
+CREATE COLUMN TABLE products (id INTEGER PRIMARY KEY, name NVARCHAR(100));
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_column)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (column_definitions
+        (column_definition
+          (identifier)
+          (int
+            (keyword_int))
+          (keyword_primary)
+          (keyword_key))
+        (column_definition
+          (identifier)
+          (nvarchar
+            (keyword_nvarchar)
+            (literal)))))))
+
+================================================================================
+HANA: CREATE ROW TABLE
+================================================================================
+
+CREATE ROW TABLE config (k NVARCHAR(50), v NVARCHAR(200));
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_row)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (column_definitions
+        (column_definition
+          (identifier)
+          (nvarchar
+            (keyword_nvarchar)
+            (literal)))
+        (column_definition
+          (identifier)
+          (nvarchar
+            (keyword_nvarchar)
+            (literal)))))))
+
+================================================================================
+HANA: UPSERT with WITH PRIMARY KEY
+================================================================================
+
+UPSERT products VALUES (1, 'widget') WITH PRIMARY KEY;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (upsert_statement
+      (keyword_upsert)
+      (object_reference
+        (identifier))
+      (keyword_values)
+      (literal)
+      (literal)
+      (keyword_with)
+      (keyword_primary)
+      (keyword_key))))
+
+================================================================================
+HANA: UPSERT with column list and WHERE
+================================================================================
+
+UPSERT products (id, name) VALUES (2, 'gadget') WHERE id = 2;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (upsert_statement
+      (keyword_upsert)
+      (object_reference
+        (identifier))
+      (list
+        (column
+          (identifier))
+        (column
+          (identifier)))
+      (keyword_values)
+      (literal)
+      (literal)
+      (where
+        (keyword_where)
+        (binary_expression
+          (field
+            (identifier))
+          (literal))))))
+
+================================================================================
+HANA: SELECT WITH HINT
+================================================================================
+
+SELECT a FROM t1 WITH HINT (NO_USE_HEX_PLAN, IGNORE_PLAN_CACHE);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (field
+            (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier))))
+    (with_hint_clause
+      (keyword_with)
+      (keyword_hint)
+      (identifier)
+      (identifier))))
+
+================================================================================
+HANA: CREATE PROCEDURE LANGUAGE SQLSCRIPT
+================================================================================
+
+CREATE PROCEDURE update_prices (IN pct DECIMAL(5,2), OUT total INTEGER) LANGUAGE SQLSCRIPT SQL SECURITY INVOKER AS BEGIN DECLARE v_count INTEGER := 0; v_count := :v_count + 1; UPDATE products SET price = price * :pct; END;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_procedure
+      (keyword_create)
+      (keyword_procedure)
+      (object_reference
+        (identifier))
+      (procedure_parameter
+        (keyword_in)
+        (identifier)
+        (decimal
+          (keyword_decimal)
+          (literal)
+          (literal)))
+      (procedure_parameter
+        (keyword_out)
+        (identifier)
+        (int
+          (keyword_int)))
+      (keyword_language)
+      (keyword_sqlscript)
+      (keyword_sql)
+      (keyword_security)
+      (keyword_invoker)
+      (keyword_as)
+      (compound_statement
+        (keyword_begin)
+        (declare_statement
+          (keyword_declare)
+          (identifier)
+          (int
+            (keyword_int))
+          (literal))
+        (assignment_statement
+          (identifier)
+          (binary_expression
+            (parameter)
+            (literal)))
+        (statement
+          (update
+            (keyword_update)
+            (relation
+              (object_reference
+                (identifier)))
+            (keyword_set)
+            (assignment
+              (field
+                (identifier))
+              (binary_expression
+                (field
+                  (identifier))
+                (parameter)))))
+        (keyword_end)))))
+
+================================================================================
+COMMENT ON TABLE
+================================================================================
+
+COMMENT ON TABLE t1 IS 'docs';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (comment_statement
+      (keyword_comment)
+      (keyword_on)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_is)
+      (literal))))
+
+
+================================================================================
+SELECT FOR UPDATE with OF and WAIT
+================================================================================
+
+SELECT a FROM t1 FOR UPDATE OF a WAIT 5;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))))
+    (locking_clause
+      (keyword_for)
+      (keyword_update)
+      (keyword_of)
+      (object_reference
+        name: (identifier))
+      (keyword_wait)
+      (literal))))

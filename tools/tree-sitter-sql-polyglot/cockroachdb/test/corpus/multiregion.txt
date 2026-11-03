@@ -1,0 +1,41 @@
+================================================================================
+SET LOCALITY REGIONAL BY ROW
+================================================================================
+
+ALTER TABLE t SET LOCALITY REGIONAL BY ROW;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_set)
+      (keyword_locality)
+      (keyword_regional)
+      (keyword_by)
+      (keyword_row))))
+
+================================================================================
+CONFIGURE ZONE USING
+================================================================================
+
+ALTER TABLE t CONFIGURE ZONE USING num_replicas = 5;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_configure)
+      (keyword_zone)
+      (keyword_using)
+      (identifier)
+      (literal))))

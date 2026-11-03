@@ -1,0 +1,84 @@
+
+================================================================================
+Spark: CREATE DATABASE with COMMENT, LOCATION and DBPROPERTIES
+================================================================================
+
+CREATE DATABASE IF NOT EXISTS db1 COMMENT 'docs' LOCATION '/tmp/db1' WITH DBPROPERTIES (a = 1);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_database
+      (keyword_create)
+      (keyword_database)
+      (keyword_if)
+      (keyword_not)
+      (keyword_exists)
+      (identifier)
+      (keyword_comment)
+      comment: (literal)
+      (keyword_location)
+      location: (literal)
+      (keyword_with)
+      (keyword_dbproperties)
+      (spark_property
+        name: (identifier)
+        value: (literal)))))
+
+================================================================================
+Spark: ALTER DATABASE SET DBPROPERTIES
+================================================================================
+
+ALTER DATABASE db1 SET DBPROPERTIES (a = 1);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_database
+      (keyword_alter)
+      (keyword_database)
+      (identifier)
+      (keyword_set)
+      (keyword_dbproperties)
+      (spark_property
+        name: (identifier)
+        value: (literal)))))
+
+================================================================================
+Spark: DROP DATABASE CASCADE
+================================================================================
+
+DROP DATABASE IF EXISTS db1 CASCADE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_database
+      (keyword_drop)
+      (keyword_database)
+      (keyword_if)
+      (keyword_exists)
+      (identifier)
+      (keyword_cascade))))
+
+================================================================================
+Spark: DROP TEMPORARY FUNCTION
+================================================================================
+
+DROP TEMPORARY FUNCTION IF EXISTS f1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_function
+      (keyword_drop)
+      (keyword_temporary)
+      (keyword_function)
+      (keyword_if)
+      (keyword_exists)
+      (object_reference
+        name: (identifier)))))

@@ -1,0 +1,215 @@
+================================================================================
+Spanner: CREATE LOCALITY GROUP
+================================================================================
+
+CREATE LOCALITY GROUP lg1 OPTIONS (storage = 'ssd')
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (locality_group_statement
+      (keyword_create)
+      (keyword_locality)
+      (keyword_group)
+      name: (identifier)
+      (options_clause
+        (keyword_options)
+        key: (identifier)
+        value: (literal)))))
+
+================================================================================
+Spanner: DROP PLACEMENT
+================================================================================
+
+DROP PLACEMENT p1
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (locality_group_statement
+      (keyword_drop)
+      (keyword_placement)
+      name: (identifier))))
+
+================================================================================
+Spanner: DROP PROTO BUNDLE
+================================================================================
+
+DROP PROTO BUNDLE
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (proto_bundle_statement
+      (keyword_drop)
+      (keyword_proto)
+      (keyword_bundle))))
+
+================================================================================
+Spanner: ALTER PROTO BUNDLE INSERT
+================================================================================
+
+ALTER PROTO BUNDLE INSERT (my.pkg.Type)
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (proto_bundle_statement
+      (keyword_alter)
+      (keyword_proto)
+      (keyword_bundle)
+      (keyword_insert)
+      (object_reference
+        database: (identifier)
+        schema: (identifier)
+        name: (identifier)))))
+
+================================================================================
+Spanner: DROP SEARCH INDEX
+================================================================================
+
+DROP SEARCH INDEX IF EXISTS idx1
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_search_index
+      (keyword_drop)
+      (keyword_search)
+      (keyword_index)
+      (keyword_if)
+      (keyword_exists)
+      name: (identifier))))
+
+================================================================================
+Spanner: ALTER SEARCH INDEX ADD STORED COLUMN
+================================================================================
+
+ALTER SEARCH INDEX idx1 ADD STORED COLUMN c1
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_index_columns
+      (keyword_alter)
+      (keyword_search)
+      (keyword_index)
+      name: (identifier)
+      (keyword_add)
+      (keyword_stored)
+      (keyword_column)
+      column: (identifier))))
+
+================================================================================
+Spanner: DROP CHANGE STREAM
+================================================================================
+
+DROP CHANGE STREAM cs1
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_change_stream
+      (keyword_drop)
+      (keyword_change)
+      (keyword_stream)
+      name: (identifier))))
+
+================================================================================
+Spanner: ALTER CHANGE STREAM DROP FOR ALL
+================================================================================
+
+ALTER CHANGE STREAM cs1 DROP FOR ALL
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_change_stream
+      (keyword_alter)
+      (keyword_change)
+      (keyword_stream)
+      name: (identifier)
+      (keyword_drop)
+      (keyword_for)
+      (keyword_all))))
+
+================================================================================
+Spanner: ALTER STATISTICS
+================================================================================
+
+ALTER STATISTICS pkg1 SET OPTIONS (allow_gc = true)
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_statistics
+      (keyword_alter)
+      (keyword_statistics)
+      name: (identifier)
+      (keyword_set)
+      (options_clause
+        (keyword_options)
+        key: (identifier)
+        value: (literal
+          (keyword_true))))))
+
+================================================================================
+Spanner: ANALYZE
+================================================================================
+
+ANALYZE
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (analyze_statement
+      (keyword_analyze))))
+
+================================================================================
+Spanner: DROP MODEL
+================================================================================
+
+DROP MODEL IF EXISTS m1
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (model_statement
+      (keyword_drop)
+      (keyword_model)
+      (keyword_if)
+      (keyword_exists)
+      name: (object_reference
+        name: (identifier)))))
+
+================================================================================
+Spanner: CREATE MODEL REMOTE
+================================================================================
+
+CREATE MODEL m1 REMOTE OPTIONS (endpoint = 'https://x')
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_model
+      (keyword_create)
+      (keyword_model)
+      name: (object_reference
+        name: (identifier))
+      (keyword_remote)
+      (options_clause
+        (keyword_options)
+        key: (identifier)
+        value: (literal)))))

@@ -1,0 +1,170 @@
+================================================================================
+CREATE TABLE with PARTITION BY
+================================================================================
+
+CREATE TABLE t (id INT64) PARTITION BY created_at;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (keyword_int64)))
+      (bq_partition_by
+        (keyword_partition)
+        (keyword_by)
+        (field
+          name: (identifier))))))
+
+================================================================================
+CREATE TABLE with CLUSTER BY
+================================================================================
+
+CREATE TABLE t (id INT64, country STRING) CLUSTER BY country;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (keyword_int64))
+        (column_definition
+          name: (identifier)
+          type: (keyword_string)))
+      (bq_cluster_by
+        (keyword_cluster)
+        (keyword_by)
+        (identifier)))))
+
+================================================================================
+CREATE TABLE with PARTITION BY and CLUSTER BY
+================================================================================
+
+CREATE TABLE t (id INT64, country STRING, created_at INT64)
+  PARTITION BY created_at
+  CLUSTER BY country;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (keyword_int64))
+        (column_definition
+          name: (identifier)
+          type: (keyword_string))
+        (column_definition
+          name: (identifier)
+          type: (keyword_int64)))
+      (bq_partition_by
+        (keyword_partition)
+        (keyword_by)
+        (field
+          name: (identifier)))
+      (bq_cluster_by
+        (keyword_cluster)
+        (keyword_by)
+        (identifier)))))
+
+================================================================================
+CREATE TABLE with PARTITION BY and OPTIONS
+================================================================================
+
+CREATE TABLE t (id INT64) PARTITION BY _PARTITIONDATE OPTIONS (require_partition_filter = true);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (keyword_int64)))
+      (bq_partition_by
+        (keyword_partition)
+        (keyword_by)
+        (field
+          name: (identifier)))
+      (options_clause
+        (keyword_options)
+        key: (identifier)
+        value: (literal
+          (keyword_true))))))
+
+================================================================================
+CREATE TABLE with CLUSTER BY multiple columns
+================================================================================
+
+CREATE TABLE t (id INT64, country STRING, city STRING) CLUSTER BY country, city;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (keyword_int64))
+        (column_definition
+          name: (identifier)
+          type: (keyword_string))
+        (column_definition
+          name: (identifier)
+          type: (keyword_string)))
+      (bq_cluster_by
+        (keyword_cluster)
+        (keyword_by)
+        (identifier)
+        (identifier)))))
+
+================================================================================
+CREATE SEARCH INDEX with ALL COLUMNS
+================================================================================
+
+CREATE SEARCH INDEX idx1 ON t1 (ALL COLUMNS);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_index
+      (keyword_create)
+      (keyword_search)
+      (keyword_index)
+      column: (identifier)
+      (keyword_on)
+      (object_reference
+        name: (identifier))
+      (keyword_all)
+      (keyword_columns))))

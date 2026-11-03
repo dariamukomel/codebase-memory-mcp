@@ -1,0 +1,54 @@
+================================================================================
+Athena: UNLOAD basic
+================================================================================
+
+UNLOAD (SELECT * FROM orders) TO 's3://my-bucket/output/';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (unload_statement
+      (keyword_unload)
+      (select
+        (keyword_select)
+        (select_expression
+          (term
+            value: (all_fields))))
+      (from
+        (keyword_from)
+        (relation
+          (object_reference
+            name: (identifier))))
+      (keyword_to)
+      path: (literal))))
+
+================================================================================
+Athena: UNLOAD with WITH properties
+================================================================================
+
+UNLOAD (SELECT id FROM orders) TO 's3://bucket/prefix/' WITH (format = 'PARQUET');
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (unload_statement
+      (keyword_unload)
+      (select
+        (keyword_select)
+        (select_expression
+          (term
+            value: (field
+              name: (identifier)))))
+      (from
+        (keyword_from)
+        (relation
+          (object_reference
+            name: (identifier))))
+      (keyword_to)
+      path: (literal)
+      (with_properties
+        (keyword_with)
+        key: (identifier)
+        value: (literal)))))

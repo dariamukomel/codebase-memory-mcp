@@ -1,0 +1,226 @@
+================================================================================
+CLONE table
+================================================================================
+
+CREATE TABLE new_table CLONE source_table;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (clone_clause
+        (keyword_clone)
+        (object_reference
+          name: (identifier))))))
+
+================================================================================
+CLONE table with time travel AT
+================================================================================
+
+CREATE TABLE new_table CLONE source_table AT (TIMESTAMP => '2023-01-01');
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (clone_clause
+        (keyword_clone)
+        (object_reference
+          name: (identifier))
+        (time_travel_clause
+          (keyword_at)
+          (time_travel_spec
+            (keyword_timestamp)
+            (literal)))))))
+
+================================================================================
+CLONE database
+================================================================================
+
+CREATE DATABASE new_db CLONE source_db;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_database
+      (keyword_create)
+      (keyword_database)
+      (identifier)
+      (clone_clause
+        (keyword_clone)
+        (object_reference
+          name: (identifier))))))
+
+================================================================================
+UNDROP TABLE
+================================================================================
+
+UNDROP TABLE employees;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (undrop_statement
+      (keyword_undrop)
+      (keyword_table)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+UNDROP SCHEMA
+================================================================================
+
+UNDROP SCHEMA myschema;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (undrop_statement
+      (keyword_undrop)
+      (keyword_schema)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+UNDROP DATABASE
+================================================================================
+
+UNDROP DATABASE mydb;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (undrop_statement
+      (keyword_undrop)
+      (keyword_database)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+CREATE WAREHOUSE simple
+================================================================================
+
+CREATE WAREHOUSE my_wh;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_warehouse_statement
+      (keyword_create)
+      (keyword_warehouse)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+CREATE WAREHOUSE with size
+================================================================================
+
+CREATE WAREHOUSE my_wh WAREHOUSE_SIZE = LARGE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_warehouse_statement
+      (keyword_create)
+      (keyword_warehouse)
+      (object_reference
+        name: (identifier))
+      (warehouse_properties
+        (keyword_warehouse_size)
+        (identifier)))))
+
+================================================================================
+CREATE WAREHOUSE with multiple properties
+================================================================================
+
+CREATE WAREHOUSE my_wh
+  WAREHOUSE_SIZE = MEDIUM
+  AUTO_SUSPEND = 300
+  AUTO_RESUME = TRUE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_warehouse_statement
+      (keyword_create)
+      (keyword_warehouse)
+      (object_reference
+        name: (identifier))
+      (warehouse_properties
+        (keyword_warehouse_size)
+        (identifier)
+        (keyword_auto_suspend)
+        (literal)
+        (keyword_auto_resume)
+        (keyword_true)))))
+
+================================================================================
+ALTER WAREHOUSE SUSPEND
+================================================================================
+
+ALTER WAREHOUSE my_wh SUSPEND;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_warehouse
+      (keyword_alter)
+      (keyword_warehouse)
+      (object_reference
+        name: (identifier))
+      (keyword_suspend))))
+
+================================================================================
+ALTER WAREHOUSE RESUME
+================================================================================
+
+ALTER WAREHOUSE my_wh RESUME;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_warehouse
+      (keyword_alter)
+      (keyword_warehouse)
+      (object_reference
+        name: (identifier))
+      (keyword_resume))))
+
+================================================================================
+ALTER WAREHOUSE ABORT ALL QUERIES
+================================================================================
+
+ALTER WAREHOUSE my_wh ABORT ALL QUERIES;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_warehouse
+      (keyword_alter)
+      (keyword_warehouse)
+      (object_reference
+        name: (identifier))
+      (keyword_abort)
+      (keyword_all)
+      (keyword_queries))))
+

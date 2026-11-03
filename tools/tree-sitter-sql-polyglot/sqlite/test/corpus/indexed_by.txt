@@ -1,0 +1,103 @@
+================================================================================
+SQLite: INDEXED BY on relation
+================================================================================
+
+SELECT * FROM t INDEXED BY my_idx WHERE id = 1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))
+        (keyword_indexed)
+        (keyword_by)
+        index: (identifier))
+      (where
+        (keyword_where)
+        predicate: (binary_expression
+          left: (field
+            name: (identifier))
+          right: (literal))))))
+
+================================================================================
+SQLite: NOT INDEXED on relation
+================================================================================
+
+SELECT * FROM t NOT INDEXED WHERE id = 1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))
+        (keyword_not)
+        (keyword_indexed))
+      (where
+        (keyword_where)
+        predicate: (binary_expression
+          left: (field
+            name: (identifier))
+          right: (literal))))))
+
+================================================================================
+SQLite: INDEXED BY and NOT INDEXED in JOIN
+================================================================================
+
+SELECT a, b FROM t1 INDEXED BY idx1 JOIN t2 NOT INDEXED ON t1.id = t2.id;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))
+        (term
+          value: (field
+            name: (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))
+        (keyword_indexed)
+        (keyword_by)
+        index: (identifier))
+      (join
+        (keyword_join)
+        (relation
+          (object_reference
+            name: (identifier))
+          (keyword_not)
+          (keyword_indexed))
+        (keyword_on)
+        predicate: (binary_expression
+          left: (field
+            (object_reference
+              name: (identifier))
+            name: (identifier))
+          right: (field
+            (object_reference
+              name: (identifier))
+            name: (identifier)))))))

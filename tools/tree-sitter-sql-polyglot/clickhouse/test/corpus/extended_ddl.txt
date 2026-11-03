@@ -1,0 +1,150 @@
+================================================================================
+CREATE TABLE ON CLUSTER
+================================================================================
+
+CREATE TABLE t ON CLUSTER my_cluster (id UInt64) ENGINE = MergeTree() ORDER BY id
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (on_cluster
+        (keyword_on)
+        (keyword_cluster)
+        cluster: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (keyword_uint64)))
+      (engine_clause
+        (keyword_engine)
+        engine: (invocation
+          (object_reference
+            name: (identifier))))
+      (order_by
+        (keyword_order)
+        (keyword_by)
+        (order_target
+          (field
+            name: (identifier)))))))
+
+================================================================================
+CREATE TABLE with TTL and SETTINGS
+================================================================================
+
+CREATE TABLE t (id UInt64, ts DateTime) ENGINE = MergeTree() ORDER BY id TTL ts + 1 DELETE SETTINGS index_granularity = 8192
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (keyword_uint64))
+        (column_definition
+          name: (identifier)
+          type: (datetime_type
+            (keyword_datetime))))
+      (engine_clause
+        (keyword_engine)
+        engine: (invocation
+          (object_reference
+            name: (identifier))))
+      (order_by
+        (keyword_order)
+        (keyword_by)
+        (order_target
+          (field
+            name: (identifier))))
+      (ttl_clause
+        (keyword_ttl)
+        (ttl_item
+          (binary_expression
+            left: (field
+              name: (identifier))
+            right: (literal))
+          (keyword_delete)))
+      (settings_clause
+        (keyword_settings)
+        (setting_item
+          name: (identifier)
+          value: (literal))))))
+
+================================================================================
+FixedString and DateTime64 columns
+================================================================================
+
+CREATE TABLE t (a FixedString(16), b DateTime64(3, 'UTC'), c DateTime('UTC'))
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (fixedstring_type
+            (keyword_fixedstring)
+            length: (literal)))
+        (column_definition
+          name: (identifier)
+          type: (datetime_type
+            (keyword_datetime64)
+            precision: (literal)
+            timezone: (literal)))
+        (column_definition
+          name: (identifier)
+          type: (datetime_type
+            (keyword_datetime)
+            timezone: (literal)))))))
+
+================================================================================
+SummingMergeTree engine
+================================================================================
+
+CREATE TABLE t (id UInt64) ENGINE = SummingMergeTree(columns) ORDER BY id
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (keyword_uint64)))
+      (engine_clause
+        (keyword_engine)
+        engine: (invocation
+          (object_reference
+            name: (identifier))
+          parameter: (term
+            value: (field
+              name: (identifier)))))
+      (order_by
+        (keyword_order)
+        (keyword_by)
+        (order_target
+          (field
+            name: (identifier)))))))
+

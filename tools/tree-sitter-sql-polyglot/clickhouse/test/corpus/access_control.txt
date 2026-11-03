@@ -1,0 +1,162 @@
+================================================================================
+ClickHouse: KILL QUERY with SYNC
+================================================================================
+
+KILL QUERY WHERE query_id = 'abc123' SYNC;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (kill_query_statement
+      (keyword_kill)
+      (keyword_query)
+      (where
+        (keyword_where)
+        predicate: (binary_expression
+          left: (field
+            name: (identifier))
+          right: (literal)))
+      (keyword_sync))))
+
+================================================================================
+ClickHouse: KILL MUTATION with WHERE clause
+================================================================================
+
+KILL MUTATION WHERE database = 'default' AND table = 'events' SYNC;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (kill_mutation_statement
+      (keyword_kill)
+      (keyword_mutation)
+      (where
+        (keyword_where)
+        predicate: (binary_expression
+          left: (binary_expression
+            left: (field
+              name: (identifier))
+            right: (literal))
+          operator: (keyword_and)
+          right: (binary_expression
+            left: (field
+              name: (identifier))
+            right: (literal))))
+      (keyword_sync))))
+
+================================================================================
+ClickHouse: CREATE USER with IDENTIFIED WITH
+================================================================================
+
+CREATE USER alice IDENTIFIED WITH sha256_password BY 'secret';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_user_statement
+      (keyword_create)
+      (keyword_user)
+      (identifier)
+      (keyword_identified)
+      (keyword_with)
+      (identifier)
+      (keyword_by)
+      (literal))))
+
+================================================================================
+ClickHouse: CREATE ROLE
+================================================================================
+
+CREATE ROLE analyst;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_role_statement
+      (keyword_create)
+      (keyword_role)
+      (identifier))))
+
+================================================================================
+ClickHouse: GRANT role to user
+================================================================================
+
+GRANT analyst TO alice;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (ch_grant_statement
+      (keyword_grant)
+      (identifier)
+      (keyword_to)
+      (identifier))))
+
+================================================================================
+ClickHouse: REVOKE role from user
+================================================================================
+
+REVOKE analyst FROM alice;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (ch_revoke_statement
+      (keyword_revoke)
+      (identifier)
+      (keyword_from)
+      (identifier))))
+
+================================================================================
+ClickHouse: CREATE ROLE with settings constraints
+================================================================================
+
+CREATE ROLE OR REPLACE r1 ON CLUSTER c1 SETTINGS max_memory_usage = 100 MAX 200 READONLY;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_role_statement
+      (keyword_create)
+      (keyword_role)
+      (keyword_or)
+      (keyword_replace)
+      (identifier)
+      (on_cluster
+        (keyword_on)
+        (keyword_cluster)
+        cluster: (identifier))
+      (keyword_settings)
+      name: (identifier)
+      value: (literal)
+      (keyword_max)
+      max: (literal)
+      constraint: (keyword_readonly))))
+
+================================================================================
+ClickHouse: CREATE SETTINGS PROFILE with a profile reference
+================================================================================
+
+CREATE SETTINGS PROFILE p1 SETTINGS PROFILE 'base' TO r1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_settings_profile_statement
+      (keyword_create)
+      (keyword_settings)
+      (keyword_profile)
+      (identifier)
+      (keyword_settings)
+      (keyword_profile)
+      profile: (literal)
+      (keyword_to)
+      (identifier))))

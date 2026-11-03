@@ -1,0 +1,131 @@
+================================================================================
+Oracle: Anonymous PL/SQL block
+================================================================================
+
+BEGIN
+  INSERT INTO t VALUES (1);
+END;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (compound_statement
+      (keyword_begin)
+      (statement
+        (insert
+          (keyword_insert)
+          (keyword_into)
+          (object_reference
+            (identifier))
+          (keyword_values)
+          (list
+            (literal))))
+      (keyword_end))))
+
+================================================================================
+Oracle: DECLARE BEGIN END
+================================================================================
+
+DECLARE
+  v_id NUMBER;
+BEGIN
+  SELECT id FROM t;
+END;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (compound_statement
+      (keyword_declare)
+      (variable_declaration
+        name: (identifier)
+        (number_type
+          (keyword_number)))
+      (keyword_begin)
+      (statement
+        (select
+          (keyword_select)
+          (select_expression
+            (term
+              value: (field
+                name: (identifier)))))
+        (from
+          (keyword_from)
+          (relation
+            (object_reference
+              name: (identifier)))))
+      (keyword_end))))
+
+================================================================================
+Oracle: EXCEPTION block
+================================================================================
+
+BEGIN
+  INSERT INTO t VALUES (1);
+EXCEPTION
+  WHEN OTHERS THEN
+    INSERT INTO errors VALUES (1);
+END;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (compound_statement
+      (keyword_begin)
+      (statement
+        (insert
+          (keyword_insert)
+          (keyword_into)
+          (object_reference
+            (identifier))
+          (keyword_values)
+          (list
+            (literal))))
+      (keyword_exception)
+      (exception_handler
+        (keyword_when)
+        (keyword_others)
+        (keyword_then)
+        (statement
+          (insert
+            (keyword_insert)
+            (keyword_into)
+            (object_reference
+              (identifier))
+            (keyword_values)
+            (list
+              (literal)))))
+      (keyword_end))))
+
+==================
+CREATE TRIGGER with PL/SQL block body
+==================
+
+CREATE TRIGGER trg BEFORE INSERT ON t FOR EACH ROW BEGIN NULL; END
+
+---
+
+(program
+  (statement
+    (create_trigger
+      (keyword_create)
+      (keyword_trigger)
+      (object_reference
+        name: (identifier))
+      (keyword_before)
+      (keyword_insert)
+      (keyword_on)
+      (object_reference
+        name: (identifier))
+      (keyword_for)
+      (keyword_each)
+      (keyword_row)
+      (compound_statement
+        (keyword_begin)
+        (statement
+          (null_statement
+            (keyword_null)))
+        (keyword_end)))))

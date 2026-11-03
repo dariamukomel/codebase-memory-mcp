@@ -1,0 +1,43 @@
+================================================================================
+USE DATABASE / SCHEMA / WAREHOUSE / ROLE
+================================================================================
+
+USE DATABASE mydb;
+USE SCHEMA mydb.myschema;
+USE WAREHOUSE compute_wh;
+USE ROLE sysadmin;
+USE myschema;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (use_statement
+      (keyword_use)
+      (keyword_database)
+      (object_reference
+        (identifier))))
+  (statement
+    (use_statement
+      (keyword_use)
+      (keyword_schema)
+      (object_reference
+        (identifier)
+        (identifier))))
+  (statement
+    (use_statement
+      (keyword_use)
+      (keyword_warehouse)
+      (object_reference
+        (identifier))))
+  (statement
+    (use_statement
+      (keyword_use)
+      (keyword_role)
+      (object_reference
+        (identifier))))
+  (statement
+    (use_statement
+      (keyword_use)
+      (object_reference
+        (identifier)))))

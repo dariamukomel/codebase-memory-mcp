@@ -1,0 +1,39 @@
+================================================================================
+ON CONFLICT target with excluded
+================================================================================
+
+INSERT INTO t(id,n) VALUES(1,1) ON CONFLICT(id) DO UPDATE SET n=excluded.n;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (insert
+      (keyword_insert)
+      (keyword_into)
+      (object_reference
+        name: (identifier))
+      (list
+        (column
+          (identifier))
+        (column
+          (identifier)))
+      (keyword_values)
+      (list
+        (literal)
+        (literal))
+      (keyword_on)
+      (keyword_conflict)
+      (conflict_target
+        (field
+          name: (identifier)))
+      (keyword_do)
+      (keyword_update)
+      (keyword_set)
+      (assignment
+        left: (field
+          name: (identifier))
+        right: (field
+          (object_reference
+            name: (identifier))
+          name: (identifier))))))

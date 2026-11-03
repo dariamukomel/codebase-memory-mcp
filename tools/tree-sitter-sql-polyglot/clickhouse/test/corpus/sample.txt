@@ -1,0 +1,76 @@
+================================================================================
+SAMPLE fraction
+================================================================================
+
+SELECT * FROM t SAMPLE 0.1
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))
+        (sample_clause
+          (keyword_sample)
+          ratio: (literal))))))
+
+================================================================================
+SAMPLE absolute
+================================================================================
+
+SELECT * FROM t SAMPLE 1000000
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))
+        (sample_clause
+          (keyword_sample)
+          ratio: (literal))))))
+
+================================================================================
+SAMPLE ratio with OFFSET
+================================================================================
+
+SELECT * FROM t SAMPLE 1/10 OFFSET 3/10
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))
+        (sample_clause
+          (keyword_sample)
+          ratio: (literal)
+          ratio: (literal)
+          (keyword_offset)
+          offset: (literal)
+          offset: (literal))))))
+

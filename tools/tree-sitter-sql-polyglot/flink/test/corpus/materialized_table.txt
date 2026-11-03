@@ -1,0 +1,193 @@
+================================================================================
+CREATE MATERIALIZED TABLE with FRESHNESS
+================================================================================
+
+CREATE MATERIALIZED TABLE my_mt
+FRESHNESS = INTERVAL '10' MINUTE
+AS SELECT product, SUM(amount) AS total FROM orders GROUP BY product
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_materialized_table
+      (keyword_create)
+      (keyword_materialized)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (keyword_freshness)
+      (interval
+        (keyword_interval)
+        (identifier))
+      (keyword_as)
+      (create_query
+        (select
+          (keyword_select)
+          (select_expression
+            (term
+              (field
+                (identifier)))
+            (term
+              (invocation
+                (object_reference
+                  (identifier))
+                (term
+                  (field
+                    (identifier))))
+              (keyword_as)
+              (identifier))))
+        (from
+          (keyword_from)
+          (relation
+            (object_reference
+              (identifier)))
+          (group_by
+            (keyword_group)
+            (keyword_by)
+            (field
+              (identifier))))))))
+
+================================================================================
+CREATE MATERIALIZED TABLE with REFRESH_MODE
+================================================================================
+
+CREATE MATERIALIZED TABLE hourly_agg
+WITH ('connector' = 'hive', 'format' = 'parquet')
+FRESHNESS = INTERVAL '1' HOUR
+REFRESH_MODE = FULL
+AS SELECT * FROM source_t
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_materialized_table
+      (keyword_create)
+      (keyword_materialized)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (with_properties
+        (keyword_with)
+        (literal)
+        (literal)
+        (literal)
+        (literal))
+      (keyword_freshness)
+      (interval
+        (keyword_interval)
+        (identifier))
+      (keyword_refresh_mode)
+      (keyword_full)
+      (keyword_as)
+      (create_query
+        (select
+          (keyword_select)
+          (select_expression
+            (term
+              (all_fields))))
+        (from
+          (keyword_from)
+          (relation
+            (object_reference
+              (identifier))))))))
+
+================================================================================
+ALTER MATERIALIZED TABLE SUSPEND
+================================================================================
+
+ALTER MATERIALIZED TABLE my_mt SUSPEND
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_materialized_table
+      (keyword_alter)
+      (keyword_materialized)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (keyword_suspend))))
+
+================================================================================
+ALTER MATERIALIZED TABLE RESUME WITH options
+================================================================================
+
+ALTER MATERIALIZED TABLE my_mt RESUME WITH ('table.exec.resource.default-parallelism' = '8')
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_materialized_table
+      (keyword_alter)
+      (keyword_materialized)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (keyword_resume)
+      (with_properties
+        (keyword_with)
+        (literal)
+        (literal)))))
+
+================================================================================
+ALTER MATERIALIZED TABLE REFRESH
+================================================================================
+
+ALTER MATERIALIZED TABLE my_mt REFRESH
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_materialized_table
+      (keyword_alter)
+      (keyword_materialized)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (keyword_refresh))))
+
+================================================================================
+ALTER MATERIALIZED TABLE SET FRESHNESS
+================================================================================
+
+ALTER MATERIALIZED TABLE my_mt SET FRESHNESS = INTERVAL '30' MINUTE
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_materialized_table
+      (keyword_alter)
+      (keyword_materialized)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (keyword_set)
+      (keyword_freshness)
+      (interval
+        (keyword_interval)
+        (identifier)))))
+
+================================================================================
+DROP MATERIALIZED TABLE
+================================================================================
+
+DROP MATERIALIZED TABLE IF EXISTS my_mt
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_materialized_table
+      (keyword_drop)
+      (keyword_materialized)
+      (keyword_table)
+      (keyword_if)
+      (keyword_exists)
+      (object_reference
+        (identifier)))))

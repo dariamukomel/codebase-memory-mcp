@@ -1,0 +1,124 @@
+================================================================================
+DuckDB: SELECT * EXCLUDE single column
+================================================================================
+
+SELECT * EXCLUDE id FROM t;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields_exclude
+            (keyword_exclude)
+            col: (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))))))
+
+================================================================================
+DuckDB: SELECT * EXCLUDE multiple columns
+================================================================================
+
+SELECT * EXCLUDE (id, name) FROM t;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields_exclude
+            (keyword_exclude)
+            col: (identifier)
+            col: (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))))))
+
+================================================================================
+DuckDB: SELECT * REPLACE
+================================================================================
+
+SELECT * REPLACE (price * 1.1 AS price) FROM t;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields_replace
+            (keyword_replace)
+            value: (binary_expression
+              left: (field
+                name: (identifier))
+              right: (literal))
+            (keyword_as)
+            col: (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))))))
+
+================================================================================
+DuckDB: SELECT * RENAME
+================================================================================
+
+SELECT * RENAME (old_name AS new_name) FROM t;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields_rename
+            (keyword_rename)
+            old_col: (identifier)
+            (keyword_as)
+            new_col: (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))))))
+
+================================================================================
+DuckDB: Table-qualified * EXCLUDE
+================================================================================
+
+SELECT t.* EXCLUDE id FROM t;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields_exclude
+            (object_reference
+              name: (identifier))
+            (keyword_exclude)
+            col: (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))))))

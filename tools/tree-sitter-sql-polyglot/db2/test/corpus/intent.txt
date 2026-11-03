@@ -1,0 +1,65 @@
+; Intent-based tests: expected trees derived from reading the grammar rules,
+; not copied from parser output.
+;
+; db2/grammar/isolation.js defines:
+;   with_isolation_clause: keyword_with + choice(keyword_ur | keyword_cs | keyword_rs | keyword_rr)
+;
+; db2/grammar.js overrides from to append:
+;   optional($.optimize_for_clause)
+;   optional($.with_isolation_clause)
+;
+; SELECT * FROM t WITH UR must produce a from node whose last child is
+; with_isolation_clause containing keyword_with and keyword_ur.
+
+================================================================================
+Db2: SELECT with isolation level UR
+================================================================================
+
+SELECT * FROM t WITH UR;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (with_isolation_clause
+        (keyword_with)
+        (keyword_ur)))))
+
+; isolation.js defines:
+;   with_isolation_clause: keyword_with + choice(ur | cs | rs | rr)
+;
+; RR (Repeatable Read) is the strictest level.  Same structure as UR.
+
+================================================================================
+Db2: SELECT with isolation level RR
+================================================================================
+
+SELECT * FROM t WITH RR;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (with_isolation_clause
+        (keyword_with)
+        (keyword_rr)))))

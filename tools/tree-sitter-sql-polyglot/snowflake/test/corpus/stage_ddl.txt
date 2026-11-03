@@ -1,0 +1,126 @@
+================================================================================
+CREATE STAGE minimal
+================================================================================
+
+CREATE STAGE my_stage
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_stage
+      (keyword_create)
+      (keyword_stage)
+      (object_reference
+        (identifier)))))
+
+================================================================================
+CREATE OR REPLACE STAGE with URL
+================================================================================
+
+CREATE OR REPLACE STAGE my_s3_stage
+  URL = 's3://mybucket/mypath/'
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_stage
+      (keyword_create)
+      (keyword_or)
+      (keyword_replace)
+      (keyword_stage)
+      (object_reference
+        (identifier))
+      (snowflake_property
+        (identifier)
+        (literal)))))
+
+================================================================================
+CREATE TEMPORARY STAGE IF NOT EXISTS
+================================================================================
+
+CREATE TEMPORARY STAGE IF NOT EXISTS my_temp_stage
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_stage
+      (keyword_create)
+      (keyword_temporary)
+      (keyword_stage)
+      (keyword_if)
+      (keyword_not)
+      (keyword_exists)
+      (object_reference
+        (identifier)))))
+
+================================================================================
+ALTER STAGE RENAME TO
+================================================================================
+
+ALTER STAGE my_stage RENAME TO new_stage
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_stage
+      (keyword_alter)
+      (keyword_stage)
+      (object_reference
+        (identifier))
+      (rename_object
+        (keyword_rename)
+        (keyword_to)
+        (object_reference
+          (identifier))))))
+
+================================================================================
+DROP STAGE
+================================================================================
+
+DROP STAGE IF EXISTS my_stage
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_object
+      (keyword_drop)
+      (keyword_stage)
+      (keyword_if)
+      (keyword_exists)
+      (object_reference
+        (identifier)))))
+
+================================================================================
+LIST stage
+================================================================================
+
+LIST @my_stage
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (list_stage_statement
+      (keyword_list)
+      (stage_ref))))
+
+================================================================================
+LIST stage with PATTERN
+================================================================================
+
+LIST @my_stage PATTERN = '.*\.csv'
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (list_stage_statement
+      (keyword_list)
+      (stage_ref)
+      (keyword_pattern)
+      (literal))))

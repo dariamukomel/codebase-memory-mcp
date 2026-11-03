@@ -1,0 +1,124 @@
+================================================================================
+Temporal join FOR SYSTEM_TIME AS OF
+================================================================================
+
+SELECT o.order_id, o.amount, r.rate
+FROM orders AS o
+JOIN currency_rates FOR SYSTEM_TIME AS OF o.proc_time AS r
+ON o.currency = r.currency
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (field
+            (object_reference
+              (identifier))
+            (identifier)))
+        (term
+          (field
+            (object_reference
+              (identifier))
+            (identifier)))
+        (term
+          (field
+            (object_reference
+              (identifier))
+            (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier))
+        (keyword_as)
+        (identifier))
+      (join
+        (keyword_join)
+        (relation
+          (object_reference
+            (identifier))
+          (for_system_time_as_of
+            (keyword_for)
+            (keyword_system_time)
+            (keyword_as)
+            (keyword_of)
+            (field
+              (object_reference
+                (identifier))
+              (identifier)))
+          (keyword_as)
+          (identifier))
+        (keyword_on)
+        (binary_expression
+          (field
+            (object_reference
+              (identifier))
+            (identifier))
+          (field
+            (object_reference
+              (identifier))
+            (identifier)))))))
+
+================================================================================
+Temporal join with event time
+================================================================================
+
+SELECT o.id, d.name
+FROM orders AS o
+JOIN dim_table FOR SYSTEM_TIME AS OF o.proc_time AS d
+ON o.dim_id = d.id
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (field
+            (object_reference
+              (identifier))
+            (identifier)))
+        (term
+          (field
+            (object_reference
+              (identifier))
+            (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier))
+        (keyword_as)
+        (identifier))
+      (join
+        (keyword_join)
+        (relation
+          (object_reference
+            (identifier))
+          (for_system_time_as_of
+            (keyword_for)
+            (keyword_system_time)
+            (keyword_as)
+            (keyword_of)
+            (field
+              (object_reference
+                (identifier))
+              (identifier)))
+          (keyword_as)
+          (identifier))
+        (keyword_on)
+        (binary_expression
+          (field
+            (object_reference
+              (identifier))
+            (identifier))
+          (field
+            (object_reference
+              (identifier))
+            (identifier)))))))

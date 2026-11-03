@@ -1,0 +1,139 @@
+================================================================================
+Snowflake: PUT local file to stage
+================================================================================
+
+PUT file:///tmp/data.csv @my_stage AUTO_COMPRESS = TRUE
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (put_statement
+      (keyword_put)
+      source: (file_uri)
+      stage: (stage_ref)
+      (copy_property
+        (identifier)
+        (literal
+          (keyword_true))))))
+
+================================================================================
+Snowflake: GET staged file
+================================================================================
+
+GET @my_stage file:///tmp/out/
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (get_statement
+      (keyword_get)
+      stage: (stage_ref)
+      target: (file_uri))))
+
+================================================================================
+Snowflake: REMOVE with PATTERN
+================================================================================
+
+REMOVE @my_stage/path PATTERN = '.*[.]csv'
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (remove_statement
+      (keyword_remove)
+      stage: (stage_ref)
+      (keyword_pattern)
+      (literal))))
+
+================================================================================
+Snowflake: COPY FILES INTO stage
+================================================================================
+
+COPY FILES INTO @dst FROM @src FILES = ('a.csv', 'b.csv')
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (copy_files_statement
+      (keyword_copy)
+      (keyword_files)
+      (keyword_into)
+      target: (stage_ref)
+      (keyword_from)
+      source: (stage_ref)
+      (keyword_files)
+      (literal)
+      (literal))))
+
+================================================================================
+Snowflake: EXECUTE IMMEDIATE FROM stage
+================================================================================
+
+EXECUTE IMMEDIATE FROM @my_stage/setup.sql
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (execute_immediate_statement
+      (keyword_execute)
+      (keyword_immediate)
+      (keyword_from)
+      (stage_ref))))
+
+================================================================================
+Snowflake: ALTER SESSION SET multiple parameters
+================================================================================
+
+ALTER SESSION SET TIMEZONE = 'UTC', QUERY_TAG = 'etl'
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_session
+      (keyword_alter)
+      (keyword_session)
+      (keyword_set)
+      (session_parameter
+        name: (identifier)
+        value: (literal))
+      (session_parameter
+        name: (identifier)
+        value: (literal)))))
+
+================================================================================
+Snowflake: ALTER SESSION UNSET
+================================================================================
+
+ALTER SESSION UNSET QUERY_TAG
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_session
+      (keyword_alter)
+      (keyword_session)
+      (keyword_unset)
+      (identifier))))
+
+================================================================================
+Snowflake: TRUNCATE MATERIALIZED VIEW
+================================================================================
+
+TRUNCATE MATERIALIZED VIEW mv1
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (keyword_truncate)
+    (keyword_materialized)
+    (keyword_view)
+    (object_reference
+      name: (identifier))))

@@ -1,0 +1,533 @@
+================================================================================
+SELECT FOR UPDATE
+================================================================================
+
+SELECT * FROM orders WHERE id = 1 FOR UPDATE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier)))
+      (where
+        (keyword_where)
+        (binary_expression
+          (field
+            (identifier))
+          (literal))))
+    (locking_clause
+      (keyword_for)
+      (keyword_update))))
+
+================================================================================
+SELECT FOR UPDATE SKIP LOCKED
+================================================================================
+
+SELECT * FROM orders FOR UPDATE SKIP LOCKED;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier))))
+    (locking_clause
+      (keyword_for)
+      (keyword_update)
+      (keyword_skip)
+      (keyword_locked))))
+
+================================================================================
+SELECT LOCK IN SHARE MODE
+================================================================================
+
+SELECT * FROM t LOCK IN SHARE MODE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier))))
+    (locking_clause
+      (keyword_lock)
+      (keyword_in)
+      (keyword_share)
+      (keyword_mode))))
+
+================================================================================
+SET GLOBAL and SESSION variables
+================================================================================
+
+SET GLOBAL max_connections = 200;
+SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
+SET @@GLOBAL.max_connections = 200;
+SET PERSIST max_connections = 200;
+SET PERSIST_ONLY innodb_buffer_pool_size = 1073741824;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (set_variable_statement
+      (keyword_set)
+      (set_assignment
+        (keyword_global)
+        (identifier)
+        (literal))))
+  (statement
+    (set_variable_statement
+      (keyword_set)
+      (set_assignment
+        (keyword_session)
+        (identifier)
+        (literal))))
+  (statement
+    (set_variable_statement
+      (keyword_set)
+      (set_assignment
+        (user_variable)
+        (identifier)
+        (literal))))
+  (statement
+    (set_variable_statement
+      (keyword_set)
+      (set_assignment
+        (keyword_persist)
+        (identifier)
+        (literal))))
+  (statement
+    (set_variable_statement
+      (keyword_set)
+      (set_assignment
+        (keyword_persist_only)
+        (identifier)
+        (literal)))))
+
+================================================================================
+SET with multiple scoped assignments
+================================================================================
+
+SET GLOBAL max_connections = 200, SESSION sql_mode = 'STRICT';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (set_variable_statement
+      (keyword_set)
+      (set_assignment
+        (keyword_global)
+        (identifier)
+        (literal))
+      (set_assignment
+        (keyword_session)
+        (identifier)
+        (literal)))))
+
+================================================================================
+SET NAMES and SET CHARACTER SET
+================================================================================
+
+SET NAMES 'utf8mb4' COLLATE 'utf8mb4_unicode_ci';
+SET CHARACTER SET utf8mb4;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (set_variable_statement
+      (keyword_set)
+      (keyword_names)
+      (literal)
+      (keyword_collate)
+      (literal)))
+  (statement
+    (set_variable_statement
+      (keyword_set)
+      (keyword_character)
+      (keyword_set)
+      (identifier))))
+
+================================================================================
+CREATE USER with IDENTIFIED BY
+================================================================================
+
+CREATE USER 'alice'@'localhost' IDENTIFIED BY 'password';
+CREATE USER IF NOT EXISTS 'app'@'%' IDENTIFIED WITH caching_sha2_password BY 'secret';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_user_statement
+      (keyword_create)
+      (keyword_user)
+      (account_name
+        (literal)
+        (literal))
+      (keyword_identified)
+      (keyword_by)
+      (literal)))
+  (statement
+    (create_user_statement
+      (keyword_create)
+      (keyword_user)
+      (keyword_if)
+      (keyword_not)
+      (keyword_exists)
+      (account_name
+        (literal)
+        (literal))
+      (keyword_identified)
+      (keyword_with)
+      (identifier)
+      (keyword_by)
+      (literal))))
+
+================================================================================
+ALTER USER forms
+================================================================================
+
+ALTER USER 'alice'@'localhost' IDENTIFIED BY 'newpassword';
+ALTER USER 'alice'@'localhost' PASSWORD EXPIRE;
+ALTER USER 'alice'@'%' ACCOUNT LOCK;
+ALTER USER 'alice'@'%' ACCOUNT UNLOCK;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_user_statement
+      (keyword_alter)
+      (keyword_user)
+      (account_name
+        (literal)
+        (literal))
+      (keyword_identified)
+      (keyword_by)
+      (literal)))
+  (statement
+    (alter_user_statement
+      (keyword_alter)
+      (keyword_user)
+      (account_name
+        (literal)
+        (literal))
+      (keyword_password)
+      (keyword_expire)))
+  (statement
+    (alter_user_statement
+      (keyword_alter)
+      (keyword_user)
+      (account_name
+        (literal)
+        (literal))
+      (keyword_account)
+      (keyword_lock)))
+  (statement
+    (alter_user_statement
+      (keyword_alter)
+      (keyword_user)
+      (account_name
+        (literal)
+        (literal))
+      (keyword_account)
+      (keyword_unlock))))
+
+================================================================================
+DROP USER and RENAME USER
+================================================================================
+
+DROP USER IF EXISTS 'alice'@'localhost';
+DROP USER 'alice'@'localhost', 'bob'@'%';
+RENAME USER 'old'@'localhost' TO 'new'@'localhost';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_user_statement
+      (keyword_drop)
+      (keyword_user)
+      (keyword_if)
+      (keyword_exists)
+      (account_name
+        (literal)
+        (literal))))
+  (statement
+    (drop_user_statement
+      (keyword_drop)
+      (keyword_user)
+      (account_name
+        (literal)
+        (literal))
+      (account_name
+        (literal)
+        (literal))))
+  (statement
+    (rename_user_statement
+      (keyword_rename)
+      (keyword_user)
+      (account_name
+        (literal)
+        (literal))
+      (keyword_to)
+      (account_name
+        (literal)
+        (literal)))))
+
+================================================================================
+REPAIR TABLE
+================================================================================
+
+REPAIR TABLE t;
+REPAIR TABLE t QUICK;
+REPAIR NO_WRITE_TO_BINLOG TABLE t;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (repair_table_statement
+      (keyword_repair)
+      (keyword_table)
+      (object_reference
+        (identifier))))
+  (statement
+    (repair_table_statement
+      (keyword_repair)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (keyword_quick)))
+  (statement
+    (repair_table_statement
+      (keyword_repair)
+      (keyword_no_write_to_binlog)
+      (keyword_table)
+      (object_reference
+        (identifier)))))
+
+================================================================================
+CHECK TABLE
+================================================================================
+
+CHECK TABLE t;
+CHECK TABLE t1, t2 FOR UPGRADE;
+CHECK TABLE t EXTENDED;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (check_table_statement
+      (keyword_check)
+      (keyword_table)
+      (object_reference
+        (identifier))))
+  (statement
+    (check_table_statement
+      (keyword_check)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (object_reference
+        (identifier))
+      (keyword_for)
+      (keyword_upgrade)))
+  (statement
+    (check_table_statement
+      (keyword_check)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (keyword_extended))))
+
+================================================================================
+ANALYZE TABLE with histogram management
+================================================================================
+
+ANALYZE TABLE t;
+ANALYZE TABLE t UPDATE HISTOGRAM ON col1, col2;
+ANALYZE TABLE t DROP HISTOGRAM ON col;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (analyze_table_statement
+      (keyword_analyze)
+      (keyword_table)
+      (object_reference
+        (identifier))))
+  (statement
+    (analyze_table_statement
+      (keyword_analyze)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (keyword_update)
+      (keyword_histogram)
+      (keyword_on)
+      (identifier)
+      (identifier)))
+  (statement
+    (analyze_table_statement
+      (keyword_analyze)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (keyword_drop)
+      (keyword_histogram)
+      (keyword_on)
+      (identifier))))
+
+================================================================================
+PREPARE / EXECUTE / DEALLOCATE
+================================================================================
+
+PREPARE p1 FROM 'SELECT 1';
+EXECUTE p1 USING @a, @b;
+DEALLOCATE PREPARE p1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (prepare_statement
+      (keyword_prepare)
+      name: (identifier)
+      (keyword_from)
+      (literal)))
+  (statement
+    (execute_statement
+      (keyword_execute)
+      name: (identifier)
+      (keyword_using)
+      (user_variable)
+      (user_variable)))
+  (statement
+    (deallocate_statement
+      (keyword_deallocate)
+      (keyword_prepare)
+      name: (identifier))))
+
+================================================================================
+MySQL: ALTER VIEW with ALGORITHM and CHECK OPTION
+================================================================================
+
+ALTER ALGORITHM = MERGE SQL SECURITY INVOKER VIEW v1 AS SELECT 1 WITH CASCADED CHECK OPTION;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_view
+      (keyword_alter)
+      (keyword_algorithm)
+      algorithm: (keyword_merge)
+      (keyword_sql)
+      (keyword_security)
+      security: (keyword_invoker)
+      (keyword_view)
+      (object_reference
+        name: (identifier))
+      (keyword_as)
+      (select
+        (keyword_select)
+        (select_expression
+          (term
+            value: (literal))))
+      (keyword_with)
+      (keyword_cascaded)
+      (keyword_check)
+      (keyword_option))))
+
+================================================================================
+MySQL: DROP INDEX with ALGORITHM and LOCK
+================================================================================
+
+DROP INDEX ix1 ON t1 ALGORITHM = INPLACE LOCK = NONE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_index
+      (keyword_drop)
+      (keyword_index)
+      name: (identifier)
+      (keyword_on)
+      (object_reference
+        name: (identifier))
+      (keyword_algorithm)
+      algorithm: (keyword_inplace)
+      (keyword_lock)
+      lock: (keyword_none))))
+
+================================================================================
+MySQL: LOAD DATA with partition, charset and SET
+================================================================================
+
+LOAD DATA LOW_PRIORITY LOCAL INFILE 'd.csv' INTO TABLE t1 PARTITION (p0) CHARACTER SET utf8mb4 FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '"' IGNORE 1 LINES SET c1 = 1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (load_data_statement
+      (keyword_load)
+      (keyword_data)
+      (keyword_low_priority)
+      (keyword_local)
+      (keyword_infile)
+      (literal)
+      (keyword_into)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_partition)
+      (identifier)
+      (keyword_character)
+      (keyword_set)
+      charset: (identifier)
+      (keyword_fields)
+      (keyword_terminated)
+      (keyword_by)
+      (literal)
+      (keyword_optionally)
+      (keyword_enclosed)
+      (keyword_by)
+      (literal)
+      (keyword_ignore)
+      (literal)
+      (keyword_lines)
+      (keyword_set)
+      column: (identifier)
+      value: (literal))))

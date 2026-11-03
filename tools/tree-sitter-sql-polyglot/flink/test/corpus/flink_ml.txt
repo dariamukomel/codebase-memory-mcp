@@ -1,0 +1,176 @@
+================================================================================
+CREATE MODEL
+================================================================================
+
+CREATE MODEL my_model
+INPUT (text STRING)
+OUTPUT (label STRING)
+WITH (
+  'provider' = 'openai',
+  'openai.model' = 'gpt-4o'
+)
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_model
+      (keyword_create)
+      (keyword_model)
+      (object_reference
+        (identifier))
+      (keyword_input)
+      (column_definition
+        (identifier)
+        (keyword_string))
+      (keyword_output)
+      (column_definition
+        (identifier)
+        (keyword_string))
+      (with_properties
+        (keyword_with)
+        (literal)
+        (literal)
+        (literal)
+        (literal)))))
+
+================================================================================
+CREATE MODEL with AS SELECT
+================================================================================
+
+CREATE MODEL my_regressor
+INPUT (feature1 DOUBLE, feature2 DOUBLE)
+OUTPUT (prediction DOUBLE)
+WITH ('provider' = 'local', 'model.path' = 's3://bucket/model')
+AS SELECT feature1, feature2, label FROM training_data
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_model
+      (keyword_create)
+      (keyword_model)
+      (object_reference
+        (identifier))
+      (keyword_input)
+      (column_definition
+        (identifier)
+        (double
+          (keyword_double)))
+      (column_definition
+        (identifier)
+        (double
+          (keyword_double)))
+      (keyword_output)
+      (column_definition
+        (identifier)
+        (double
+          (keyword_double)))
+      (with_properties
+        (keyword_with)
+        (literal)
+        (literal)
+        (literal)
+        (literal))
+      (keyword_as)
+      (create_query
+        (select
+          (keyword_select)
+          (select_expression
+            (term
+              (field
+                (identifier)))
+            (term
+              (field
+                (identifier)))
+            (term
+              (field
+                (identifier)))))
+        (from
+          (keyword_from)
+          (relation
+            (object_reference
+              (identifier))))))))
+
+================================================================================
+ML_PREDICT positional form
+================================================================================
+
+SELECT id, ML_PREDICT(my_model, text) FROM input_data
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (field
+            (identifier)))
+        (term
+          (ml_predict_tvf
+            (keyword_ml_predict)
+            (field
+              (identifier))
+            (field
+              (identifier))))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier))))))
+
+================================================================================
+VECTOR_SEARCH TVF
+================================================================================
+
+SELECT * FROM VECTOR_SEARCH(
+  TABLE embeddings,
+  query_vec,
+  DESCRIPTOR(embedding_col),
+  10
+)
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (vector_search_tvf
+          (keyword_vector_search)
+          (keyword_table)
+          (object_reference
+            (identifier))
+          (field
+            (identifier))
+          (descriptor_call
+            (keyword_descriptor)
+            (identifier))
+          (literal))))))
+
+================================================================================
+DROP MODEL
+================================================================================
+
+DROP MODEL IF EXISTS my_model
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_model
+      (keyword_drop)
+      (keyword_model)
+      (keyword_if)
+      (keyword_exists)
+      (object_reference
+        (identifier)))))

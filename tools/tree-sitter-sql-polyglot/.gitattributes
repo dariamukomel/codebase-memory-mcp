@@ -1,0 +1,20 @@
+* text eol=lf
+
+# Brotli-compressed binary blobs (see scripts/compress-parsers.js) - must
+# never go through text/CRLF normalization, or the compressed data corrupts.
+*.br binary linguist-generated
+*.pdf binary
+
+src/*.json linguist-generated
+src/parser.c linguist-generated
+src/tree_sitter/* linguist-generated
+
+bindings/** linguist-generated
+binding.gyp linguist-generated
+setup.py linguist-generated
+Makefile linguist-generated
+Package.swift linguist-generated
+
+# Zig bindings
+build.zig linguist-generated
+build.zig.zon linguist-generated

@@ -1,0 +1,73 @@
+================================================================================
+Create wrapper
+================================================================================
+
+CREATE WRAPPER drda;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_wrapper
+      (keyword_create)
+      (keyword_wrapper)
+      (identifier))))
+
+================================================================================
+Create server
+================================================================================
+
+CREATE SERVER myserver TYPE db2 VERSION 11 WRAPPER drda;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_server
+      (keyword_create)
+      (keyword_server)
+      (identifier)
+      (keyword_type)
+      (identifier)
+      (keyword_version)
+      (literal)
+      (keyword_wrapper)
+      (identifier))))
+
+================================================================================
+Create nickname
+================================================================================
+
+CREATE NICKNAME myschema.emp FOR myserver.remotedb.employee;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_nickname
+      (keyword_create)
+      (keyword_nickname)
+      (object_reference
+        (identifier)
+        (identifier))
+      (keyword_for)
+      (object_reference
+        (identifier)
+        (identifier)
+        (identifier)))))
+
+================================================================================
+Create module
+================================================================================
+
+CREATE MODULE mymod;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_module
+      (keyword_create)
+      (keyword_module)
+      (object_reference
+        (identifier)))))

@@ -1,0 +1,23 @@
+================================================================================
+NOT CASESPECIFIC column attribute
+================================================================================
+
+CREATE TABLE t (name VARCHAR(20) NOT CASESPECIFIC);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (varchar
+            (keyword_varchar)
+            size: (literal))
+          (keyword_not)
+          (keyword_casespecific))))))

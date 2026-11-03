@@ -1,0 +1,38 @@
+================================================================================
+CREATE JOIN INDEX
+================================================================================
+
+CREATE JOIN INDEX ji AS SELECT a, b FROM t PRIMARY INDEX (a);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_join_index
+      (keyword_create)
+      (keyword_join)
+      (keyword_index)
+      (object_reference
+        name: (identifier))
+      (keyword_as)
+      (create_query
+        (select
+          (keyword_select)
+          (select_expression
+            (term
+              value: (field
+                name: (identifier)))
+            (term
+              value: (field
+                name: (identifier)))))
+        (from
+          (keyword_from)
+          (relation
+            (object_reference
+              name: (identifier)))))
+      (primary_index
+        (keyword_primary)
+        (keyword_index)
+        (list
+          (column
+            (identifier)))))))

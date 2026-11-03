@@ -1,0 +1,93 @@
+================================================================================
+Athena: MSCK REPAIR TABLE DROP PARTITIONS
+================================================================================
+
+MSCK REPAIR TABLE my_table DROP PARTITIONS;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (msck_repair_statement
+      (keyword_msck)
+      (keyword_repair)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_drop)
+      (keyword_partitions))))
+
+================================================================================
+Athena: UNLOAD with ORC format and SNAPPY compression
+================================================================================
+
+UNLOAD (SELECT id, name FROM customers WHERE region = 'US') TO 's3://bucket/output/' WITH (format = 'ORC', compression = 'SNAPPY');
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (unload_statement
+      (keyword_unload)
+      (select
+        (keyword_select)
+        (select_expression
+          (term
+            value: (field
+              name: (identifier)))
+          (term
+            value: (field
+              name: (identifier)))))
+      (from
+        (keyword_from)
+        (relation
+          (object_reference
+            name: (identifier)))
+        (where
+          (keyword_where)
+          predicate: (binary_expression
+            left: (field
+              name: (identifier))
+            right: (literal))))
+      (keyword_to)
+      path: (literal)
+      (with_properties
+        (keyword_with)
+        key: (identifier)
+        value: (literal)
+        key: (identifier)
+        value: (literal)))))
+
+================================================================================
+Athena: UNLOAD with TEXTFILE format, GZIP compression, and field delimiter
+================================================================================
+
+UNLOAD (SELECT id FROM orders) TO 's3://bucket/out/' WITH (format = 'TEXTFILE', compression = 'GZIP', field_delimiter = ',');
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (unload_statement
+      (keyword_unload)
+      (select
+        (keyword_select)
+        (select_expression
+          (term
+            value: (field
+              name: (identifier)))))
+      (from
+        (keyword_from)
+        (relation
+          (object_reference
+            name: (identifier))))
+      (keyword_to)
+      path: (literal)
+      (with_properties
+        (keyword_with)
+        key: (identifier)
+        value: (literal)
+        key: (identifier)
+        value: (literal)
+        key: (identifier)
+        value: (literal)))))

@@ -1,0 +1,211 @@
+================================================================================
+START TRANSACTION READ WRITE with comma-separated modes
+================================================================================
+
+START TRANSACTION READ WRITE, ISOLATION LEVEL READ COMMITTED;
+ROLLBACK WORK;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (start_transaction_statement
+      (keyword_start)
+      (keyword_transaction)
+      (transaction_mode
+        (keyword_read)
+        (keyword_write))
+      (transaction_mode
+        (keyword_isolation)
+        (keyword_level)
+        (keyword_read)
+        (keyword_committed))))
+  (statement
+    (rollback_statement
+      (keyword_rollback)
+      (keyword_work))))
+
+================================================================================
+Standalone commit
+================================================================================
+
+COMMIT;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (commit_statement
+      (keyword_commit))))
+
+================================================================================
+Commit work and chain
+================================================================================
+
+COMMIT WORK AND CHAIN;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (commit_statement
+      (keyword_commit)
+      (keyword_work)
+      (keyword_and)
+      (keyword_chain))))
+
+================================================================================
+Rollback and no chain
+================================================================================
+
+ROLLBACK AND NO CHAIN;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (rollback_statement
+      (keyword_rollback)
+      (keyword_and)
+      (keyword_no)
+      (keyword_chain))))
+
+================================================================================
+Rollback and chain to savepoint
+================================================================================
+
+ROLLBACK AND NO CHAIN TO SAVEPOINT sp;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (rollback_to_savepoint_statement
+      (keyword_rollback)
+      (keyword_and)
+      (keyword_no)
+      (keyword_chain)
+      (keyword_to)
+      (keyword_savepoint)
+      name: (identifier))))
+
+================================================================================
+Start transaction with modes
+================================================================================
+
+START TRANSACTION ISOLATION LEVEL SERIALIZABLE, READ ONLY, DIAGNOSTICS SIZE 10;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (start_transaction_statement
+      (keyword_start)
+      (keyword_transaction)
+      (transaction_mode
+        (keyword_isolation)
+        (keyword_level)
+        (keyword_serializable))
+      (transaction_mode
+        (keyword_read)
+        (keyword_only))
+      (transaction_mode
+        (transaction_diagnostics
+          (keyword_diagnostics)
+          (keyword_size)
+          (literal))))))
+
+================================================================================
+Standalone start transaction
+================================================================================
+
+START TRANSACTION;
+UPDATE t SET a = 1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (start_transaction_statement
+      (keyword_start)
+      (keyword_transaction)))
+  (statement
+    (update
+      (keyword_update)
+      (object_reference
+        (identifier))
+      (keyword_set)
+      (assignment
+        (field
+          (identifier))
+        (literal)))))
+
+================================================================================
+Start transaction block with commit
+================================================================================
+
+START TRANSACTION;
+UPDATE t SET a = 1;
+COMMIT;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (start_transaction_statement
+      (keyword_start)
+      (keyword_transaction)))
+  (statement
+    (update
+      (keyword_update)
+      (object_reference
+        (identifier))
+      (keyword_set)
+      (assignment
+        (field
+          (identifier))
+        (literal))))
+  (statement
+    (commit_statement
+      (keyword_commit))))
+
+================================================================================
+Set transaction access mode
+================================================================================
+
+SET TRANSACTION READ ONLY;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (set_statement
+      (keyword_set)
+      (keyword_transaction)
+      (transaction_mode
+        (keyword_read)
+        (keyword_only)))))
+
+================================================================================
+Set local transaction
+================================================================================
+
+SET LOCAL TRANSACTION ISOLATION LEVEL READ COMMITTED, READ WRITE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (set_statement
+      (keyword_set)
+      (keyword_local)
+      (keyword_transaction)
+      (transaction_mode
+        (keyword_isolation)
+        (keyword_level)
+        (keyword_read)
+        (keyword_committed))
+      (transaction_mode
+        (keyword_read)
+        (keyword_write)))))
+

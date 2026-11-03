@@ -1,0 +1,65 @@
+==================
+ALTER DATABASE SET OPTIONS
+==================
+
+ALTER DATABASE db SET OPTIONS (version_retention_period = '7d')
+
+---
+
+(program
+  (statement
+    (alter_database
+      (keyword_alter)
+      (keyword_database)
+      (identifier)
+      (keyword_set)
+      (options_clause
+        (keyword_options)
+        key: (identifier)
+        value: (literal)))))
+
+==================
+ALTER TABLE ADD ROW DELETION POLICY
+==================
+
+ALTER TABLE t ADD ROW DELETION POLICY (OLDER_THAN(ts, INTERVAL 30 DAY))
+
+---
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_add)
+      (row_deletion_policy
+        (keyword_row)
+        (keyword_deletion)
+        (keyword_policy)
+        (keyword_older_than)
+        column: (identifier)
+        (interval
+          (keyword_interval)
+          qualifier: (identifier))))))
+
+==================
+ALTER TABLE DROP ROW DELETION POLICY
+==================
+
+ALTER TABLE t DROP ROW DELETION POLICY
+
+---
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_drop)
+      (keyword_row)
+      (keyword_deletion)
+      (keyword_policy))))

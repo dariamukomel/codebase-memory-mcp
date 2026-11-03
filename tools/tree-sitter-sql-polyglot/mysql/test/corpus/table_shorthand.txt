@@ -1,0 +1,38 @@
+================================================================================
+MySQL: TABLE shorthand
+================================================================================
+
+TABLE employees;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (table_statement
+      (keyword_table)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+MySQL: TABLE shorthand with ORDER BY and LIMIT
+================================================================================
+
+TABLE employees ORDER BY id LIMIT 10;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (table_statement
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (order_by
+        (keyword_order)
+        (keyword_by)
+        (order_target
+          (field
+            name: (identifier))))
+      (limit
+        (keyword_limit)
+        (literal)))))

@@ -1,0 +1,1244 @@
+================================================================================
+Create temp table
+================================================================================
+
+CREATE TEMP TABLE my_table (id BIGINT NOT NULL PRIMARY KEY);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_temp)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (bigint
+            (keyword_bigint))
+          (keyword_not)
+          (keyword_null)
+          (keyword_primary)
+          (keyword_key))))))
+
+================================================================================
+Create or replace view
+================================================================================
+
+CREATE OR REPLACE VIEW my_view AS
+SELECT * FROM my_table;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_view
+      (keyword_create)
+      (keyword_or)
+      (keyword_replace)
+      (keyword_view)
+      (object_reference
+        name: (identifier))
+      (keyword_as)
+      (create_query
+        (select
+          (keyword_select)
+          (select_expression
+            (term
+              value: (all_fields))))
+        (from
+          (keyword_from)
+          (relation
+            (object_reference
+              name: (identifier))))))))
+
+================================================================================
+Create temp view
+================================================================================
+
+CREATE TEMPORARY VIEW foo AS SELECT 1;
+CREATE TEMP VIEW foo AS SELECT 1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_view
+      (keyword_create)
+      (keyword_temporary)
+      (keyword_view)
+      (object_reference
+        (identifier))
+      (keyword_as)
+      (create_query
+        (select
+          (keyword_select)
+          (select_expression
+            (term
+              (literal)))))))
+  (statement
+    (create_view
+      (keyword_create)
+      (keyword_temp)
+      (keyword_view)
+      (object_reference
+        (identifier))
+      (keyword_as)
+      (create_query
+        (select
+          (keyword_select)
+          (select_expression
+            (term
+              (literal))))))))
+
+================================================================================
+Create schema with authorization
+================================================================================
+
+CREATE SCHEMA IF NOT EXISTS test AUTHORIZATION joe;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_schema
+      (keyword_create)
+      (keyword_schema)
+      (keyword_if)
+      (keyword_not)
+      (keyword_exists)
+      (identifier)
+      (keyword_authorization)
+      (identifier))))
+
+================================================================================
+Create database
+================================================================================
+
+CREATE DATABASE hollywood
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_database
+      (keyword_create)
+      (keyword_database)
+      (identifier))))
+
+================================================================================
+Create database if not exists
+================================================================================
+
+CREATE DATABASE IF NOT EXISTS hollywood
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_database
+      (keyword_create)
+      (keyword_database)
+      (keyword_if)
+      (keyword_not)
+      (keyword_exists)
+      (identifier))))
+
+================================================================================
+Create database with settings
+================================================================================
+
+CREATE DATABASE sales OWNER operations_dept;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_database
+      (keyword_create)
+      (keyword_database)
+      (identifier)
+      (identifier)
+      (identifier))))
+
+================================================================================
+Create user
+================================================================================
+
+CREATE ROLE rapunzel
+WITH ROLE hansel, gretel
+IN GROUP fairy, tale
+ADMIN grandma
+PASSWORD 'secret'
+VALID UNTIL '2022-01-01'
+CONNECTION LIMIT 42
+NOLOGIN
+INHERIT;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_role
+      (keyword_create)
+      (keyword_role)
+      (identifier)
+      (keyword_with)
+      (keyword_role)
+      (identifier)
+      (identifier)
+      (keyword_in)
+      (keyword_group)
+      (identifier)
+      (identifier)
+      (keyword_admin)
+      (identifier)
+      (keyword_password)
+      (literal)
+      (keyword_valid)
+      (keyword_until)
+      (literal)
+      (keyword_connection)
+      (keyword_limit)
+      (literal)
+      (identifier)
+      (identifier))))
+
+================================================================================
+Create sequence
+================================================================================
+
+CREATE TEMP SEQUENCE IF NOT EXISTS serial
+AS BIGINT
+INCREMENT BY 3
+MINVALUE 10
+MAXVALUE 9999
+START 101 CACHE 1000 NO CYCLE
+OWNED BY numbers.number_sequences;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_sequence
+      (keyword_create)
+      (keyword_temp)
+      (keyword_sequence)
+      (keyword_if)
+      (keyword_not)
+      (keyword_exists)
+      (object_reference
+        (identifier))
+      (keyword_as)
+      (bigint
+        (keyword_bigint))
+      (keyword_increment)
+      (keyword_by)
+      (literal)
+      (keyword_minvalue)
+      (literal)
+      (keyword_maxvalue)
+      (literal)
+      (keyword_start)
+      (literal)
+      (keyword_cache)
+      (literal)
+      (keyword_no)
+      (keyword_cycle)
+      (keyword_owned)
+      (keyword_by)
+      (object_reference
+        (identifier)
+        (identifier)))))
+
+================================================================================
+Create a trigger on delete for each row
+================================================================================
+
+CREATE TRIGGER update_at BEFORE DELETE ON public.table_A FOR EACH ROW EXECUTE FUNCTION public.update_timestamp();
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_trigger
+      (keyword_create)
+      (keyword_trigger)
+      (object_reference
+        (identifier))
+      (keyword_before)
+      (keyword_delete)
+      (keyword_on)
+      (object_reference
+        (identifier)
+        (identifier))
+      (keyword_for)
+      (keyword_each)
+      (keyword_row)
+      (keyword_execute)
+      (keyword_function)
+      (object_reference
+        (identifier)
+        (identifier)))))
+
+================================================================================
+Create a trigger on update
+================================================================================
+
+CREATE TRIGGER update_at_user AFTER UPDATE OF name ON public."user" EXECUTE FUNCTION public.update_timestamp();
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_trigger
+      (keyword_create)
+      (keyword_trigger)
+      (object_reference
+        (identifier))
+      (keyword_after)
+      (keyword_update)
+      (keyword_of)
+      (identifier)
+      (keyword_on)
+      (object_reference
+        (identifier)
+        (identifier))
+      (keyword_execute)
+      (keyword_function)
+      (object_reference
+        (identifier)
+        (identifier)))))
+
+================================================================================
+Delete whole table and only the whole table
+================================================================================
+
+DELETE FROM ONLY my_table;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (delete
+      (keyword_delete))
+    (from
+      (keyword_from)
+      (keyword_only)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+Truncate table
+================================================================================
+
+TRUNCATE TABLE employees CASCADE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (keyword_truncate)
+    (keyword_table)
+    (object_reference
+      (identifier))
+    (keyword_cascade)))
+================================================================================
+Drop function
+================================================================================
+
+DROP FUNCTION my_function;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_function
+      (keyword_drop)
+      (keyword_function)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+Drop function if exists
+================================================================================
+
+DROP FUNCTION IF EXISTS my_function;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_function
+      (keyword_drop)
+      (keyword_function)
+      (keyword_if)
+      (keyword_exists)
+      (object_reference
+        (identifier)))))
+
+================================================================================
+Drop table
+================================================================================
+
+DROP TABLE my_table;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_table
+      (keyword_drop)
+      (keyword_table)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+Drop table with FQN
+================================================================================
+
+DROP TABLE my_table.my_schema.my_table;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_table
+      (keyword_drop)
+      (keyword_table)
+      (object_reference
+        database: (identifier)
+        schema: (identifier)
+        name: (identifier)))))
+
+================================================================================
+Drop view
+================================================================================
+
+DROP VIEW my_view;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_view
+      (keyword_drop)
+      (keyword_view)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+Drop view with FQN
+================================================================================
+
+DROP VIEW my_database.my_schema.my_view;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_view
+      (keyword_drop)
+      (keyword_view)
+      (object_reference
+        database: (identifier)
+        schema: (identifier)
+        name: (identifier)))))
+
+================================================================================
+Drop index
+================================================================================
+
+DROP INDEX idx;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_index
+      (keyword_drop)
+      (keyword_index)
+      name: (identifier))))
+
+================================================================================
+Drop index
+================================================================================
+
+DROP INDEX idx ON tbl;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_index
+      (keyword_drop)
+      (keyword_index)
+      name: (identifier)
+      (keyword_on)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+Drop index cascade full sequence
+================================================================================
+
+DROP INDEX CONCURRENTLY IF EXISTS idx CASCADE ON tbl;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_index
+      (keyword_drop)
+      (keyword_index)
+      (keyword_concurrently)
+      (keyword_if)
+      (keyword_exists)
+      name: (identifier)
+      (keyword_cascade)
+      (keyword_on)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+Drop index restrict full sequence
+================================================================================
+
+DROP INDEX CONCURRENTLY IF EXISTS idx RESTRICT ON tbl;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_index
+      (keyword_drop)
+      (keyword_index)
+      (keyword_concurrently)
+      (keyword_if)
+      (keyword_exists)
+      name: (identifier)
+      (keyword_restrict)
+      (keyword_on)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+Drop schema
+================================================================================
+
+DROP SCHEMA IF EXISTS myschema CASCADE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_schema
+      (keyword_drop)
+      (keyword_schema)
+      (keyword_if)
+      (keyword_exists)
+      (identifier)
+      (keyword_cascade))))
+
+================================================================================
+Drop Database
+================================================================================
+
+DROP DATABASE IF EXISTS hollywood WITH FORCE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_database
+      (keyword_drop)
+      (keyword_database)
+      (keyword_if)
+      (keyword_exists)
+      (identifier)
+      (keyword_with)
+      (keyword_force))))
+
+================================================================================
+Drop Role
+================================================================================
+
+DROP ROLE hansel;
+DROP GROUP fairy;
+DROP USER rapunzel;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_role
+      (keyword_drop)
+      (keyword_role)
+      (identifier)))
+  (statement
+    (drop_role
+      (keyword_drop)
+      (keyword_group)
+      (identifier)))
+  (statement
+    (drop_role
+      (keyword_drop)
+      (keyword_user)
+      (identifier))))
+
+================================================================================
+Drop sequence
+================================================================================
+
+DROP SEQUENCE IF EXISTS serial RESTRICT;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_sequence
+      (keyword_drop)
+      (keyword_sequence)
+      (keyword_if)
+      (keyword_exists)
+      (object_reference
+        (identifier))
+      (keyword_restrict))))
+
+================================================================================
+Drop materialized view
+================================================================================
+
+DROP MATERIALIZED VIEW my_view;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_materialized_view
+      (keyword_drop)
+      (keyword_materialized)
+      (keyword_view)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+Drop materialized view if exists
+================================================================================
+
+DROP MATERIALIZED VIEW IF EXISTS my_view;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_materialized_view
+      (keyword_drop)
+      (keyword_materialized)
+      (keyword_view)
+      (keyword_if)
+      (keyword_exists)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+Drop materialized view cascade
+================================================================================
+
+DROP MATERIALIZED VIEW IF EXISTS my_view CASCADE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_materialized_view
+      (keyword_drop)
+      (keyword_materialized)
+      (keyword_view)
+      (keyword_if)
+      (keyword_exists)
+      (object_reference
+        name: (identifier))
+      (keyword_cascade))))
+
+================================================================================
+Drop materialized view with schema
+================================================================================
+
+DROP MATERIALIZED VIEW myschema.my_view;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_materialized_view
+      (keyword_drop)
+      (keyword_materialized)
+      (keyword_view)
+      (object_reference
+        schema: (identifier)
+        name: (identifier)))))
+================================================================================
+Simple insert with alias
+================================================================================
+
+INSERT INTO my_table AS x
+VALUES('foo','bar', 3);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (insert
+      (keyword_insert)
+      (keyword_into)
+      (object_reference
+        name: (identifier))
+      (keyword_as)
+      alias: (identifier)
+      (keyword_values)
+      (list
+        (literal)
+        (literal)
+        (literal)))))
+
+================================================================================
+INSERT ... SET assignment form
+================================================================================
+
+INSERT INTO t1 SET a = 1, b = 2;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (insert
+      (keyword_insert)
+      (keyword_into)
+      (object_reference
+        name: (identifier))
+      (keyword_set)
+      (assignment
+        left: (field
+          name: (identifier))
+        right: (literal))
+      (assignment
+        left: (field
+          name: (identifier))
+        right: (literal)))))
+================================================================================
+Drop procedure
+================================================================================
+
+DROP PROCEDURE my_procedure;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_procedure
+      (keyword_drop)
+      (keyword_procedure)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+Drop procedure if exists
+================================================================================
+
+DROP PROCEDURE IF EXISTS my_procedure;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_procedure
+      (keyword_drop)
+      (keyword_procedure)
+      (keyword_if)
+      (keyword_exists)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+Drop procedure cascade
+================================================================================
+
+DROP PROCEDURE IF EXISTS public.my_procedure CASCADE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_procedure
+      (keyword_drop)
+      (keyword_procedure)
+      (keyword_if)
+      (keyword_exists)
+      (object_reference
+        (identifier)
+        (identifier))
+      (keyword_cascade))))
+================================================================================
+Refresh materialized view basic
+================================================================================
+
+REFRESH MATERIALIZED VIEW my_view;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (refresh_materialized_view
+      (keyword_refresh)
+      (keyword_materialized)
+      (keyword_view)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+Refresh materialized view concurrently
+================================================================================
+
+REFRESH MATERIALIZED VIEW CONCURRENTLY my_view;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (refresh_materialized_view
+      (keyword_refresh)
+      (keyword_materialized)
+      (keyword_view)
+      (keyword_concurrently)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+Refresh materialized view with data
+================================================================================
+
+REFRESH MATERIALIZED VIEW my_view WITH DATA;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (refresh_materialized_view
+      (keyword_refresh)
+      (keyword_materialized)
+      (keyword_view)
+      (object_reference
+        name: (identifier))
+      (keyword_with)
+      (keyword_data))))
+
+================================================================================
+Refresh materialized view with no data
+================================================================================
+
+REFRESH MATERIALIZED VIEW my_view WITH NO DATA;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (refresh_materialized_view
+      (keyword_refresh)
+      (keyword_materialized)
+      (keyword_view)
+      (object_reference
+        name: (identifier))
+      (keyword_with)
+      (keyword_no)
+      (keyword_data))))
+
+================================================================================
+Refresh materialized view concurrently with no data
+================================================================================
+
+REFRESH MATERIALIZED VIEW CONCURRENTLY my_view WITH NO DATA;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (refresh_materialized_view
+      (keyword_refresh)
+      (keyword_materialized)
+      (keyword_view)
+      (keyword_concurrently)
+      (object_reference
+        name: (identifier))
+      (keyword_with)
+      (keyword_no)
+      (keyword_data))))
+
+================================================================================
+Refresh materialized view with schema qualification
+================================================================================
+
+REFRESH MATERIALIZED VIEW schema.my_view;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (refresh_materialized_view
+      (keyword_refresh)
+      (keyword_materialized)
+      (keyword_view)
+      (object_reference
+        schema: (identifier)
+        name: (identifier)))))
+
+================================================================================
+Refresh materialized view lowercase
+================================================================================
+
+refresh materialized view my_view;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (refresh_materialized_view
+      (keyword_refresh)
+      (keyword_materialized)
+      (keyword_view)
+      (object_reference
+        name: (identifier)))))
+================================================================================
+Standalone start transaction
+================================================================================
+
+START TRANSACTION;
+UPDATE t SET a = 1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (start_transaction_statement
+      (keyword_start)
+      (keyword_transaction)))
+  (statement
+    (update
+      (keyword_update)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (keyword_set)
+      (assignment
+        left: (field
+          name: (identifier))
+        right: (literal)))))
+
+================================================================================
+Simple update
+================================================================================
+
+UPDATE my_table
+SET for = foo + 1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (update
+      (keyword_update)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (keyword_set)
+      (assignment
+        left: (field
+          name: (identifier))
+        right: (binary_expression
+          left: (field
+            name: (identifier))
+          right: (literal))))))
+
+================================================================================
+Simple update with ONLY
+================================================================================
+
+UPDATE ONLY my_table
+SET for = foo + 1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (update
+      (keyword_update)
+      (keyword_only)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (keyword_set)
+      (assignment
+        left: (field
+          name: (identifier))
+        right: (binary_expression
+          left: (field
+            name: (identifier))
+          right: (literal))))))
+
+================================================================================
+update with multiple assignments
+================================================================================
+
+UPDATE my_table
+SET for = foo + 1, col2 = col1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (update
+      (keyword_update)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (keyword_set)
+      (assignment
+        left: (field
+          name: (identifier))
+        right: (binary_expression
+          left: (field
+            name: (identifier))
+          right: (literal)))
+      (assignment
+        left: (field
+          name: (identifier))
+        right: (field
+          name: (identifier))))))
+
+================================================================================
+update with multiple table references
+================================================================================
+
+UPDATE items, month
+SET items.price=month.price
+WHERE items.id=month.item_id;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (update
+      (keyword_update)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (relation
+        (object_reference
+          name: (identifier)))
+      (keyword_set)
+      (assignment
+        left: (field
+          (object_reference
+            name: (identifier))
+          name: (identifier))
+        right: (field
+          (object_reference
+            name: (identifier))
+          name: (identifier)))
+      (where
+        (keyword_where)
+        predicate: (binary_expression
+          left: (field
+            (object_reference
+              name: (identifier))
+            name: (identifier))
+          right: (field
+            (object_reference
+              name: (identifier))
+            name: (identifier)))))))
+
+================================================================================
+update with function call
+================================================================================
+
+UPDATE my_table
+SET ts = now();
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (update
+      (keyword_update)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (keyword_set)
+      (assignment
+        left: (field
+          name: (identifier))
+        right: (invocation
+          (object_reference
+            name: (identifier)))))))
+
+================================================================================
+Update with a JOIN
+================================================================================
+
+UPDATE table_a a
+INNER JOIN table_b b ON b.a = a.uid
+INNER JOIN table_c c ON c.b = b.uid
+SET
+a.d = 5;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (update
+      (keyword_update)
+      (relation
+        (object_reference
+          (identifier))
+        (identifier))
+      (join
+        (keyword_inner)
+        (keyword_join)
+        (relation
+          (object_reference
+            (identifier))
+          (identifier))
+        (keyword_on)
+        (binary_expression
+          (field
+            (object_reference
+              (identifier))
+            (identifier))
+          (field
+            (object_reference
+              (identifier))
+            (identifier))))
+      (join
+        (keyword_inner)
+        (keyword_join)
+        (relation
+          (object_reference
+            (identifier))
+          (identifier))
+        (keyword_on)
+        (binary_expression
+          (field
+            (object_reference
+              (identifier))
+            (identifier))
+          (field
+            (object_reference
+              (identifier))
+            (identifier))))
+      (keyword_set)
+      (assignment
+        (field
+          (object_reference
+            (identifier))
+          (identifier))
+        (literal)))))
+
+================================================================================
+Postgres style update
+================================================================================
+
+UPDATE table_a as a
+SET d = 5
+WHERE b.a = a.uid;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (update
+      (keyword_update)
+      (relation
+        (object_reference
+          (identifier))
+        (keyword_as)
+        (identifier))
+      (keyword_set)
+      (assignment
+        (field
+          (identifier))
+        (literal))
+      (where
+        (keyword_where)
+        (binary_expression
+          (field
+            (object_reference
+              (identifier))
+            (identifier))
+          (field
+            (object_reference
+              (identifier))
+            (identifier)))))))
+
+================================================================================
+Postgres style update w/ join
+================================================================================
+
+UPDATE table_a as a
+SET d = 5
+FROM table_b b
+INNER JOIN table_c c ON c.b = b.uid
+WHERE b.a = a.uid;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (update
+      (keyword_update)
+      (relation
+        (object_reference
+          (identifier))
+        (keyword_as)
+        (identifier))
+      (keyword_set)
+      (assignment
+        (field
+          (identifier))
+        (literal))
+      (from
+        (keyword_from)
+        (relation
+          (object_reference
+            (identifier))
+          (identifier))
+        (join
+          (keyword_inner)
+          (keyword_join)
+          (relation
+            (object_reference
+              (identifier))
+            (identifier))
+          (keyword_on)
+          (binary_expression
+            (field
+              (object_reference
+                (identifier))
+              (identifier))
+            (field
+              (object_reference
+                (identifier))
+              (identifier))))
+        (where
+          (keyword_where)
+          (binary_expression
+            (field
+              (object_reference
+                (identifier))
+              (identifier))
+            (field
+              (object_reference
+                (identifier))
+              (identifier))))))))

@@ -1,0 +1,69 @@
+================================================================================
+GLOBAL IN
+================================================================================
+
+SELECT * FROM t WHERE x GLOBAL IN (SELECT id FROM u);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (where
+        (keyword_where)
+        predicate: (binary_expression
+          left: (field
+            name: (identifier))
+          operator: (global_in)
+          right: (subquery
+            (select
+              (keyword_select)
+              (select_expression
+                (term
+                  value: (field
+                    name: (identifier)))))
+            (from
+              (keyword_from)
+              (relation
+                (object_reference
+                  name: (identifier))))))))))
+
+================================================================================
+GLOBAL NOT IN
+================================================================================
+
+SELECT * FROM t WHERE x GLOBAL NOT IN (1, 2, 3);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (where
+        (keyword_where)
+        predicate: (binary_expression
+          left: (field
+            name: (identifier))
+          operator: (global_not_in)
+          right: (list
+            (literal)
+            (literal)
+            (literal)))))))

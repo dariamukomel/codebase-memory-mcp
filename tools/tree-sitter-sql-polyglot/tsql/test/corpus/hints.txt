@@ -1,0 +1,110 @@
+================================================================================
+Table hint NOLOCK
+================================================================================
+
+SELECT id FROM orders WITH (NOLOCK);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))
+        (table_hints
+          (keyword_with)
+          (table_hint
+            (keyword_nolock)))))))
+
+================================================================================
+Multiple table hints
+================================================================================
+
+SELECT id FROM orders WITH (NOLOCK, ROWLOCK);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))
+        (table_hints
+          (keyword_with)
+          (table_hint
+            (keyword_nolock))
+          (table_hint
+            (keyword_rowlock)))))))
+
+================================================================================
+Table hint INDEX
+================================================================================
+
+SELECT id FROM orders WITH (INDEX(ix_customer));
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))
+        (table_hints
+          (keyword_with)
+          (table_hint
+            (keyword_index)
+            (identifier)))))))
+
+================================================================================
+Table hint with alias
+================================================================================
+
+SELECT o.id FROM orders AS o WITH (UPDLOCK);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (field
+            (object_reference
+              name: (identifier))
+            name: (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))
+        (keyword_as)
+        alias: (identifier)
+        (table_hints
+          (keyword_with)
+          (table_hint
+            (keyword_updlock)))))))

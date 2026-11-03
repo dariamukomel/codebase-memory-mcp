@@ -1,0 +1,6 @@
+#define tree_sitter_sql_external_scanner_create      tree_sitter_mariadb_sql_external_scanner_create
+#define tree_sitter_sql_external_scanner_destroy     tree_sitter_mariadb_sql_external_scanner_destroy
+#define tree_sitter_sql_external_scanner_scan        tree_sitter_mariadb_sql_external_scanner_scan
+#define tree_sitter_sql_external_scanner_serialize   tree_sitter_mariadb_sql_external_scanner_serialize
+#define tree_sitter_sql_external_scanner_deserialize tree_sitter_mariadb_sql_external_scanner_deserialize
+#include "../../src/scanner.c"

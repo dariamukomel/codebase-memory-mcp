@@ -1,0 +1,521 @@
+================================================================================
+SELECT FOR UPDATE
+================================================================================
+
+SELECT * FROM t WHERE id = 1 FOR UPDATE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier)))
+      (where
+        (keyword_where)
+        (binary_expression
+          (field
+            (identifier))
+          (literal))))
+    (locking_clause
+      (keyword_for)
+      (keyword_update))))
+
+================================================================================
+SELECT FOR SHARE SKIP LOCKED
+================================================================================
+
+SELECT * FROM t FOR SHARE SKIP LOCKED;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier))))
+    (locking_clause
+      (keyword_for)
+      (keyword_share)
+      (keyword_skip)
+      (keyword_locked))))
+
+================================================================================
+SELECT FOR UPDATE OF table NOWAIT
+================================================================================
+
+SELECT * FROM t FOR UPDATE OF t NOWAIT;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier))))
+    (locking_clause
+      (keyword_for)
+      (keyword_update)
+      (keyword_of)
+      (object_reference
+        (identifier))
+      (keyword_nowait))))
+
+================================================================================
+SELECT FOR NO KEY UPDATE
+================================================================================
+
+SELECT * FROM t FOR NO KEY UPDATE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier))))
+    (locking_clause
+      (keyword_for)
+      (keyword_no)
+      (keyword_key)
+      (keyword_update))))
+
+================================================================================
+LOCK TABLE IN EXCLUSIVE MODE
+================================================================================
+
+LOCK TABLE t IN EXCLUSIVE MODE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (lock_table_statement
+      (keyword_lock)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (keyword_in)
+      (keyword_exclusive)
+      (keyword_mode))))
+
+================================================================================
+LOCK TABLE IN SHARE ROW EXCLUSIVE MODE NOWAIT
+================================================================================
+
+LOCK TABLE t IN SHARE ROW EXCLUSIVE MODE NOWAIT;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (lock_table_statement
+      (keyword_lock)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (keyword_in)
+      (keyword_share)
+      (keyword_row)
+      (keyword_exclusive)
+      (keyword_mode)
+      (keyword_nowait))))
+
+================================================================================
+GRANT ON ALL TABLES IN SCHEMA
+================================================================================
+
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO analyst;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (grant_statement
+      (keyword_grant)
+      (keyword_select)
+      (keyword_on)
+      (keyword_all)
+      (keyword_tables)
+      (keyword_in)
+      (keyword_schema)
+      (object_reference
+        (identifier))
+      (keyword_to)
+      (identifier))))
+
+================================================================================
+GRANT USAGE ON ALL SEQUENCES IN SCHEMA
+================================================================================
+
+GRANT USAGE ON ALL SEQUENCES IN SCHEMA myschema TO app_user;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (grant_statement
+      (keyword_grant)
+      (keyword_usage)
+      (keyword_on)
+      (keyword_all)
+      (keyword_sequences)
+      (keyword_in)
+      (keyword_schema)
+      (object_reference
+        (identifier))
+      (keyword_to)
+      (identifier))))
+
+================================================================================
+REVOKE ON ALL FUNCTIONS IN SCHEMA
+================================================================================
+
+REVOKE EXECUTE ON ALL FUNCTIONS IN SCHEMA util FROM PUBLIC;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (revoke_statement
+      (keyword_revoke)
+      (keyword_execute)
+      (keyword_on)
+      (keyword_all)
+      (keyword_functions)
+      (keyword_in)
+      (keyword_schema)
+      (object_reference
+        (identifier))
+      (keyword_from)
+      (keyword_public))))
+
+================================================================================
+SELECT DISTINCT ON
+================================================================================
+
+SELECT DISTINCT ON (customer_id) customer_id, order_date
+FROM orders
+ORDER BY customer_id, order_date DESC;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (keyword_distinct)
+      (keyword_on)
+      (field
+        (identifier))
+      (select_expression
+        (term
+          (field
+            (identifier)))
+        (term
+          (field
+            (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier)))
+      (order_by
+        (keyword_order)
+        (keyword_by)
+        (order_target
+          (field
+            (identifier)))
+        (order_target
+          (field
+            (identifier))
+          (direction
+            (keyword_desc)))))))
+
+================================================================================
+ILIKE operator
+================================================================================
+
+SELECT * FROM users WHERE name ILIKE '%john%';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier)))
+      (where
+        (keyword_where)
+        (binary_expression
+          (field
+            (identifier))
+          (keyword_ilike)
+          (literal))))))
+
+================================================================================
+NOT ILIKE operator
+================================================================================
+
+SELECT * FROM t WHERE col NOT ILIKE 'prefix_%';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier)))
+      (where
+        (keyword_where)
+        (binary_expression
+          (field
+            (identifier))
+          (not_ilike
+            (keyword_not)
+            (keyword_ilike))
+          (literal))))))
+
+================================================================================
+PREPARE with parameter types
+================================================================================
+
+PREPARE my_plan (int) AS SELECT * FROM orders WHERE id = $1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (prepare_statement
+      (keyword_prepare)
+      (identifier)
+      (int
+        (keyword_int))
+      (keyword_as)
+      (select
+        (keyword_select)
+        (select_expression
+          (term
+            (all_fields))))
+      (from
+        (keyword_from)
+        (relation
+          (object_reference
+            (identifier)))
+        (where
+          (keyword_where)
+          (binary_expression
+            (field
+              (identifier))
+            (parameter)))))))
+
+================================================================================
+EXECUTE prepared statement
+================================================================================
+
+EXECUTE my_plan (42);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (execute_statement
+      (keyword_execute)
+      (identifier)
+      (literal))))
+
+================================================================================
+DEALLOCATE prepared statement
+================================================================================
+
+DEALLOCATE my_plan;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (deallocate_statement
+      (keyword_deallocate)
+      (identifier))))
+
+================================================================================
+DEALLOCATE ALL
+================================================================================
+
+DEALLOCATE ALL;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (deallocate_statement
+      (keyword_deallocate)
+      (keyword_all))))
+
+================================================================================
+DELETE USING
+================================================================================
+
+DELETE FROM orders
+USING customers
+WHERE orders.customer_id = customers.id;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (delete
+      (keyword_delete))
+    (from
+      (keyword_from)
+      (object_reference
+        (identifier))
+      (keyword_using)
+      (relation
+        (object_reference
+          (identifier)))
+      (where
+        (keyword_where)
+        (binary_expression
+          (field
+            (object_reference
+              (identifier))
+            (identifier))
+          (field
+            (object_reference
+              (identifier))
+            (identifier)))))))
+
+================================================================================
+CALL procedure
+================================================================================
+
+CALL process_orders(2024);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (call_statement
+      (keyword_call)
+      (object_reference
+        (identifier))
+      (literal))))
+
+================================================================================
+CALL procedure with named arguments
+================================================================================
+
+CALL myschema.my_proc(arg1 => 'val', arg2 => 42);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (call_statement
+      (keyword_call)
+      (object_reference
+        (identifier)
+        (identifier))
+      (identifier)
+      (literal)
+      (identifier)
+      (literal))))
+
+================================================================================
+EXPLAIN with option list
+================================================================================
+
+EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON) SELECT * FROM t;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (keyword_explain)
+    (explain_options
+      (keyword_analyze)
+      (keyword_buffers)
+      (keyword_format)
+      (keyword_json))
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier))))))
+
+================================================================================
+EXPLAIN with boolean option values
+================================================================================
+
+EXPLAIN (ANALYZE true, COSTS false, SETTINGS, GENERIC_PLAN) SELECT * FROM t;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (keyword_explain)
+    (explain_options
+      (keyword_analyze)
+      (keyword_true)
+      (keyword_costs)
+      (keyword_false)
+      (keyword_settings)
+      (keyword_generic_plan))
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier))))))

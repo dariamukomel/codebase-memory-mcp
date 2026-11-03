@@ -1,0 +1,54 @@
+================================================================================
+ATTACH TABLE
+================================================================================
+
+ATTACH TABLE t
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (attach_statement
+      (keyword_attach)
+      (keyword_table)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+DETACH DICTIONARY
+================================================================================
+
+DETACH DICTIONARY d
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (detach_statement
+      (keyword_detach)
+      (keyword_dictionary)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+DETACH TABLE IF EXISTS ON CLUSTER
+================================================================================
+
+DETACH TABLE IF EXISTS t ON CLUSTER c
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (detach_statement
+      (keyword_detach)
+      (keyword_table)
+      (keyword_if)
+      (keyword_exists)
+      (object_reference
+        name: (identifier))
+      (on_cluster
+        (keyword_on)
+        (keyword_cluster)
+        cluster: (identifier)))))
+

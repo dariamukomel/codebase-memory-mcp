@@ -1,0 +1,20 @@
+================================================================================
+SQLite: CREATE VIRTUAL TABLE with module args
+================================================================================
+
+CREATE VIRTUAL TABLE docs USING fts5(content);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_virtual_table
+      (keyword_create)
+      (keyword_virtual)
+      (keyword_table)
+      name: (object_reference
+        name: (identifier))
+      (keyword_using)
+      module: (identifier)
+      (field
+        name: (identifier)))))

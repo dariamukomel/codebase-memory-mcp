@@ -1,0 +1,88 @@
+================================================================================
+Oracle: MERGE with DELETE WHERE
+================================================================================
+
+MERGE INTO target t USING source s ON (t.id = s.id)
+WHEN MATCHED THEN UPDATE SET t.val = s.val DELETE WHERE t.active = 0
+WHEN NOT MATCHED THEN INSERT (id, val) VALUES (s.id, s.val);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (keyword_merge)
+    (keyword_into)
+    (object_reference
+      (identifier))
+    (identifier)
+    (keyword_using)
+    (object_reference
+      (identifier))
+    (identifier)
+    (keyword_on)
+    (parenthesized_expression
+      (binary_expression
+        (field
+          (object_reference
+            (identifier))
+          (identifier))
+        (field
+          (object_reference
+            (identifier))
+          (identifier))))
+    (when_clause
+      (keyword_when)
+      (keyword_matched)
+      (keyword_then)
+      (keyword_update)
+      (keyword_set)
+      (assignment
+        (field
+          (object_reference
+            (identifier))
+          (identifier))
+        (field
+          (object_reference
+            (identifier))
+          (identifier)))
+      (keyword_delete)
+      (keyword_where)
+      (binary_expression
+        (field
+          (object_reference
+            (identifier))
+          (identifier))
+        (literal)))
+    (when_clause
+      (keyword_when)
+      (keyword_not)
+      (keyword_matched)
+      (keyword_then)
+      (keyword_insert)
+      (list
+        (column
+          (identifier))
+        (column
+          (identifier)))
+      (keyword_values)
+      (list
+        (field
+          (object_reference
+            (identifier))
+          (identifier))
+        (field
+          (object_reference
+            (identifier))
+          (identifier))))))
+
+================================================================================
+Oracle: MERGE WHEN MATCHED THEN requires an action (no bare/empty action)
+:error
+================================================================================
+
+MERGE INTO target t
+USING source s
+ON (t.id = s.id)
+WHEN MATCHED THEN;
+
+--------------------------------------------------------------------------------

@@ -1,0 +1,226 @@
+================================================================================
+Insert returning
+================================================================================
+
+INSERT INTO my_table
+VALUES('foo','bar', 3)
+RETURNING *;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (insert
+      (keyword_insert)
+      (keyword_into)
+      (object_reference
+        name: (identifier))
+      (keyword_values)
+      (list
+        (literal)
+        (literal)
+        (literal)))
+    (returning
+      (keyword_returning)
+      (select_expression
+        (term
+          value: (all_fields))))))
+
+================================================================================
+Insert returning single column
+================================================================================
+
+INSERT INTO my_table
+VALUES('foo','bar', 3)
+RETURNING id;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (insert
+      (keyword_insert)
+      (keyword_into)
+      (object_reference
+        name: (identifier))
+      (keyword_values)
+      (list
+        (literal)
+        (literal)
+        (literal)))
+    (returning
+      (keyword_returning)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))))))
+
+================================================================================
+Insert returning multiple defined columns
+================================================================================
+
+INSERT INTO my_table
+VALUES('foo','bar', 3)
+RETURNING id, val1, val2;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (insert
+      (keyword_insert)
+      (keyword_into)
+      (object_reference
+        name: (identifier))
+      (keyword_values)
+      (list
+        (literal)
+        (literal)
+        (literal)))
+    (returning
+      (keyword_returning)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))
+        (term
+          value: (field
+            name: (identifier)))
+        (term
+          value: (field
+            name: (identifier)))))))
+
+================================================================================
+Multiple ctes with returning
+================================================================================
+
+WITH first AS (
+  INSERT INTO my_table (one, two)
+  VALUES (1, 2)
+  RETURNING *
+), second AS (
+  SELECT one, two
+  FROM my_table
+)
+SELECT *
+FROM second;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (keyword_with)
+    (cte
+      name: (identifier)
+      (keyword_as)
+      (statement
+        (insert
+          (keyword_insert)
+          (keyword_into)
+          (object_reference
+            name: (identifier))
+          (list
+            (column
+              (identifier))
+            (column
+              (identifier)))
+          (keyword_values)
+          (list
+            (literal)
+            (literal)))
+        (returning
+          (keyword_returning)
+          (select_expression
+            (term
+              value: (all_fields))))))
+    (cte
+      name: (identifier)
+      (keyword_as)
+      (statement
+        (select
+          (keyword_select)
+          (select_expression
+            (term
+              value: (field
+                name: (identifier)))
+            (term
+              value: (field
+                name: (identifier)))))
+        (from
+          (keyword_from)
+          (relation
+            (object_reference
+              name: (identifier))))))
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))))))
+
+================================================================================
+Simple insert with on conflict do nothing
+================================================================================
+
+INSERT INTO my_table
+VALUES('foo','bar', 3)
+ON CONFLICT DO NOTHING;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (insert
+      (keyword_insert)
+      (keyword_into)
+      (object_reference
+        name: (identifier))
+      (keyword_values)
+      (list
+        (literal)
+        (literal)
+        (literal))
+      (keyword_on)
+      (keyword_conflict)
+      (keyword_do)
+      (keyword_nothing))))
+
+================================================================================
+Simple insert with on conflict do update
+================================================================================
+
+INSERT INTO my_table
+VALUES('foo','bar', 3)
+ON CONFLICT DO UPDATE SET dname = EXCLUDED.dname;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (insert
+      (keyword_insert)
+      (keyword_into)
+      (object_reference
+        name: (identifier))
+      (keyword_values)
+      (list
+        (literal)
+        (literal)
+        (literal))
+      (keyword_on)
+      (keyword_conflict)
+      (keyword_do)
+      (keyword_update)
+      (keyword_set)
+      (assignment
+        left: (field
+          name: (identifier))
+        right: (field
+          (object_reference
+            name: (identifier))
+          name: (identifier))))))
+

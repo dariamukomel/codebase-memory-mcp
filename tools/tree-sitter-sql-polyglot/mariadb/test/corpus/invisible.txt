@@ -1,0 +1,50 @@
+================================================================================
+MariaDB: CREATE TABLE with INVISIBLE column
+================================================================================
+
+CREATE TABLE t (id INT, secret VARCHAR(100) INVISIBLE);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int)))
+        (column_definition
+          name: (identifier)
+          type: (varchar
+            (keyword_varchar)
+            size: (literal))
+          (keyword_invisible))))))
+
+================================================================================
+MariaDB: ALTER TABLE ADD INVISIBLE column
+================================================================================
+
+ALTER TABLE t ADD COLUMN hidden INT INVISIBLE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (add_column
+        (keyword_add)
+        (keyword_column)
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int))
+          (keyword_invisible))))))

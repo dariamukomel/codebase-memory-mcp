@@ -1,0 +1,78 @@
+================================================================================
+COPY with IAM_ROLE and FORMAT AS PARQUET
+================================================================================
+
+COPY orders FROM 's3://mybucket/orders/'
+IAM_ROLE 'arn:aws:iam::123456789:role/MyRole'
+FORMAT AS PARQUET
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (copy_statement
+      (keyword_copy)
+      (object_reference
+        (identifier))
+      (keyword_from)
+      (literal)
+      (keyword_iam_role)
+      (literal)
+      (keyword_format)
+      (keyword_as)
+      (keyword_parquet))))
+
+================================================================================
+COPY with CSV options and IGNOREHEADER
+================================================================================
+
+COPY customers FROM 's3://mybucket/customers.csv'
+IAM_ROLE 'arn:aws:iam::123456789:role/MyRole'
+CSV QUOTE '"' DELIMITER ','
+IGNOREHEADER 1
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (copy_statement
+      (keyword_copy)
+      (object_reference
+        (identifier))
+      (keyword_from)
+      (literal)
+      (keyword_iam_role)
+      (literal)
+      (keyword_csv)
+      (keyword_quote)
+      (literal)
+      (keyword_delimiter)
+      (literal)
+      (keyword_ignoreheader)
+      (literal))))
+
+================================================================================
+COPY with GZIP compression
+================================================================================
+
+COPY logs FROM 's3://mybucket/logs/'
+IAM_ROLE 'arn:aws:iam::123456789:role/MyRole'
+FORMAT AS CSV
+GZIP
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (copy_statement
+      (keyword_copy)
+      (object_reference
+        (identifier))
+      (keyword_from)
+      (literal)
+      (keyword_iam_role)
+      (literal)
+      (keyword_format)
+      (keyword_as)
+      (keyword_csv)
+      (keyword_gzip))))

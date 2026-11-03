@@ -106,6 +106,8 @@ row instead.
 
 | grammar | location | patch | reason |
 |---|---|---|---|
+| sql-polyglot | `tools/tree-sitter-sql-polyglot/grammar/**` and dialect overrides | accept `$name`, `${name}` and mixed static/dynamic identifiers; add stable `target`, `source`, `relation`, `projection`, query-body and identifier-component fields | gSQL/OpenFlow templates must remain parseable without storing variable fragments as graph nodes; the common semantic fields let one lineage extractor consume all 23 compiled grammars |
+| sql-polyglot | `tools/tree-sitter-sql-polyglot/src/scanner.c`, deserialize | free the previous dollar-quote start tag before restoring scanner state | tree-sitter may deserialize one external scanner repeatedly during GLR recovery; overwriting the pointer leaked every prior tag (the dialect scanners include this shared implementation) |
 | crystal    | `crystal/scanner.c`, serialize    | guard `memcpy(&buffer[offset], state->literals.contents, literal_content_size)` with `if (literal_content_size > 0)` | UBSan: zero-length `memcpy` with a NULL/0-size source on the empty-state serialize round-trip (formal UB, harmless) |
 | rescript   | `rescript/scanner.c`, deserialize | guard `memcpy(state, buffer, n_bytes)` with `if (n_bytes > 0)` | UBSan: zero-length `memcpy` with a NULL `buffer` / `n_bytes == 0` on empty-state deserialize (formal UB, harmless). The sibling serialize copies a fixed `sizeof(ScannerState)` (always > 0, non-NULL src) and needs no guard. |
 | rescript   | `rescript/scanner.c`, scan, `TEMPLATE_CHARS` branch | `if (valid_symbols[TEMPLATE_CHARS])` → `if (valid_symbols[TEMPLATE_CHARS] && !valid_symbols[NEWLINE])` | **Quadratic lexing in error recovery (#2176).** The only parse state whose external lex state enables both tokens is tree-sitter's ERROR state (`ts_lex_modes[0]`, external state 1; the in-template state 7 has no `_newline`), where every external token is marked valid and the lexer retries at each byte. From every byte the template loop ran to the next `` ` ``, `$`, `\` or NUL — the end of file when there is none — and returned false, so an unparseable stretch cost O(n²) inside lexing, where the parse budget's progress callback never runs. 50 KB of `0xFF` took 5.3 s, 100 KB 30 s; after: 3 ms, linear (lexer bytes pulled for 4 KB → 8 KB of `0xFF`: 8.8 M → 35.3 M before, 8.7 K → 17.4 K after, `complexity_rescript_error_recovery_lexing_is_linear`). Valid files parse to byte-identical trees; broken files recover more (a `let` after an unterminated expression is kept instead of swallowed). Upstream pin `43c2f1f35024` carries the unguarded branch |
@@ -234,7 +236,7 @@ row instead.
 | solidity | 15 | JoranHonig/tree-sitter-solidity | `048fe686cb1f` | VERIFIED-BOTH | ✅ |
 | soql | 14 | aheber/tree-sitter-sfapex | `3597575a4297` | VERIFIED-NVIM | ✅ |
 | sosl | 14 | aheber/tree-sitter-sfapex | `3597575a4297` | VERIFIED-NVIM | ✅ |
-| sql | 15 | DerekStride/tree-sitter-sql | `851e9cb257ba` | VERIFIED-BOTH | ✅ |
+| sql (ANSI + 22 dialects) | 15 | RelativelyUnknown/Tree-sitter-sql-polyglot | `af0fa43227ef` | UPSTREAM-PIN + local fields | ✅ |
 | squirrel | 14 | tree-sitter-grammars/tree-sitter-squirrel | `072c969749e6` | VERIFIED-NVIM | ✅ |
 | starlark | 14 | tree-sitter-grammars/tree-sitter-starlark | `a453dbf3ba43` | VERIFIED-NVIM | ✅ |
 | svelte | 14 | tree-sitter-grammars/tree-sitter-svelte | `ae5199db4775` | VERIFIED-NVIM | ✅ |

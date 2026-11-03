@@ -1,0 +1,75 @@
+================================================================================
+Select with UR isolation
+================================================================================
+
+SELECT id FROM t WITH UR;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (field
+            (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier)))
+      (with_isolation_clause
+        (keyword_with)
+        (keyword_ur)))))
+
+================================================================================
+Select with CS isolation
+================================================================================
+
+SELECT id FROM t WITH CS;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (field
+            (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier)))
+      (with_isolation_clause
+        (keyword_with)
+        (keyword_cs)))))
+
+================================================================================
+Select optimize for rows
+================================================================================
+
+SELECT id FROM t OPTIMIZE FOR 100 ROWS;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (field
+            (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier)))
+      (optimize_for_clause
+        (keyword_optimize)
+        (keyword_for)
+        (keyword_rows)))))

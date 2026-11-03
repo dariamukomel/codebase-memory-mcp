@@ -1,0 +1,301 @@
+================================================================================
+MySQL: CREATE TABLE PARTITION BY RANGE with MAXVALUE
+================================================================================
+
+CREATE TABLE orders (id INT, order_date DATE) PARTITION BY RANGE (YEAR(order_date)) (PARTITION p2022 VALUES LESS THAN (2023), PARTITION pmax VALUES LESS THAN MAXVALUE)
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int)))
+        (column_definition
+          name: (identifier)
+          type: (keyword_date)))
+      (table_partition_by
+        (keyword_partition)
+        (keyword_by)
+        (keyword_range)
+        (invocation
+          (object_reference
+            name: (identifier))
+          parameter: (term
+            value: (field
+              name: (identifier))))
+        (partition_definition
+          (keyword_partition)
+          (identifier)
+          (keyword_values)
+          (keyword_less)
+          (keyword_than)
+          (literal))
+        (partition_definition
+          (keyword_partition)
+          (identifier)
+          (keyword_values)
+          (keyword_less)
+          (keyword_than)
+          (keyword_maxvalue))))))
+
+================================================================================
+MySQL: CREATE TABLE PARTITION BY LIST
+================================================================================
+
+CREATE TABLE users (id INT, region TINYINT) PARTITION BY LIST (region) (PARTITION p_us VALUES IN (1, 2, 3), PARTITION p_eu VALUES IN (4, 5, 6))
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int)))
+        (column_definition
+          name: (identifier)
+          custom_type: (object_reference
+            name: (identifier))))
+      (table_partition_by
+        (keyword_partition)
+        (keyword_by)
+        (keyword_list)
+        (field
+          name: (identifier))
+        (partition_definition
+          (keyword_partition)
+          (identifier)
+          (keyword_values)
+          (keyword_in)
+          (literal)
+          (literal)
+          (literal))
+        (partition_definition
+          (keyword_partition)
+          (identifier)
+          (keyword_values)
+          (keyword_in)
+          (literal)
+          (literal)
+          (literal))))))
+
+================================================================================
+MySQL: CREATE TABLE PARTITION BY HASH with PARTITIONS count
+================================================================================
+
+CREATE TABLE t (id INT) PARTITION BY HASH (id) PARTITIONS 4
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int))))
+      (table_partition_by
+        (keyword_partition)
+        (keyword_by)
+        (keyword_hash)
+        (field
+          name: (identifier))
+        (keyword_partitions)
+        (literal)))))
+
+================================================================================
+MySQL: CREATE TABLE PARTITION BY KEY
+================================================================================
+
+CREATE TABLE t (id INT, store_id INT) PARTITION BY KEY (store_id) PARTITIONS 4
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int)))
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int))))
+      (table_partition_by
+        (keyword_partition)
+        (keyword_by)
+        (keyword_key)
+        (identifier)
+        (keyword_partitions)
+        (literal)))))
+
+================================================================================
+MySQL: ALTER TABLE ADD PARTITION
+================================================================================
+
+ALTER TABLE orders ADD PARTITION (PARTITION p2024 VALUES LESS THAN (2025))
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (alter_partition
+        (keyword_add)
+        (keyword_partition)
+        (partition_definition
+          (keyword_partition)
+          (identifier)
+          (keyword_values)
+          (keyword_less)
+          (keyword_than)
+          (literal))))))
+
+================================================================================
+MySQL: ALTER TABLE DROP PARTITION
+================================================================================
+
+ALTER TABLE orders DROP PARTITION p2022
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (alter_partition
+        (keyword_drop)
+        (keyword_partition)
+        (identifier)))))
+
+================================================================================
+MySQL: ALTER TABLE TRUNCATE PARTITION
+================================================================================
+
+ALTER TABLE orders TRUNCATE PARTITION p2022
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (alter_partition
+        (keyword_truncate)
+        (keyword_partition)
+        (identifier)))))
+
+================================================================================
+MySQL: ALTER TABLE COALESCE PARTITION
+================================================================================
+
+ALTER TABLE orders COALESCE PARTITION 2
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (alter_partition
+        (keyword_coalesce)
+        (keyword_partition)
+        (literal)))))
+
+================================================================================
+MySQL: ALTER TABLE REBUILD PARTITION multiple names
+================================================================================
+
+ALTER TABLE orders REBUILD PARTITION p2022, p2023
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (alter_partition
+        (keyword_rebuild)
+        (keyword_partition)
+        (identifier)
+        (identifier)))))
+
+================================================================================
+MySQL: ALTER TABLE ANALYZE PARTITION ALL
+================================================================================
+
+ALTER TABLE orders ANALYZE PARTITION ALL
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (alter_partition
+        (keyword_analyze)
+        (keyword_partition)
+        (keyword_all)))))
+
+================================================================================
+MySQL: ALTER TABLE REMOVE PARTITIONING
+================================================================================
+
+ALTER TABLE t REMOVE PARTITIONING
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (alter_partition
+        (keyword_remove)
+        (keyword_partitioning)))))

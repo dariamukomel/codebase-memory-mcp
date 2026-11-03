@@ -1,0 +1,154 @@
+================================================================================
+Delta: OPTIMIZE basic
+================================================================================
+
+OPTIMIZE my_table;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (keyword_optimize)
+    (object_reference
+      name: (identifier))))
+
+================================================================================
+Delta: OPTIMIZE with WHERE and ZORDER BY
+================================================================================
+
+OPTIMIZE my_catalog.my_schema.my_table WHERE event_date >= '2024-01-01' ZORDER BY (id, ts);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (keyword_optimize)
+    (object_reference
+      database: (identifier)
+      schema: (identifier)
+      name: (identifier))
+    (where
+      (keyword_where)
+      predicate: (binary_expression
+        left: (field
+          name: (identifier))
+        right: (literal)))
+    (keyword_zorder)
+    (keyword_by)
+    (field
+      name: (identifier))
+    (field
+      name: (identifier))))
+
+================================================================================
+Spark: ANALYZE TABLE COMPUTE STATISTICS
+================================================================================
+
+ANALYZE TABLE my_table COMPUTE STATISTICS;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (keyword_analyze)
+    (keyword_table)
+    (object_reference
+      name: (identifier))
+    (keyword_compute)
+    (keyword_statistics)))
+
+================================================================================
+Spark: ANALYZE TABLE COMPUTE STATISTICS NOSCAN
+================================================================================
+
+ANALYZE TABLE my_table COMPUTE STATISTICS NOSCAN;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (keyword_analyze)
+    (keyword_table)
+    (object_reference
+      name: (identifier))
+    (keyword_compute)
+    (keyword_statistics)
+    (keyword_noscan)))
+
+================================================================================
+Spark: ANALYZE TABLE FOR COLUMNS
+================================================================================
+
+ANALYZE TABLE my_table COMPUTE STATISTICS FOR COLUMNS col1, col2;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (keyword_analyze)
+    (keyword_table)
+    (object_reference
+      name: (identifier))
+    (keyword_compute)
+    (keyword_statistics)
+    (keyword_for)
+    (keyword_columns)
+    (field
+      name: (identifier))
+    (field
+      name: (identifier))))
+
+================================================================================
+Spark: ANALYZE TABLES FROM db NOSCAN
+================================================================================
+
+ANALYZE TABLES FROM mydb COMPUTE STATISTICS NOSCAN;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (keyword_analyze)
+    (keyword_tables)
+    (keyword_from)
+    (object_reference
+      name: (identifier))
+    (keyword_compute)
+    (keyword_statistics)
+    (keyword_noscan)))
+
+================================================================================
+Spark: ANALYZE TABLES IN db
+================================================================================
+
+ANALYZE TABLES IN mydb COMPUTE STATISTICS;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (keyword_analyze)
+    (keyword_tables)
+    (keyword_in)
+    (object_reference
+      name: (identifier))
+    (keyword_compute)
+    (keyword_statistics)))
+
+================================================================================
+Spark: ANALYZE TABLE COMPUTE DELTA STATISTICS
+================================================================================
+
+ANALYZE TABLE my_table COMPUTE DELTA STATISTICS;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (keyword_analyze)
+    (keyword_table)
+    (object_reference
+      name: (identifier))
+    (keyword_compute)
+    (keyword_delta)
+    (keyword_statistics)))

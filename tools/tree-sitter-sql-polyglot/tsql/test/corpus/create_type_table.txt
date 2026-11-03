@@ -1,0 +1,24 @@
+================================================================================
+CREATE TYPE AS TABLE
+================================================================================
+
+CREATE TYPE IdList AS TABLE (id INT PRIMARY KEY);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_type
+      (keyword_create)
+      (keyword_type)
+      (object_reference
+        name: (identifier))
+      (keyword_as)
+      (keyword_table)
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int))
+          (keyword_primary)
+          (keyword_key))))))

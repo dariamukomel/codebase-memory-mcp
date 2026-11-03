@@ -1,0 +1,30 @@
+{
+  "grammars": [
+    {
+      "name": "hive_sql",
+      "camelcase": "HiveSQL",
+      "scope": "source.hive.sql",
+      "path": ".",
+      "file-types": [
+        "sql",
+        "hql"
+      ],
+      "highlights": [
+        "queries/highlights.scm"
+      ]
+    }
+  ],
+  "metadata": {
+    "version": "0.1.2",
+    "license": "MIT",
+    "description": "Tree-sitter Apache Hive grammar (extends Spark SQL)",
+    "authors": [
+      {
+        "name": "relativelyunknown"
+      }
+    ],
+    "links": {
+      "repository": "git+https://github.com/relativelyunknown/tree-sitter-sql-polyglot.git"
+    }
+  }
+}

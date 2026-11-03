@@ -1,0 +1,64 @@
+==================
+CREATE TABLE managed Iceberg
+==================
+
+CREATE TABLE t (a INT) LOCATION 's3://x' TBLPROPERTIES ('table_type'='ICEBERG')
+
+---
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int))))
+      (keyword_location)
+      (literal)
+      (keyword_tblproperties)
+      key: (literal)
+      value: (literal))))
+
+==================
+CREATE TABLE Iceberg PARTITIONED BY transform
+==================
+
+CREATE TABLE t (a INT, ts TIMESTAMP) PARTITIONED BY (day(ts), bucket(16, a)) LOCATION 's3://x' TBLPROPERTIES ('table_type'='ICEBERG')
+
+---
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int)))
+        (column_definition
+          name: (identifier)
+          type: (timestamp
+            (keyword_timestamp))))
+      (keyword_partitioned)
+      (keyword_by)
+      (partition_transform
+        transform: (identifier)
+        (identifier))
+      (partition_transform
+        transform: (identifier)
+        (literal)
+        (identifier))
+      (keyword_location)
+      (literal)
+      (keyword_tblproperties)
+      key: (literal)
+      value: (literal))))

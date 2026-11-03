@@ -1,0 +1,29 @@
+{
+  "grammars": [
+    {
+      "name": "databricks_sql",
+      "camelcase": "DatabricksSQL",
+      "scope": "source.databricks.sql",
+      "path": ".",
+      "file-types": [
+        "sql"
+      ],
+      "highlights": [
+        "queries/highlights.scm"
+      ]
+    }
+  ],
+  "metadata": {
+    "version": "0.1.2",
+    "license": "MIT",
+    "description": "Tree-sitter Databricks SQL grammar (extends Spark SQL)",
+    "authors": [
+      {
+        "name": "relativelyunknown"
+      }
+    ],
+    "links": {
+      "repository": "git+https://github.com/relativelyunknown/tree-sitter-sql-polyglot.git"
+    }
+  }
+}

@@ -1,0 +1,49 @@
+================================================================================
+Athena: SHOW PARTITIONS
+================================================================================
+
+SHOW PARTITIONS orders;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (show_partitions_statement
+      (keyword_show)
+      (keyword_partitions)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+Athena: SHOW CREATE TABLE
+================================================================================
+
+SHOW CREATE TABLE orders;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (show_create_statement
+      (keyword_show)
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+Athena: SHOW CREATE VIEW
+================================================================================
+
+SHOW CREATE VIEW v_summary;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (show_create_statement
+      (keyword_show)
+      (keyword_create)
+      (keyword_view)
+      (object_reference
+        name: (identifier)))))

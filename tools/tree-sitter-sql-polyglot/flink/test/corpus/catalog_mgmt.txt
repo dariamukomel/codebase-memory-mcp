@@ -1,0 +1,99 @@
+================================================================================
+CREATE CATALOG
+================================================================================
+
+CREATE CATALOG my_catalog WITH (
+  'type' = 'hive',
+  'hive-conf-dir' = '/conf'
+)
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_catalog
+      (keyword_create)
+      (keyword_catalog)
+      (identifier)
+      (with_properties
+        (keyword_with)
+        (literal)
+        (literal)
+        (literal)
+        (literal)))))
+
+================================================================================
+CREATE CATALOG with COMMENT
+================================================================================
+
+CREATE CATALOG hive_catalog
+COMMENT 'Hive metastore catalog'
+WITH ('type' = 'hive', 'hive-conf-dir' = '/etc/hive/conf')
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_catalog
+      (keyword_create)
+      (keyword_catalog)
+      (identifier)
+      (keyword_comment)
+      (literal)
+      (with_properties
+        (keyword_with)
+        (literal)
+        (literal)
+        (literal)
+        (literal)))))
+
+================================================================================
+USE CATALOG
+================================================================================
+
+USE CATALOG my_catalog
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (use_catalog_statement
+      (keyword_use)
+      (keyword_catalog)
+      (identifier))))
+
+================================================================================
+DROP CATALOG
+================================================================================
+
+DROP CATALOG IF EXISTS my_catalog
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_catalog
+      (keyword_drop)
+      (keyword_catalog)
+      (keyword_if)
+      (keyword_exists)
+      (identifier))))
+
+================================================================================
+ALTER CATALOG SET options
+================================================================================
+
+ALTER CATALOG my_catalog SET ('type' = 'jdbc')
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_catalog
+      (keyword_alter)
+      (keyword_catalog)
+      (identifier)
+      (keyword_set)
+      (with_properties
+        (literal)
+        (literal)))))

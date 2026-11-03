@@ -1,0 +1,56 @@
+; Intent-based tests: expected trees derived from reading the grammar rules,
+; not copied from parser output.
+;
+; hive/grammar.js overrides create_function with two branches:
+;   branch 1 (standard): function_arguments + returns + body
+;   branch 2 (Hive UDF):  keyword_as + class:literal + optional(USING JAR jar:literal)
+;
+; CREATE FUNCTION my_udf AS 'com.example.UpperUDF' uses branch 2.
+; No function_arguments, no returns, no body.
+; keyword_as is a named node that appears in the tree.
+; The class name string is aliased to $.literal and tagged with field 'class'.
+
+================================================================================
+Hive: CREATE FUNCTION class-backed UDF
+================================================================================
+
+CREATE FUNCTION my_udf AS 'com.example.UpperUDF';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_function
+      (keyword_create)
+      (keyword_function)
+      (object_reference
+        name: (identifier))
+      (keyword_as)
+      class: (literal))))
+
+; hive/grammar.js UDF branch also supports USING JAR:
+;   seq(keyword_as, class:literal, optional(seq(keyword_using, keyword_jar, jar:literal)))
+;
+; CREATE FUNCTION my_udf AS 'com.example.UDF' USING JAR '/path/to.jar'
+; adds keyword_using, keyword_jar, jar:literal after the class literal.
+
+================================================================================
+Hive: CREATE FUNCTION UDF with USING JAR
+================================================================================
+
+CREATE FUNCTION my_udf AS 'com.example.UDF' USING JAR '/opt/jars/udf.jar';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_function
+      (keyword_create)
+      (keyword_function)
+      (object_reference
+        name: (identifier))
+      (keyword_as)
+      class: (literal)
+      (keyword_using)
+      (keyword_jar)
+      jar: (literal))))

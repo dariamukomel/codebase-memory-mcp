@@ -1,0 +1,120 @@
+================================================================================
+MariaDB: CREATE OR REPLACE PACKAGE BODY with function and procedure
+================================================================================
+
+CREATE OR REPLACE PACKAGE BODY payroll_pkg AS
+  FUNCTION compute_tax(salary DECIMAL(10,2)) RETURN DECIMAL(10,2);
+  PROCEDURE update_salary(emp_id INT, new_salary DECIMAL(10,2));
+END payroll_pkg;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_package_body
+      (keyword_create)
+      (keyword_or)
+      (keyword_replace)
+      (keyword_package)
+      (keyword_body)
+      (object_reference
+        name: (identifier))
+      (package_spec
+        (keyword_as)
+        (package_item
+          (package_function_decl
+            (keyword_function)
+            (object_reference
+              name: (identifier))
+            (function_arguments
+              (function_argument
+                (identifier)
+                (decimal
+                  (keyword_decimal)
+                  precision: (literal)
+                  scale: (literal))))
+            (keyword_return)
+            (decimal
+              (keyword_decimal)
+              precision: (literal)
+              scale: (literal))))
+        (package_item
+          (package_procedure_decl
+            (keyword_procedure)
+            (object_reference
+              name: (identifier))
+            (function_arguments
+              (function_argument
+                (identifier)
+                (int
+                  (keyword_int)))
+              (function_argument
+                (identifier)
+                (decimal
+                  (keyword_decimal)
+                  precision: (literal)
+                  scale: (literal))))))
+        (keyword_end)
+        (identifier)))))
+
+================================================================================
+MariaDB: CREATE OR REPLACE PACKAGE IF NOT EXISTS using IS keyword
+================================================================================
+
+CREATE OR REPLACE PACKAGE IF NOT EXISTS math_pkg IS
+  FUNCTION add_nums(a INT, b INT) RETURN INT;
+  FUNCTION multiply(a INT, b INT) RETURN INT;
+END math_pkg;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_package
+      (keyword_create)
+      (keyword_or)
+      (keyword_replace)
+      (keyword_package)
+      (keyword_if)
+      (keyword_not)
+      (keyword_exists)
+      (object_reference
+        name: (identifier))
+      (package_spec
+        (keyword_is)
+        (package_item
+          (package_function_decl
+            (keyword_function)
+            (object_reference
+              name: (identifier))
+            (function_arguments
+              (function_argument
+                (identifier)
+                (int
+                  (keyword_int)))
+              (function_argument
+                (identifier)
+                (int
+                  (keyword_int))))
+            (keyword_return)
+            (int
+              (keyword_int))))
+        (package_item
+          (package_function_decl
+            (keyword_function)
+            (object_reference
+              name: (identifier))
+            (function_arguments
+              (function_argument
+                (identifier)
+                (int
+                  (keyword_int)))
+              (function_argument
+                (identifier)
+                (int
+                  (keyword_int))))
+            (keyword_return)
+            (int
+              (keyword_int))))
+        (keyword_end)
+        (identifier)))))

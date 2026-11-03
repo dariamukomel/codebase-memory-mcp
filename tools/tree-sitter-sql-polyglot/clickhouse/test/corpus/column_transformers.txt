@@ -1,0 +1,25 @@
+================================================================================
+SELECT star EXCEPT APPLY transformers
+================================================================================
+
+SELECT * EXCEPT (ts) APPLY(sum) FROM t;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields_transform
+            (keyword_except)
+            col: (identifier)
+            (keyword_apply)
+            (field
+              name: (identifier))))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))))))

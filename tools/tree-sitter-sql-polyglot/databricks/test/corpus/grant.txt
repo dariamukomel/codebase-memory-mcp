@@ -1,0 +1,152 @@
+================================================================================
+Unity Catalog: GRANT SELECT on table
+================================================================================
+
+GRANT SELECT ON TABLE my_catalog.my_schema.my_table TO USER 'user@example.com';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (grant_statement
+      (keyword_grant)
+      (keyword_select)
+      (keyword_on)
+      (keyword_table)
+      (object_reference
+        database: (identifier)
+        schema: (identifier)
+        name: (identifier))
+      (keyword_to)
+      (keyword_user)
+      (literal))))
+
+================================================================================
+Unity Catalog: GRANT ALL PRIVILEGES on catalog to group
+================================================================================
+
+GRANT ALL PRIVILEGES ON CATALOG my_catalog TO GROUP 'analysts';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (grant_statement
+      (keyword_grant)
+      (keyword_all)
+      (keyword_privileges)
+      (keyword_on)
+      (keyword_catalog)
+      (object_reference
+        name: (identifier))
+      (keyword_to)
+      (keyword_group)
+      (literal))))
+
+================================================================================
+Unity Catalog: GRANT CREATE TABLE on schema to service principal
+================================================================================
+
+GRANT CREATE TABLE ON SCHEMA my_schema TO SERVICE PRINCIPAL 'sp-etl';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (grant_statement
+      (keyword_grant)
+      (keyword_create)
+      (keyword_table)
+      (keyword_on)
+      (keyword_schema)
+      (object_reference
+        name: (identifier))
+      (keyword_to)
+      (keyword_service)
+      (keyword_principal)
+      (literal))))
+
+================================================================================
+Unity Catalog: REVOKE SELECT from user
+================================================================================
+
+REVOKE SELECT ON TABLE my_table FROM USER 'user@example.com';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (revoke_statement
+      (keyword_revoke)
+      (keyword_select)
+      (keyword_on)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_from)
+      (keyword_user)
+      (literal))))
+
+================================================================================
+Unity Catalog: REVOKE GRANT OPTION FOR
+================================================================================
+
+REVOKE GRANT OPTION FOR SELECT ON TABLE my_table FROM USER 'user@example.com';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (revoke_statement
+      (keyword_revoke)
+      (keyword_grant)
+      (keyword_option)
+      (keyword_for)
+      (keyword_select)
+      (keyword_on)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_from)
+      (keyword_user)
+      (literal))))
+
+================================================================================
+Unity Catalog: DENY INSERT to user
+================================================================================
+
+DENY INSERT ON TABLE my_table TO USER 'user@example.com';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (deny_statement
+      (keyword_deny)
+      (keyword_insert)
+      (keyword_on)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_to)
+      (keyword_user)
+      (literal))))
+
+================================================================================
+GRANT with type-inferred securable and bare principal
+================================================================================
+
+GRANT SELECT ON t1 TO alice;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (grant_statement
+      (keyword_grant)
+      (keyword_select)
+      (keyword_on)
+      (object_reference
+        name: (identifier))
+      (keyword_to)
+      (identifier))))

@@ -1,0 +1,45 @@
+================================================================================
+METADATA FROM column
+================================================================================
+
+CREATE TABLE kafka_t (
+  event_time TIMESTAMP(3) METADATA FROM 'timestamp',
+  partition_id BIGINT METADATA FROM 'partition' VIRTUAL,
+  msg STRING
+) WITH ('connector' = 'kafka', 'topic' = 't')
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference (identifier))
+      (column_definitions
+        (metadata_column (identifier) (timestamp (keyword_timestamp) (literal)) (keyword_metadata) (keyword_from) (literal))
+        (metadata_column (identifier) (bigint (keyword_bigint)) (keyword_metadata) (keyword_from) (literal) (keyword_virtual))
+        (column_definition (identifier) (keyword_string)))
+      (with_properties (keyword_with) (literal) (literal) (literal) (literal)))))
+
+================================================================================
+METADATA column without FROM alias
+================================================================================
+
+CREATE TABLE t (
+  proc_time AS PROCTIME() COMMENT 'processing time',
+  offset BIGINT METADATA VIRTUAL
+) WITH ('connector' = 'kafka', 'topic' = 't')
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference (identifier))
+      (column_definitions
+        (computed_column (identifier) (keyword_as) (invocation (object_reference (identifier))) (keyword_comment) (literal))
+        (metadata_column (identifier) (bigint (keyword_bigint)) (keyword_metadata) (keyword_virtual)))
+      (with_properties (keyword_with) (literal) (literal) (literal) (literal)))))

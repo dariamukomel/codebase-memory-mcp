@@ -1,0 +1,59 @@
+================================================================================
+Db2: CREATE AUDIT POLICY ALL categories
+================================================================================
+
+CREATE AUDIT POLICY auditpol1 CATEGORIES ALL STATUS BOTH;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_audit_policy
+      (keyword_create)
+      (keyword_audit)
+      (keyword_policy)
+      name: (object_reference
+        name: (identifier))
+      (keyword_categories)
+      (keyword_all)
+      (keyword_status)
+      (keyword_both))))
+
+================================================================================
+Db2: CREATE AUDIT POLICY with specific categories STATUS FAILURE
+================================================================================
+
+CREATE AUDIT POLICY auditpol2 CATEGORIES EXECUTE, CONNECT STATUS FAILURE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_audit_policy
+      (keyword_create)
+      (keyword_audit)
+      (keyword_policy)
+      name: (object_reference
+        name: (identifier))
+      (keyword_categories)
+      (identifier)
+      (keyword_connect)
+      (keyword_status)
+      (keyword_failure))))
+
+================================================================================
+Db2: DROP AUDIT POLICY
+================================================================================
+
+DROP AUDIT POLICY auditpol1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_audit_policy
+      (keyword_drop)
+      (keyword_audit)
+      (keyword_policy)
+      name: (object_reference
+        name: (identifier)))))

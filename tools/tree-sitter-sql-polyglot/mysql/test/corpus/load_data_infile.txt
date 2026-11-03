@@ -1,0 +1,56 @@
+================================================================================
+MySQL: LOAD DATA INFILE basic
+================================================================================
+
+LOAD DATA INFILE '/data/customers.csv' INTO TABLE customers;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (load_data_statement
+      (keyword_load)
+      (keyword_data)
+      (keyword_infile)
+      (literal)
+      (keyword_into)
+      (keyword_table)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+MySQL: LOAD DATA LOCAL INFILE with FIELDS and IGNORE lines
+================================================================================
+
+LOAD DATA LOCAL INFILE '/data/orders.csv' IGNORE INTO TABLE orders FIELDS TERMINATED BY ',' ENCLOSED BY '"' IGNORE 1 LINES (order_id, amount);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (load_data_statement
+      (keyword_load)
+      (keyword_data)
+      (keyword_local)
+      (keyword_infile)
+      (literal)
+      (keyword_ignore)
+      (keyword_into)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_fields)
+      (keyword_terminated)
+      (keyword_by)
+      (literal)
+      (keyword_enclosed)
+      (keyword_by)
+      (literal)
+      (keyword_ignore)
+      (literal)
+      (keyword_lines)
+      (list
+        (column
+          (identifier))
+        (column
+          (identifier))))))

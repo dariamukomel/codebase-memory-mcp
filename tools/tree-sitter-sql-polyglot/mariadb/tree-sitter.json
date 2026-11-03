@@ -1,0 +1,29 @@
+{
+  "grammars": [
+    {
+      "name": "mariadb_sql",
+      "camelcase": "MariaDBSQL",
+      "scope": "source.mariadb.sql",
+      "path": ".",
+      "file-types": [
+        "sql"
+      ],
+      "highlights": [
+        "queries/highlights.scm"
+      ]
+    }
+  ],
+  "metadata": {
+    "version": "0.1.2",
+    "license": "MIT",
+    "description": "Tree-sitter MariaDB grammar (extends MySQL SQL)",
+    "authors": [
+      {
+        "name": "relativelyunknown"
+      }
+    ],
+    "links": {
+      "repository": "git+https://github.com/relativelyunknown/tree-sitter-sql-polyglot.git"
+    }
+  }
+}

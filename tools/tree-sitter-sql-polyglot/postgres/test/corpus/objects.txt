@@ -1,0 +1,192 @@
+================================================================================
+SECURITY LABEL on a table
+================================================================================
+
+SECURITY LABEL ON TABLE my_table IS 'classified';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (security_label_statement
+      (keyword_security)
+      (keyword_label)
+      (keyword_on)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (keyword_is)
+      (literal))))
+
+================================================================================
+SECURITY LABEL with provider and NULL
+================================================================================
+
+SECURITY LABEL FOR selinux ON COLUMN my_col IS NULL;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (security_label_statement
+      (keyword_security)
+      (keyword_label)
+      (keyword_for)
+      (identifier)
+      (keyword_on)
+      (keyword_column)
+      (object_reference
+        (identifier))
+      (keyword_is)
+      (keyword_null))))
+
+================================================================================
+REASSIGN OWNED
+================================================================================
+
+REASSIGN OWNED BY alice TO bob;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (reassign_owned_statement
+      (keyword_reassign)
+      (keyword_owned)
+      (keyword_by)
+      (identifier)
+      (keyword_to)
+      (identifier))))
+
+================================================================================
+IMPORT FOREIGN SCHEMA
+================================================================================
+
+IMPORT FOREIGN SCHEMA remote_schema FROM SERVER my_server INTO local_schema;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (import_foreign_schema_statement
+      (keyword_import)
+      (keyword_foreign)
+      (keyword_schema)
+      (identifier)
+      (keyword_from)
+      (keyword_server)
+      (identifier)
+      (keyword_into)
+      (identifier))))
+
+================================================================================
+IMPORT FOREIGN SCHEMA with LIMIT TO
+================================================================================
+
+IMPORT FOREIGN SCHEMA remote_schema LIMIT TO (t1, t2) FROM SERVER my_server INTO local_schema;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (import_foreign_schema_statement
+      (keyword_import)
+      (keyword_foreign)
+      (keyword_schema)
+      (identifier)
+      (keyword_limit)
+      (keyword_to)
+      (object_reference
+        (identifier))
+      (object_reference
+        (identifier))
+      (keyword_from)
+      (keyword_server)
+      (identifier)
+      (keyword_into)
+      (identifier))))
+
+================================================================================
+CREATE COLLATION from existing
+================================================================================
+
+CREATE COLLATION french FROM fr_FR;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_collation_statement
+      (keyword_create)
+      (keyword_collation)
+      (object_reference
+        (identifier))
+      (keyword_from)
+      (object_reference
+        (identifier)))))
+
+================================================================================
+CREATE CONVERSION
+================================================================================
+
+CREATE CONVERSION my_conv FOR 'LATIN1' TO 'UTF8' FROM my_func;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_conversion_statement
+      (keyword_create)
+      (keyword_conversion)
+      (object_reference
+        (identifier))
+      (keyword_for)
+      (literal)
+      (keyword_to)
+      (literal)
+      (keyword_from)
+      (object_reference
+        (identifier)))))
+
+================================================================================
+CREATE ACCESS METHOD
+================================================================================
+
+CREATE ACCESS METHOD my_am TYPE INDEX HANDLER my_handler;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_access_method_statement
+      (keyword_create)
+      (keyword_access)
+      (keyword_method)
+      (identifier)
+      (keyword_type)
+      (keyword_index)
+      (keyword_handler)
+      (object_reference
+        (identifier)))))
+
+================================================================================
+CREATE EVENT TRIGGER
+================================================================================
+
+CREATE EVENT TRIGGER my_trigger ON ddl_command_end EXECUTE FUNCTION my_func();
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_event_trigger_statement
+      (keyword_create)
+      (keyword_event)
+      (keyword_trigger)
+      (identifier)
+      (keyword_on)
+      (identifier)
+      (keyword_execute)
+      (keyword_function)
+      (object_reference
+        (identifier)))))

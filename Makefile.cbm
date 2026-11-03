@@ -375,6 +375,7 @@ EXTRACTION_SRCS = \
     $(CBM_DIR)/extract_k8s.c \
     $(CBM_DIR)/extract_dbt.c \
     $(CBM_DIR)/extract_sql.c \
+    $(CBM_DIR)/sql_dialect.c \
     $(CBM_DIR)/doclink.c \
     $(CBM_DIR)/doclink_cs.c \
     $(CBM_DIR)/doclink_md.c \
@@ -436,6 +437,21 @@ TS_RUNTIME_DEPS = \
 
 # All 159 grammar shim files
 GRAMMAR_SRCS = $(wildcard $(CBM_DIR)/grammar_*.c)
+
+# SQL Polyglot commits Brotli-compressed generated parsers instead of roughly
+# 500 MB of parser.c files. Inflate them once per build directory. A developer
+# generated parser is newer than its .br and the upstream script preserves it;
+# grammar/scanner changes still refresh the stamp and rebuild all SQL unity
+# objects, so switching dialect implementations cannot leave stale objects.
+SQL_POLYGLOT_DIR = tools/tree-sitter-sql-polyglot
+SQL_POLYGLOT_INPUTS = $(shell find $(SQL_POLYGLOT_DIR) -type f \
+	\( -name '*.js' -o -name '*.c' -o -name '*.br' \) 2>/dev/null)
+SQL_POLYGLOT_STAMP = $(BUILD_DIR)/.sql-polyglot-inflated
+SQL_GRAMMAR_SRCS = $(filter $(CBM_DIR)/grammar_sql%.c,$(GRAMMAR_SRCS))
+
+$(SQL_POLYGLOT_STAMP): $(SQL_POLYGLOT_INPUTS) | $(BUILD_DIR)
+	node $(SQL_POLYGLOT_DIR)/scripts/inflate-parsers.js
+	@touch $@
 
 # LZ4 + Aho-Corasick
 AC_LZ4_SRCS = $(CBM_DIR)/ac.c $(CBM_DIR)/lz4_store.c
@@ -982,10 +998,14 @@ GRAMMAR_CFLAGS_TSAN = -std=c11 -D_DEFAULT_SOURCE -g -O1 -w -I$(CBM_DIR) -I$(TS_I
 
 # Object files for grammars + ts_runtime + lsp_all + preprocessor
 GRAMMAR_OBJS_TEST = $(patsubst $(CBM_DIR)/%.c,$(BUILD_DIR)/%.o,$(GRAMMAR_SRCS))
+SQL_GRAMMAR_OBJS_TEST = $(patsubst $(CBM_DIR)/%.c,$(BUILD_DIR)/%.o,$(SQL_GRAMMAR_SRCS))
 TS_RUNTIME_OBJ_TEST = $(BUILD_DIR)/ts_runtime.o
 LSP_OBJ_TEST = $(BUILD_DIR)/lsp_all.o
 PP_OBJ_TEST = $(BUILD_DIR)/preprocessor.o
 GRAMMAR_OBJS_TSAN = $(patsubst $(CBM_DIR)/%.c,$(BUILD_DIR)/tsan_%.o,$(GRAMMAR_SRCS))
+SQL_GRAMMAR_OBJS_TSAN = $(patsubst $(CBM_DIR)/%.c,$(BUILD_DIR)/tsan_%.o,$(SQL_GRAMMAR_SRCS))
+
+$(SQL_GRAMMAR_OBJS_TEST) $(SQL_GRAMMAR_OBJS_TSAN): $(SQL_POLYGLOT_STAMP)
 TS_RUNTIME_OBJ_TSAN = $(BUILD_DIR)/tsan_ts_runtime.o
 LSP_OBJ_TSAN = $(BUILD_DIR)/tsan_lsp_all.o
 PP_OBJ_TSAN = $(BUILD_DIR)/tsan_preprocessor.o
@@ -1264,6 +1284,8 @@ test-daemon-smoke: $(BUILD_DIR)/codebase-memory-mcp
 
 # Grammar/TS/LSP objects for production (compiled with relaxed warnings, -O2)
 GRAMMAR_OBJS_PROD = $(patsubst $(CBM_DIR)/%.c,$(BUILD_DIR)/prod_%.o,$(GRAMMAR_SRCS))
+SQL_GRAMMAR_OBJS_PROD = $(patsubst $(CBM_DIR)/%.c,$(BUILD_DIR)/prod_%.o,$(SQL_GRAMMAR_SRCS))
+$(SQL_GRAMMAR_OBJS_PROD): $(SQL_POLYGLOT_STAMP)
 TS_RUNTIME_OBJ_PROD = $(BUILD_DIR)/prod_ts_runtime.o
 LSP_OBJ_PROD = $(BUILD_DIR)/prod_lsp_all.o
 PP_OBJ_PROD = $(BUILD_DIR)/prod_preprocessor.o

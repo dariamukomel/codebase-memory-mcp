@@ -1,0 +1,506 @@
+================================================================================
+Oracle: PL/SQL assignment
+================================================================================
+
+BEGIN
+  v_count := 0;
+END;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (compound_statement
+      (keyword_begin)
+      (statement
+        (assignment_statement
+          target: (identifier)
+          value: (literal)))
+      (keyword_end))))
+
+================================================================================
+Oracle: PL/SQL IF THEN ELSE END IF
+================================================================================
+
+BEGIN
+  IF x > 0 THEN
+    v := 1;
+  ELSE
+    v := 0;
+  END IF;
+END;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (compound_statement
+      (keyword_begin)
+      (statement
+        (if_statement
+          (keyword_if)
+          condition: (binary_expression
+            left: (field
+              name: (identifier))
+            right: (literal))
+          (keyword_then)
+          (statement
+            (assignment_statement
+              target: (identifier)
+              value: (literal)))
+          (keyword_else)
+          (statement
+            (assignment_statement
+              target: (identifier)
+              value: (literal)))
+          (keyword_end)
+          (keyword_if)))
+      (keyword_end))))
+
+================================================================================
+Oracle: PL/SQL IF ELSIF END IF
+================================================================================
+
+BEGIN
+  IF x = 1 THEN
+    v := 'a';
+  ELSIF x = 2 THEN
+    v := 'b';
+  END IF;
+END;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (compound_statement
+      (keyword_begin)
+      (statement
+        (if_statement
+          (keyword_if)
+          condition: (binary_expression
+            left: (field
+              name: (identifier))
+            right: (literal))
+          (keyword_then)
+          (statement
+            (assignment_statement
+              target: (identifier)
+              value: (literal)))
+          (keyword_elsif)
+          condition: (binary_expression
+            left: (field
+              name: (identifier))
+            right: (literal))
+          (keyword_then)
+          (statement
+            (assignment_statement
+              target: (identifier)
+              value: (literal)))
+          (keyword_end)
+          (keyword_if)))
+      (keyword_end))))
+
+================================================================================
+Oracle: PL/SQL WHILE LOOP
+================================================================================
+
+BEGIN
+  WHILE i < 10 LOOP
+    i := i + 1;
+  END LOOP;
+END;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (compound_statement
+      (keyword_begin)
+      (statement
+        (while_statement
+          (keyword_while)
+          condition: (binary_expression
+            left: (field
+              name: (identifier))
+            right: (literal))
+          (keyword_loop)
+          (statement
+            (assignment_statement
+              target: (identifier)
+              value: (binary_expression
+                left: (field
+                  name: (identifier))
+                right: (literal))))
+          (keyword_end)
+          (keyword_loop)))
+      (keyword_end))))
+
+================================================================================
+Oracle: PL/SQL bare LOOP with EXIT WHEN
+================================================================================
+
+BEGIN
+  LOOP
+    i := i + 1;
+    EXIT WHEN i >= 10;
+  END LOOP;
+END;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (compound_statement
+      (keyword_begin)
+      (statement
+        (loop_statement
+          (keyword_loop)
+          (statement
+            (assignment_statement
+              target: (identifier)
+              value: (binary_expression
+                left: (field
+                  name: (identifier))
+                right: (literal))))
+          (statement
+            (exit_statement
+              (keyword_exit)
+              (keyword_when)
+              condition: (binary_expression
+                left: (field
+                  name: (identifier))
+                right: (literal))))
+          (keyword_end)
+          (keyword_loop)))
+      (keyword_end))))
+
+================================================================================
+Oracle: PL/SQL FOR numeric loop
+================================================================================
+
+BEGIN
+  FOR i IN 1..10 LOOP
+    NULL;
+  END LOOP;
+END;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (compound_statement
+      (keyword_begin)
+      (statement
+        (for_statement
+          (keyword_for)
+          index: (identifier)
+          (keyword_in)
+          lower: (literal)
+          upper: (literal)
+          (keyword_loop)
+          (statement
+            (null_statement
+              (keyword_null)))
+          (keyword_end)
+          (keyword_loop)))
+      (keyword_end))))
+
+================================================================================
+Oracle: PL/SQL FOR REVERSE loop
+================================================================================
+
+BEGIN
+  FOR i IN REVERSE 1..5 LOOP
+    NULL;
+  END LOOP;
+END;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (compound_statement
+      (keyword_begin)
+      (statement
+        (for_statement
+          (keyword_for)
+          index: (identifier)
+          (keyword_in)
+          (keyword_reverse)
+          lower: (literal)
+          upper: (literal)
+          (keyword_loop)
+          (statement
+            (null_statement
+              (keyword_null)))
+          (keyword_end)
+          (keyword_loop)))
+      (keyword_end))))
+
+================================================================================
+Oracle: PL/SQL RETURN expression
+================================================================================
+
+BEGIN
+  RETURN 42;
+END;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (compound_statement
+      (keyword_begin)
+      (statement
+        (return_statement
+          (keyword_return)
+          (literal)))
+      (keyword_end))))
+
+================================================================================
+Oracle: PL/SQL CONTINUE WHEN
+================================================================================
+
+BEGIN
+  LOOP
+    CONTINUE WHEN done = 1;
+  END LOOP;
+END;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (compound_statement
+      (keyword_begin)
+      (statement
+        (loop_statement
+          (keyword_loop)
+          (statement
+            (continue_statement
+              (keyword_continue)
+              (keyword_when)
+              condition: (binary_expression
+                left: (field
+                  name: (identifier))
+                right: (literal))))
+          (keyword_end)
+          (keyword_loop)))
+      (keyword_end))))
+
+================================================================================
+Oracle: FORALL with UPDATE
+================================================================================
+
+BEGIN
+  FORALL i IN 1..10
+    UPDATE t SET val = vals(i) WHERE id = ids(i);
+END;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (compound_statement
+      (keyword_begin)
+      (statement
+        (forall_statement
+          (keyword_forall)
+          index: (identifier)
+          (keyword_in)
+          lower: (literal)
+          upper: (literal)
+          (update
+            (keyword_update)
+            (relation
+              (object_reference
+                name: (identifier)))
+            (keyword_set)
+            (assignment
+              left: (field
+                name: (identifier))
+              right: (invocation
+                (object_reference
+                  name: (identifier))
+                parameter: (term
+                  value: (field
+                    name: (identifier)))))
+            (where
+              (keyword_where)
+              predicate: (binary_expression
+                left: (field
+                  name: (identifier))
+                right: (invocation
+                  (object_reference
+                    name: (identifier))
+                  parameter: (term
+                    value: (field
+                      name: (identifier)))))))))
+      (keyword_end))))
+
+================================================================================
+Oracle: EXECUTE IMMEDIATE BULK COLLECT INTO
+================================================================================
+
+BEGIN
+  EXECUTE IMMEDIATE 'SELECT id FROM t' BULK COLLECT INTO id_list;
+END;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (compound_statement
+      (keyword_begin)
+      (statement
+        (execute_immediate_statement
+          (keyword_execute)
+          (keyword_immediate)
+          sql: (literal)
+          (keyword_bulk)
+          (keyword_collect)
+          (keyword_into)
+          (identifier)))
+      (keyword_end))))
+
+================================================================================
+Oracle: INSERT RETURNING INTO
+================================================================================
+
+INSERT INTO audit_log (event) VALUES ('login') RETURNING id INTO v_log_id;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (insert
+      (keyword_insert)
+      (keyword_into)
+      (object_reference
+        name: (identifier))
+      (list
+        (column
+          (identifier)))
+      (keyword_values)
+      (list
+        (literal))
+      (returning_into_clause
+        (keyword_returning)
+        (field
+          name: (identifier))
+        (keyword_into)
+        (identifier)))))
+
+================================================================================
+Oracle: UPDATE ... WHERE ... RETURNING INTO
+================================================================================
+
+UPDATE orders SET status = 'shipped' WHERE id = 1 RETURNING id INTO v_id;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (update
+      (keyword_update)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (keyword_set)
+      (assignment
+        left: (field
+          name: (identifier))
+        right: (literal))
+      (where
+        (keyword_where)
+        predicate: (binary_expression
+          left: (field
+            name: (identifier))
+          right: (literal)))
+      (returning_into_clause
+        (keyword_returning)
+        (field
+          name: (identifier))
+        (keyword_into)
+        (identifier)))))
+
+================================================================================
+Oracle: DELETE RETURNING BULK COLLECT INTO
+================================================================================
+
+DELETE FROM temp_data WHERE session_id = 1 RETURNING row_data BULK COLLECT INTO v_rows;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (delete
+      (keyword_delete))
+    (from
+      (keyword_from)
+      (object_reference
+        name: (identifier))
+      (where
+        (keyword_where)
+        predicate: (binary_expression
+          left: (field
+            name: (identifier))
+          right: (literal)))
+      (returning_into_clause
+        (keyword_returning)
+        (field
+          name: (identifier))
+        (keyword_bulk)
+        (keyword_collect)
+        (keyword_into)
+        (identifier)))))
+
+================================================================================
+Oracle: PRAGMA with arguments
+================================================================================
+
+PRAGMA EXCEPTION_INIT(e_dup, -1);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (pragma_statement
+      (keyword_pragma)
+      (identifier)
+      (field
+        name: (identifier))
+      (literal))))
+
+================================================================================
+Oracle: PRAGMA without arguments
+================================================================================
+
+PRAGMA AUTONOMOUS_TRANSACTION;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (pragma_statement
+      (keyword_pragma)
+      (identifier))))
+
+================================================================================
+Oracle: PIPE ROW
+================================================================================
+
+PIPE ROW(r.id);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (pipe_row_statement
+      (keyword_pipe)
+      (keyword_row)
+      (field
+        (object_reference
+          name: (identifier))
+        name: (identifier)))))

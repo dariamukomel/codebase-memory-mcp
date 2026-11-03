@@ -1,0 +1,42 @@
+================================================================================
+CREATE SERVER
+================================================================================
+
+CREATE SERVER srv FOREIGN DATA WRAPPER fdw;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_server
+      (keyword_create)
+      (keyword_server)
+      (identifier)
+      (keyword_foreign)
+      (keyword_data)
+      (keyword_wrapper)
+      (identifier))))
+
+================================================================================
+CREATE FOREIGN TABLE
+================================================================================
+
+CREATE FOREIGN TABLE ft (a int) SERVER srv;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_foreign_table
+      (keyword_create)
+      (keyword_foreign)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int))))
+      (keyword_server)
+      (identifier))))

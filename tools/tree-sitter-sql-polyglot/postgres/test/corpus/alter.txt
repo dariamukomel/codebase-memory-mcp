@@ -1,0 +1,789 @@
+================================================================================
+Alter policy basic
+================================================================================
+
+ALTER POLICY my_policy ON my_table;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_policy
+      (keyword_alter)
+      (keyword_policy)
+      (object_reference
+        name: (identifier))
+      (keyword_on)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+Alter policy with schema qualified table
+================================================================================
+
+ALTER POLICY my_policy ON my_schema.my_table;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_policy
+      (keyword_alter)
+      (keyword_policy)
+      (object_reference
+        name: (identifier))
+      (keyword_on)
+      (object_reference
+        schema: (identifier)
+        name: (identifier)))))
+
+================================================================================
+Alter policy rename
+================================================================================
+
+ALTER POLICY my_policy ON my_table RENAME TO new_policy;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_policy
+      (keyword_alter)
+      (keyword_policy)
+      (object_reference
+        name: (identifier))
+      (keyword_on)
+      (object_reference
+        name: (identifier))
+      (rename_object
+        (keyword_rename)
+        (keyword_to)
+        (object_reference
+          name: (identifier))))))
+
+================================================================================
+Alter policy to role
+================================================================================
+
+ALTER POLICY my_policy ON my_table TO admin;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_policy
+      (keyword_alter)
+      (keyword_policy)
+      (object_reference
+        name: (identifier))
+      (keyword_on)
+      (object_reference
+        name: (identifier))
+      (keyword_to)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+Alter policy to public
+================================================================================
+
+ALTER POLICY my_policy ON my_table TO PUBLIC;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_policy
+      (keyword_alter)
+      (keyword_policy)
+      (object_reference
+        name: (identifier))
+      (keyword_on)
+      (object_reference
+        name: (identifier))
+      (keyword_to)
+      (keyword_public))))
+
+================================================================================
+Alter policy to current_role
+================================================================================
+
+ALTER POLICY my_policy ON my_table TO CURRENT_ROLE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_policy
+      (keyword_alter)
+      (keyword_policy)
+      (object_reference
+        name: (identifier))
+      (keyword_on)
+      (object_reference
+        name: (identifier))
+      (keyword_to)
+      (keyword_current_role))))
+
+================================================================================
+Alter policy to current_user
+================================================================================
+
+ALTER POLICY my_policy ON my_table TO CURRENT_USER;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_policy
+      (keyword_alter)
+      (keyword_policy)
+      (object_reference
+        name: (identifier))
+      (keyword_on)
+      (object_reference
+        name: (identifier))
+      (keyword_to)
+      (keyword_current_user))))
+
+================================================================================
+Alter policy to session_user
+================================================================================
+
+ALTER POLICY my_policy ON my_table TO SESSION_USER;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_policy
+      (keyword_alter)
+      (keyword_policy)
+      (object_reference
+        name: (identifier))
+      (keyword_on)
+      (object_reference
+        name: (identifier))
+      (keyword_to)
+      (keyword_session_user))))
+
+================================================================================
+Alter policy to multiple roles
+================================================================================
+
+ALTER POLICY my_policy ON my_table TO admin, manager, PUBLIC;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_policy
+      (keyword_alter)
+      (keyword_policy)
+      (object_reference
+        name: (identifier))
+      (keyword_on)
+      (object_reference
+        name: (identifier))
+      (keyword_to)
+      (object_reference
+        name: (identifier))
+      (object_reference
+        name: (identifier))
+      (keyword_public))))
+
+================================================================================
+Alter policy with using clause
+================================================================================
+
+ALTER POLICY my_policy ON my_table USING (user_id = get_user_id());
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_policy
+      (keyword_alter)
+      (keyword_policy)
+      (object_reference
+        name: (identifier))
+      (keyword_on)
+      (object_reference
+        name: (identifier))
+      (keyword_using)
+      (parenthesized_expression
+        (binary_expression
+          left: (field
+            name: (identifier))
+          right: (invocation
+            (object_reference
+              name: (identifier))))))))
+
+================================================================================
+Alter policy with check clause
+================================================================================
+
+ALTER POLICY my_policy ON my_table WITH CHECK (status = 'active');
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_policy
+      (keyword_alter)
+      (keyword_policy)
+      (object_reference
+        name: (identifier))
+      (keyword_on)
+      (object_reference
+        name: (identifier))
+      (keyword_with)
+      (keyword_check)
+      (parenthesized_expression
+        (binary_expression
+          left: (field
+            name: (identifier))
+          right: (literal))))))
+
+================================================================================
+Alter policy with using and check clauses
+================================================================================
+
+ALTER POLICY my_policy ON my_table USING (visible = true) WITH CHECK (user_id = get_user_id());
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_policy
+      (keyword_alter)
+      (keyword_policy)
+      (object_reference
+        name: (identifier))
+      (keyword_on)
+      (object_reference
+        name: (identifier))
+      (keyword_using)
+      (parenthesized_expression
+        (binary_expression
+          left: (field
+            name: (identifier))
+          right: (literal
+            (keyword_true))))
+      (keyword_with)
+      (keyword_check)
+      (parenthesized_expression
+        (binary_expression
+          left: (field
+            name: (identifier))
+          right: (invocation
+            (object_reference
+              name: (identifier))))))))
+
+================================================================================
+Alter policy full syntax
+================================================================================
+
+ALTER POLICY my_policy ON my_schema.my_table
+  TO admin, manager
+  USING (tenant_id = get_tenant_id()::int)
+  WITH CHECK (tenant_id = get_tenant_id()::int);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_policy
+      (keyword_alter)
+      (keyword_policy)
+      (object_reference
+        name: (identifier))
+      (keyword_on)
+      (object_reference
+        schema: (identifier)
+        name: (identifier))
+      (keyword_to)
+      (object_reference
+        name: (identifier))
+      (object_reference
+        name: (identifier))
+      (keyword_using)
+      (parenthesized_expression
+        (cast
+          (binary_expression
+            left: (field
+              name: (identifier))
+            right: (invocation
+              (object_reference
+                name: (identifier))))
+          (int
+            (keyword_int))))
+      (keyword_with)
+      (keyword_check)
+      (parenthesized_expression
+        (cast
+          (binary_expression
+            left: (field
+              name: (identifier))
+            right: (invocation
+              (object_reference
+                name: (identifier))))
+          (int
+            (keyword_int)))))))
+
+================================================================================
+Alter materialized view rename
+================================================================================
+
+ALTER MATERIALIZED VIEW my_view RENAME TO new_view;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_materialized_view
+      (keyword_alter)
+      (keyword_materialized)
+      (keyword_view)
+      (object_reference
+        name: (identifier))
+      (rename_object
+        (keyword_rename)
+        (keyword_to)
+        (object_reference
+          name: (identifier))))))
+
+================================================================================
+Alter materialized view if exists rename
+================================================================================
+
+ALTER MATERIALIZED VIEW IF EXISTS my_view RENAME TO new_view;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_materialized_view
+      (keyword_alter)
+      (keyword_materialized)
+      (keyword_view)
+      (keyword_if)
+      (keyword_exists)
+      (object_reference
+        name: (identifier))
+      (rename_object
+        (keyword_rename)
+        (keyword_to)
+        (object_reference
+          name: (identifier))))))
+
+================================================================================
+Alter materialized view set schema
+================================================================================
+
+ALTER MATERIALIZED VIEW my_view SET SCHEMA new_schema;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_materialized_view
+      (keyword_alter)
+      (keyword_materialized)
+      (keyword_view)
+      (object_reference
+        name: (identifier))
+      (set_schema
+        (keyword_set)
+        (keyword_schema)
+        schema: (identifier)))))
+
+================================================================================
+Alter materialized view change owner
+================================================================================
+
+ALTER MATERIALIZED VIEW my_view OWNER TO someone_else;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_materialized_view
+      (keyword_alter)
+      (keyword_materialized)
+      (keyword_view)
+      (object_reference
+        name: (identifier))
+      (change_ownership
+        (keyword_owner)
+        (keyword_to)
+        (identifier)))))
+
+================================================================================
+Alter materialized view with schema qualification
+================================================================================
+
+ALTER MATERIALIZED VIEW myschema.my_view RENAME TO new_view;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_materialized_view
+      (keyword_alter)
+      (keyword_materialized)
+      (keyword_view)
+      (object_reference
+        schema: (identifier)
+        name: (identifier))
+      (rename_object
+        (keyword_rename)
+        (keyword_to)
+        (object_reference
+          name: (identifier))))))
+
+================================================================================
+Postgres: Alter table and enable row level security
+================================================================================
+
+ALTER TABLE my_table
+  ENABLE ROW LEVEL SECURITY;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_enable)
+      (keyword_row)
+      (keyword_level)
+      (keyword_security))))
+
+================================================================================
+Postgres: Alter table and disable row level security
+================================================================================
+
+ALTER TABLE my_table
+  DISABLE ROW LEVEL SECURITY;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_disable)
+      (keyword_row)
+      (keyword_level)
+      (keyword_security))))
+
+================================================================================
+Postgres: Alter table and force row level security
+================================================================================
+
+ALTER TABLE my_table
+  FORCE ROW LEVEL SECURITY;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_force)
+      (keyword_row)
+      (keyword_level)
+      (keyword_security))))
+
+================================================================================
+Postgres: Alter table and no force row level security
+================================================================================
+
+ALTER TABLE my_table
+  NO FORCE ROW LEVEL SECURITY;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_no)
+      (keyword_force)
+      (keyword_row)
+      (keyword_level)
+      (keyword_security))))
+
+================================================================================
+Alter index alter column set statistics
+================================================================================
+
+ALTER INDEX coord_idx ALTER COLUMN 3 SET STATISTICS 1000;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_index
+      (keyword_alter)
+      (keyword_index)
+      (identifier)
+      (keyword_alter)
+      (keyword_column)
+      (literal)
+      (keyword_set)
+      (keyword_statistics)
+      (literal))))
+
+================================================================================
+Alter Column Set Storage
+================================================================================
+
+ALTER TABLE table_name
+    ALTER COLUMN col1 SET STORAGE PLAIN;
+ALTER TABLE table_name
+    ALTER COLUMN col1 SET STORAGE EXTERNAL;
+ALTER TABLE table_name
+    ALTER COLUMN col1 SET STORAGE EXTENDED;
+ALTER TABLE table_name
+    ALTER COLUMN col1 SET STORAGE MAIN;
+ALTER TABLE table_name
+    ALTER COLUMN col1 SET STORAGE DEFAULT;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (alter_column
+        (keyword_alter)
+        (keyword_column)
+        (identifier)
+        (keyword_set)
+        (keyword_storage)
+        (keyword_plain))))
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (alter_column
+        (keyword_alter)
+        (keyword_column)
+        (identifier)
+        (keyword_set)
+        (keyword_storage)
+        (keyword_external))))
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (alter_column
+        (keyword_alter)
+        (keyword_column)
+        (identifier)
+        (keyword_set)
+        (keyword_storage)
+        (keyword_extended))))
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (alter_column
+        (keyword_alter)
+        (keyword_column)
+        (identifier)
+        (keyword_set)
+        (keyword_storage)
+        (keyword_main))))
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (alter_column
+        (keyword_alter)
+        (keyword_column)
+        (identifier)
+        (keyword_set)
+        (keyword_storage)
+        (keyword_default)))))
+
+================================================================================
+Alter Column Set Compression
+================================================================================
+
+ALTER TABLE table_name
+    ALTER COLUMN col1 SET COMPRESSION lz4;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (alter_column
+        (keyword_alter)
+        (keyword_column)
+        (identifier)
+        (keyword_set)
+        (keyword_compression)))))
+
+================================================================================
+Alter Column Set Statistics
+================================================================================
+
+ALTER TABLE table_name
+    ALTER COLUMN col1 SET STATISTICS 100;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (alter_column
+        (keyword_alter)
+        (keyword_column)
+        (identifier)
+        (keyword_set)
+        (keyword_statistics)))))
+
+================================================================================
+ALTER INDEX ATTACH PARTITION
+================================================================================
+
+ALTER INDEX measurement_idx ATTACH PARTITION measurement_y2024_idx;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_index
+      (keyword_alter)
+      (keyword_index)
+      (identifier)
+      (keyword_attach)
+      (keyword_partition)
+      index: (object_reference
+        name: (identifier)))))
+
+================================================================================
+ALTER INDEX NO DEPENDS ON EXTENSION
+================================================================================
+
+ALTER INDEX my_index NO DEPENDS ON EXTENSION my_ext;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_index
+      (keyword_alter)
+      (keyword_index)
+      (identifier)
+      (keyword_no)
+      (keyword_depends)
+      (keyword_on)
+      (keyword_extension)
+      extension: (identifier))))
+
+================================================================================
+ALTER INDEX ALL IN TABLESPACE
+================================================================================
+
+ALTER INDEX ALL IN TABLESPACE old_space OWNED BY alice SET TABLESPACE new_space NOWAIT;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_index
+      (keyword_alter)
+      (keyword_index)
+      (keyword_all)
+      (keyword_in)
+      (keyword_tablespace)
+      tablespace: (identifier)
+      (keyword_owned)
+      (keyword_by)
+      (identifier)
+      (keyword_set)
+      (keyword_tablespace)
+      new_tablespace: (identifier)
+      (keyword_nowait))))
+
+================================================================================
+ALTER MATERIALIZED VIEW CLUSTER ON
+================================================================================
+
+ALTER MATERIALIZED VIEW mv1 CLUSTER ON mv1_idx;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_materialized_view
+      (keyword_alter)
+      (keyword_materialized)
+      (keyword_view)
+      (object_reference
+        name: (identifier))
+      (keyword_cluster)
+      (keyword_on)
+      index: (identifier))))
+
+================================================================================
+ALTER MATERIALIZED VIEW column actions
+================================================================================
+
+ALTER MATERIALIZED VIEW mv1 ALTER COLUMN c1 SET STATISTICS 100, SET TABLESPACE fast;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_materialized_view
+      (keyword_alter)
+      (keyword_materialized)
+      (keyword_view)
+      (object_reference
+        name: (identifier))
+      (keyword_alter)
+      (keyword_column)
+      column: (identifier)
+      (keyword_set)
+      (keyword_statistics)
+      (literal)
+      (keyword_set)
+      (keyword_tablespace)
+      tablespace: (identifier))))

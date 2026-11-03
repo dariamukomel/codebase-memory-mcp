@@ -1,0 +1,171 @@
+================================================================================
+Athena: CREATE EXTERNAL TABLE with ROW FORMAT SERDE and SERDEPROPERTIES
+================================================================================
+
+CREATE EXTERNAL TABLE json_logs (event_id BIGINT, payload STRING)
+ROW FORMAT SERDE 'org.apache.hive.hcatalog.data.JsonSerDe'
+WITH SERDEPROPERTIES ('serialization.format' = '1')
+STORED AS TEXTFILE
+LOCATION 's3://mybucket/json/'
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_external_table
+      (keyword_create)
+      (keyword_external)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (bigint
+            (keyword_bigint)))
+        (column_definition
+          name: (identifier)
+          type: (keyword_string)))
+      (row_format
+        (keyword_row)
+        (keyword_format)
+        (keyword_serde)
+        class: (literal)
+        (keyword_with)
+        (keyword_serdeproperties)
+        key: (literal)
+        value: (literal))
+      (stored_as
+        (keyword_stored)
+        (keyword_as)
+        (keyword_textfile))
+      (keyword_location)
+      location: (literal))))
+
+================================================================================
+Athena: CREATE EXTERNAL TABLE with TBLPROPERTIES multiple entries
+================================================================================
+
+CREATE EXTERNAL TABLE sales_data (amount DOUBLE, region STRING)
+STORED AS PARQUET
+LOCATION 's3://mybucket/sales/'
+TBLPROPERTIES ('has_encrypted_data'='false', 'classification'='parquet')
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_external_table
+      (keyword_create)
+      (keyword_external)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (double
+            (keyword_double)))
+        (column_definition
+          name: (identifier)
+          type: (keyword_string)))
+      (stored_as
+        (keyword_stored)
+        (keyword_as)
+        (keyword_parquet))
+      (keyword_location)
+      location: (literal)
+      (keyword_tblproperties)
+      key: (literal)
+      value: (literal)
+      key: (literal)
+      value: (literal))))
+
+================================================================================
+Athena: CREATE EXTERNAL TABLE PARTITIONED BY with SERDE
+================================================================================
+
+CREATE EXTERNAL TABLE partitioned_logs (message STRING)
+PARTITIONED BY (year STRING, month STRING, day STRING)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
+STORED AS TEXTFILE
+LOCATION 's3://mybucket/logs/'
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_external_table
+      (keyword_create)
+      (keyword_external)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (keyword_string)))
+      (keyword_partitioned)
+      (keyword_by)
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (keyword_string))
+        (column_definition
+          name: (identifier)
+          type: (keyword_string))
+        (column_definition
+          name: (identifier)
+          type: (keyword_string)))
+      (row_format
+        (keyword_row)
+        (keyword_format)
+        (keyword_serde)
+        class: (literal))
+      (stored_as
+        (keyword_stored)
+        (keyword_as)
+        (keyword_textfile))
+      (keyword_location)
+      location: (literal))))
+
+================================================================================
+Athena: CREATE EXTERNAL TABLE IF NOT EXISTS with ORC and TBLPROPERTIES
+================================================================================
+
+CREATE EXTERNAL TABLE IF NOT EXISTS events (id BIGINT, ts TIMESTAMP)
+STORED AS ORC
+LOCATION 's3://mybucket/events/'
+TBLPROPERTIES ('has_encrypted_data'='false')
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_external_table
+      (keyword_create)
+      (keyword_external)
+      (keyword_table)
+      (keyword_if)
+      (keyword_not)
+      (keyword_exists)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (bigint
+            (keyword_bigint)))
+        (column_definition
+          name: (identifier)
+          type: (timestamp
+            (keyword_timestamp))))
+      (stored_as
+        (keyword_stored)
+        (keyword_as)
+        (keyword_orc))
+      (keyword_location)
+      location: (literal)
+      (keyword_tblproperties)
+      key: (literal)
+      value: (literal))))

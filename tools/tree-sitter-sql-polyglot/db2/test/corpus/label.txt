@@ -1,0 +1,18 @@
+================================================================================
+LABEL ON TABLE
+================================================================================
+
+LABEL ON TABLE t IS 'Customers';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (label_statement
+      (keyword_label)
+      (keyword_on)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_is)
+      (literal))))

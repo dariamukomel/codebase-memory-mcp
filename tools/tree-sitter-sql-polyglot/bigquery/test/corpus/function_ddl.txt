@@ -1,0 +1,113 @@
+================================================================================
+SQL UDF
+================================================================================
+
+CREATE FUNCTION d.f(x INT64) RETURNS INT64 AS (x+1);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_function
+      (keyword_create)
+      (keyword_function)
+      (object_reference
+        schema: (identifier)
+        name: (identifier))
+      (function_arguments
+        (function_argument
+          (identifier)
+          (keyword_int64)))
+      (keyword_returns)
+      (keyword_int64)
+      (function_body
+        (keyword_as)
+        (binary_expression
+          left: (field
+            name: (identifier))
+          right: (literal))))))
+
+================================================================================
+JavaScript UDF
+================================================================================
+
+CREATE FUNCTION d.j(x FLOAT64) RETURNS FLOAT64 LANGUAGE js AS 'return x*2;';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_function
+      (keyword_create)
+      (keyword_function)
+      (object_reference
+        schema: (identifier)
+        name: (identifier))
+      (function_arguments
+        (function_argument
+          (identifier)
+          (keyword_float64)))
+      (keyword_returns)
+      (keyword_float64)
+      (function_language
+        (keyword_language)
+        (identifier))
+      (function_body
+        (keyword_as)
+        (literal)))))
+
+================================================================================
+Table function
+================================================================================
+
+CREATE TABLE FUNCTION d.tf() AS SELECT 1 AS a;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_function
+      (keyword_create)
+      (keyword_table)
+      (keyword_function)
+      (object_reference
+        schema: (identifier)
+        name: (identifier))
+      (function_arguments)
+      (function_body
+        (keyword_as)
+        (create_query
+          (select
+            (keyword_select)
+            (select_expression
+              (term
+                value: (literal)
+                (keyword_as)
+                alias: (identifier)))))))))
+
+================================================================================
+Procedure with BEGIN END
+================================================================================
+
+CREATE PROCEDURE d.p() BEGIN SELECT 1; END;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_procedure
+      (keyword_create)
+      (keyword_procedure)
+      (object_reference
+        schema: (identifier)
+        name: (identifier))
+      (function_arguments)
+      (procedure_body
+        (keyword_begin)
+        (statement
+          (select
+            (keyword_select)
+            (select_expression
+              (term
+                value: (literal)))))
+        (keyword_end)))))

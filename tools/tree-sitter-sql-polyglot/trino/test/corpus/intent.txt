@@ -1,0 +1,49 @@
+; Intent-based tests: expected trees derived from reading the grammar rules,
+; not copied from parser output.
+;
+; trino/grammar/statements.js defines:
+;   prepare_statement: keyword_prepare + name:identifier + keyword_from + _dml_read
+;
+; PREPARE stmt1 FROM SELECT 1 uses name (identifier) and a trivial _dml_read.
+; keyword_prepare is Trino-specific (defined in trino/grammar.js).
+; _dml_read expands to a hidden rule; the visible child is a bare `select` node.
+
+================================================================================
+Trino: PREPARE statement
+================================================================================
+
+PREPARE stmt1 FROM SELECT 1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (prepare_statement
+      (keyword_prepare)
+      name: (identifier)
+      (keyword_from)
+      (select
+        (keyword_select)
+        (select_expression
+          (term
+            value: (literal)))))))
+
+; trino/grammar/statements.js defines:
+;   deallocate_statement: keyword_deallocate + keyword_prepare + name:identifier
+;
+; keyword_deallocate is Trino-specific.
+
+================================================================================
+Trino: DEALLOCATE PREPARE
+================================================================================
+
+DEALLOCATE PREPARE stmt1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (deallocate_statement
+      (keyword_deallocate)
+      (keyword_prepare)
+      name: (identifier))))

@@ -1,0 +1,90 @@
+; Intent-based tests: expected trees derived from reading the grammar rules,
+; not copied from parser output.
+;
+; sqlite/grammar/attach.js defines:
+;   attach_statement: keyword_attach + optional(keyword_database) + path:literal
+;                     + keyword_as + alias:identifier
+;
+; ATTACH DATABASE 'app.db' AS app includes the optional keyword_database.
+; keyword_as is a named node ($.keyword_as), so it appears in the tree.
+
+================================================================================
+SQLite: ATTACH with DATABASE keyword
+================================================================================
+
+ATTACH DATABASE 'app.db' AS app;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (attach_statement
+      (keyword_attach)
+      (keyword_database)
+      path: (literal)
+      (keyword_as)
+      alias: (identifier))))
+
+; sqlite/grammar.js defines:
+;   insert: keyword_insert + optional(keyword_or + conflict_action)
+;           + optional(keyword_into) + object_reference + _insert_values
+;   conflict_action: choice(rollback | abort | replace | fail | ignore)
+;
+; INSERT OR IGNORE INTO t VALUES (1) exercises the conflict action branch.
+; _insert_values is a hidden rule: seq(optional(column_list), choice(
+;   seq(keyword_values, comma_list(list, true)),   ← inline, no wrapper node
+;   _dml_read
+; ))
+; So keyword_values and list appear directly under insert (no values wrapper).
+
+================================================================================
+SQLite: INSERT OR IGNORE
+================================================================================
+
+INSERT OR IGNORE INTO t VALUES (1);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (insert
+      (keyword_insert)
+      (keyword_or)
+      (conflict_action
+        (keyword_ignore))
+      (keyword_into)
+      (object_reference
+        name: (identifier))
+      (keyword_values)
+      (list
+        (literal)))))
+
+; sqlite/grammar.js defines:
+;   create_table: ... + optional(WITHOUT ROWID | STRICT | both)
+;
+; CREATE TABLE t (id INT) WITHOUT ROWID exercises the WITHOUT ROWID path.
+; keyword_without and keyword_rowid appear directly inside create_table
+; (no wrapper node; they are plain seq elements).
+
+================================================================================
+SQLite: CREATE TABLE WITHOUT ROWID
+================================================================================
+
+CREATE TABLE t (id INT) WITHOUT ROWID;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int))))
+      (keyword_without)
+      (keyword_rowid))))

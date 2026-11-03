@@ -1,0 +1,46 @@
+================================================================================
+SQLite: PRAGMA bare
+================================================================================
+
+PRAGMA journal_mode;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (pragma_statement
+      (keyword_pragma)
+      name: (object_reference
+        name: (identifier)))))
+
+================================================================================
+SQLite: PRAGMA assignment
+================================================================================
+
+PRAGMA cache_size = 10000;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (pragma_statement
+      (keyword_pragma)
+      name: (object_reference
+        name: (identifier))
+      value: (literal))))
+
+================================================================================
+SQLite: PRAGMA function form
+================================================================================
+
+PRAGMA integrity_check(10);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (pragma_statement
+      (keyword_pragma)
+      name: (object_reference
+        name: (identifier))
+      value: (literal))))

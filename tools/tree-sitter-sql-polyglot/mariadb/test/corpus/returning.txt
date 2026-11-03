@@ -1,0 +1,95 @@
+================================================================================
+MariaDB: DELETE RETURNING
+================================================================================
+
+DELETE FROM t WHERE id = 1 RETURNING id, name;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (delete
+      (keyword_delete))
+    (from
+      (keyword_from)
+      (object_reference
+        name: (identifier))
+      (where
+        (keyword_where)
+        predicate: (binary_expression
+          left: (field
+            name: (identifier))
+          right: (literal))))
+    (returning
+      (keyword_returning)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))
+        (term
+          value: (field
+            name: (identifier)))))))
+
+================================================================================
+MariaDB: INSERT RETURNING
+================================================================================
+
+INSERT INTO t (col) VALUES (1) RETURNING id;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (insert
+      (keyword_insert)
+      (keyword_into)
+      (object_reference
+        name: (identifier))
+      (list
+        (column
+          (identifier)))
+      (keyword_values)
+      (list
+        (literal))
+      (returning
+        (keyword_returning)
+        (select_expression
+          (term
+            value: (field
+              name: (identifier))))))))
+
+================================================================================
+MariaDB: UPDATE RETURNING
+================================================================================
+
+UPDATE t SET col = 1 WHERE id = 2 RETURNING id, name;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (update
+      (keyword_update)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (keyword_set)
+      (assignment
+        left: (field
+          name: (identifier))
+        right: (literal))
+      (where
+        (keyword_where)
+        predicate: (binary_expression
+          left: (field
+            name: (identifier))
+          right: (literal)))
+      (returning
+        (keyword_returning)
+        (select_expression
+          (term
+            value: (field
+              name: (identifier)))
+          (term
+            value: (field
+              name: (identifier))))))))

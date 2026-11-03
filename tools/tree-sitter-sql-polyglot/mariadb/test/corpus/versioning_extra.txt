@@ -1,0 +1,107 @@
+================================================================================
+MariaDB: CREATE TABLE WITH SYSTEM VERSIONING multiple columns
+================================================================================
+
+CREATE TABLE orders (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT,
+  total DECIMAL(10,2),
+  created_at TIMESTAMP(6)
+) WITH SYSTEM VERSIONING;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int))
+          (keyword_auto_increment)
+          (keyword_primary)
+          (keyword_key))
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int)))
+        (column_definition
+          name: (identifier)
+          type: (decimal
+            (keyword_decimal)
+            precision: (literal)
+            scale: (literal)))
+        (column_definition
+          name: (identifier)
+          type: (timestamp
+            (keyword_timestamp)
+            size: (literal))))
+      (keyword_with)
+      (keyword_system)
+      (keyword_versioning))))
+
+================================================================================
+MariaDB: CREATE TABLE PERIOD FOR SYSTEM_TIME with PRIMARY KEY and VERSIONING
+================================================================================
+
+CREATE TABLE audit_log (
+  event_id BIGINT AUTO_INCREMENT,
+  event_type VARCHAR(50) NOT NULL,
+  row_start TIMESTAMP(6),
+  row_end TIMESTAMP(6),
+  PERIOD FOR SYSTEM_TIME(row_start, row_end),
+  PRIMARY KEY (event_id)
+) WITH SYSTEM VERSIONING;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (bigint
+            (keyword_bigint))
+          (keyword_auto_increment))
+        (column_definition
+          name: (identifier)
+          type: (varchar
+            (keyword_varchar)
+            size: (literal))
+          (keyword_not)
+          (keyword_null))
+        (column_definition
+          name: (identifier)
+          type: (timestamp
+            (keyword_timestamp)
+            size: (literal)))
+        (column_definition
+          name: (identifier)
+          type: (timestamp
+            (keyword_timestamp)
+            size: (literal)))
+        (period_for_system_time
+          (keyword_period)
+          (keyword_for)
+          (keyword_system_time)
+          start_col: (identifier)
+          end_col: (identifier))
+        (constraint
+          (keyword_primary)
+          (keyword_key)
+          (ordered_columns
+            (column
+              name: (identifier)))))
+      (keyword_with)
+      (keyword_system)
+      (keyword_versioning))))

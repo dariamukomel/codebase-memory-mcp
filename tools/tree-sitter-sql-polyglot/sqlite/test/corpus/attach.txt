@@ -1,0 +1,47 @@
+================================================================================
+SQLite: ATTACH DATABASE
+================================================================================
+
+ATTACH DATABASE '/tmp/foo.db' AS foo;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (attach_statement
+      (keyword_attach)
+      (keyword_database)
+      path: (literal)
+      (keyword_as)
+      alias: (identifier))))
+
+================================================================================
+SQLite: ATTACH without DATABASE keyword
+================================================================================
+
+ATTACH '/tmp/bar.db' AS bar;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (attach_statement
+      (keyword_attach)
+      path: (literal)
+      (keyword_as)
+      alias: (identifier))))
+
+================================================================================
+SQLite: DETACH DATABASE
+================================================================================
+
+DETACH DATABASE foo;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (detach_statement
+      (keyword_detach)
+      (keyword_database)
+      alias: (identifier))))

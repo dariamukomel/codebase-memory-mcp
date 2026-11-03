@@ -1,0 +1,32 @@
+
+================================================================================
+Spark: CREATE TABLE CLUSTERED BY INTO BUCKETS
+================================================================================
+
+CREATE TABLE t (id INT, name STRING) CLUSTERED BY (id) INTO 8 BUCKETS;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int)))
+        (column_definition
+          name: (identifier)
+          type: (keyword_string)))
+      (table_cluster
+        (keyword_clustered)
+        (keyword_by)
+        (field
+          name: (identifier))
+        (keyword_into)
+        (literal)
+        (keyword_buckets)))))

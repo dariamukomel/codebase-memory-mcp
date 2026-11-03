@@ -1,0 +1,63 @@
+================================================================================
+DuckDB: ATTACH database
+================================================================================
+
+ATTACH 'mydb.duckdb' AS mydb;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (attach_statement
+      (keyword_attach)
+      path: (literal)
+      (keyword_as)
+      alias: (identifier))))
+
+================================================================================
+DuckDB: DETACH database
+================================================================================
+
+DETACH mydb;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (detach_statement
+      (keyword_detach)
+      alias: (identifier))))
+
+================================================================================
+DuckDB: ATTACH with options
+================================================================================
+
+ATTACH 'file.db' AS db (READ_ONLY true);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (attach_statement
+      (keyword_attach)
+      path: (literal)
+      (keyword_as)
+      alias: (identifier)
+      option_name: (identifier)
+      option_value: (literal
+        (keyword_true)))))
+
+================================================================================
+DuckDB: DETACH DATABASE alias
+================================================================================
+
+DETACH DATABASE myalias;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (detach_statement
+      (keyword_detach)
+      (keyword_database)
+      alias: (identifier))))

@@ -1,0 +1,79 @@
+================================================================================
+Db2: SIGNAL SQLSTATE with message
+================================================================================
+
+SIGNAL SQLSTATE '70001' SET MESSAGE_TEXT = 'Error occurred';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (signal_statement
+      (keyword_signal)
+      (keyword_sqlstate)
+      sqlstate: (literal)
+      (keyword_set)
+      (keyword_message_text)
+      message: (literal))))
+
+================================================================================
+Db2: SIGNAL SQLSTATE without message
+================================================================================
+
+SIGNAL SQLSTATE '23505';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (signal_statement
+      (keyword_signal)
+      (keyword_sqlstate)
+      sqlstate: (literal))))
+
+================================================================================
+Db2: RESIGNAL bare
+================================================================================
+
+RESIGNAL;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (resignal_statement
+      (keyword_resignal))))
+
+================================================================================
+Db2: GET DIAGNOSTICS single item
+================================================================================
+
+GET DIAGNOSTICS v_count = ROW_COUNT;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (get_diagnostics_statement
+      (keyword_get)
+      (keyword_diagnostics)
+      target: (identifier)
+      item: (identifier))))
+
+================================================================================
+Db2: GET DIAGNOSTICS multiple items
+================================================================================
+
+GET DIAGNOSTICS v_rows = ROW_COUNT, v_status = RETURN_STATUS;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (get_diagnostics_statement
+      (keyword_get)
+      (keyword_diagnostics)
+      target: (identifier)
+      item: (identifier)
+      target: (identifier)
+      item: (identifier))))

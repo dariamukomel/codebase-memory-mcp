@@ -1,0 +1,75 @@
+================================================================================
+Map Tuple Nested types
+================================================================================
+
+CREATE TABLE t (m Map(String, UInt64), tp Tuple(String, UInt64, Float32), n Nested(id UInt64, val String))
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (map_type
+            (keyword_map)
+            key_type: (keyword_string)
+            value_type: (keyword_uint64)))
+        (column_definition
+          name: (identifier)
+          type: (tuple_type
+            (keyword_tuple)
+            (tuple_type_field
+              field_type: (keyword_string))
+            (tuple_type_field
+              field_type: (keyword_uint64))
+            (tuple_type_field
+              field_type: (keyword_float32))))
+        (column_definition
+          name: (identifier)
+          type: (nested_type
+            (keyword_nested)
+            (nested_type_field
+              field_name: (identifier)
+              field_type: (keyword_uint64))
+            (nested_type_field
+              field_name: (identifier)
+              field_type: (keyword_string))))))))
+
+================================================================================
+LowCardinality Nullable Array wrappers
+================================================================================
+
+CREATE TABLE t (a LowCardinality(String), b Nullable(Float64), c Array(UInt32))
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (lowcardinality_type
+            (keyword_lowcardinality)
+            inner: (keyword_string)))
+        (column_definition
+          name: (identifier)
+          type: (nullable_type
+            (keyword_nullable)
+            inner: (keyword_float64)))
+        (column_definition
+          name: (identifier)
+          type: (array_type
+            (keyword_array)
+            element: (keyword_uint32)))))))
+

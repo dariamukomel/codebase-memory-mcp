@@ -1,0 +1,76 @@
+================================================================================
+MySQL: GROUP BY WITH ROLLUP
+================================================================================
+
+SELECT region, SUM(sales) FROM orders GROUP BY region WITH ROLLUP;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))
+        (term
+          value: (invocation
+            (object_reference
+              name: (identifier))
+            parameter: (term
+              value: (field
+                name: (identifier)))))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (group_by
+        (keyword_group)
+        (keyword_by)
+        (field
+          name: (identifier))
+        (keyword_with)
+        (keyword_rollup)))))
+
+================================================================================
+MySQL: GROUP BY multiple columns WITH ROLLUP
+================================================================================
+
+SELECT year, month, SUM(sales) FROM orders GROUP BY year, month WITH ROLLUP;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))
+        (term
+          value: (field
+            name: (identifier)))
+        (term
+          value: (invocation
+            (object_reference
+              name: (identifier))
+            parameter: (term
+              value: (field
+                name: (identifier)))))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (group_by
+        (keyword_group)
+        (keyword_by)
+        (field
+          name: (identifier))
+        (field
+          name: (identifier))
+        (keyword_with)
+        (keyword_rollup)))))

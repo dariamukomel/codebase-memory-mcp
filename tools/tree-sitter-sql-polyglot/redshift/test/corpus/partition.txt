@@ -1,0 +1,143 @@
+================================================================================
+Redshift: CREATE EXTERNAL TABLE with PARTITIONED BY and ROW FORMAT DELIMITED
+================================================================================
+
+CREATE EXTERNAL TABLE spectrum.sales (sale_id INT, sale_date DATE, amount DECIMAL(10,2)) PARTITIONED BY (year INT, month INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' STORED AS TEXTFILE LOCATION 's3://my-bucket/sales/'
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_external_table
+      (keyword_create)
+      (keyword_external)
+      (keyword_table)
+      (object_reference
+        schema: (identifier)
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int)))
+        (column_definition
+          name: (identifier)
+          type: (keyword_date))
+        (column_definition
+          name: (identifier)
+          type: (decimal
+            (keyword_decimal)
+            precision: (literal)
+            scale: (literal))))
+      (keyword_partitioned)
+      (keyword_by)
+      (column_definition
+        name: (identifier)
+        type: (int
+          (keyword_int)))
+      (column_definition
+        name: (identifier)
+        type: (int
+          (keyword_int)))
+      (keyword_row)
+      (keyword_format)
+      (keyword_delimited)
+      (keyword_fields)
+      (keyword_terminated)
+      (keyword_by)
+      (literal)
+      (keyword_stored)
+      (keyword_as)
+      (identifier)
+      (keyword_location)
+      (literal))))
+
+================================================================================
+Redshift: CREATE EXTERNAL TABLE with PARTITIONED BY only
+================================================================================
+
+CREATE EXTERNAL TABLE spectrum.events (event_id INT, event_type VARCHAR) PARTITIONED BY (year INT, month INT) STORED AS PARQUET LOCATION 's3://my-bucket/events/'
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_external_table
+      (keyword_create)
+      (keyword_external)
+      (keyword_table)
+      (object_reference
+        schema: (identifier)
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int)))
+        (column_definition
+          name: (identifier)
+          type: (varchar
+            (keyword_varchar))))
+      (keyword_partitioned)
+      (keyword_by)
+      (column_definition
+        name: (identifier)
+        type: (int
+          (keyword_int)))
+      (column_definition
+        name: (identifier)
+        type: (int
+          (keyword_int)))
+      (keyword_stored)
+      (keyword_as)
+      (identifier)
+      (keyword_location)
+      (literal))))
+
+================================================================================
+Redshift: ALTER TABLE ADD PARTITION with key=value predicates and LOCATION
+================================================================================
+
+ALTER TABLE spectrum.sales ADD PARTITION (year=2024, month=1) LOCATION 's3://my-bucket/sales/2024/01/'
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        schema: (identifier)
+        name: (identifier))
+      (keyword_add)
+      (keyword_partition)
+      (identifier)
+      (literal)
+      (identifier)
+      (literal)
+      (keyword_location)
+      (literal))))
+
+================================================================================
+Redshift: ALTER TABLE DROP PARTITION with key=value predicates
+================================================================================
+
+ALTER TABLE spectrum.sales DROP PARTITION (year=2023, month=1)
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        schema: (identifier)
+        name: (identifier))
+      (keyword_drop)
+      (keyword_partition)
+      (identifier)
+      (literal)
+      (identifier)
+      (literal))))

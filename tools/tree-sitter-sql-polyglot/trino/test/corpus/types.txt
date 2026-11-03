@@ -1,0 +1,96 @@
+================================================================================
+Trino: ARRAY type in column definition
+================================================================================
+
+CREATE TABLE t (tags ARRAY(VARCHAR));
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (array_type
+            (keyword_array)
+            element: (varchar
+              (keyword_varchar))))))))
+
+================================================================================
+Trino: MAP type in column definition
+================================================================================
+
+CREATE TABLE t (props MAP(VARCHAR, INTEGER));
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (map_type
+            (keyword_map)
+            key_type: (varchar
+              (keyword_varchar))
+            value_type: (int
+              (keyword_int))))))))
+
+================================================================================
+Trino: ROW type in column definition
+================================================================================
+
+CREATE TABLE t (address ROW(street VARCHAR, city VARCHAR));
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (row_type
+            (keyword_row)
+            (row_type_field
+              field_name: (identifier)
+              field_type: (varchar
+                (keyword_varchar)))
+            (row_type_field
+              field_name: (identifier)
+              field_type: (varchar
+                (keyword_varchar)))))))))
+
+================================================================================
+Trino: TINYINT type
+================================================================================
+
+CREATE TABLE t (score TINYINT);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (keyword_tinyint))))))

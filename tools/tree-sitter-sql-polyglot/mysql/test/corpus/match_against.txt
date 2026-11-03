@@ -1,0 +1,33 @@
+================================================================================
+MATCH AGAINST full-text search
+================================================================================
+
+SELECT * FROM t WHERE MATCH(title, body) AGAINST('db' IN BOOLEAN MODE);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (where
+        (keyword_where)
+        predicate: (match_against
+          (keyword_match)
+          (field
+            name: (identifier))
+          (field
+            name: (identifier))
+          (keyword_against)
+          (literal)
+          (keyword_in)
+          (keyword_boolean)
+          (keyword_mode))))))

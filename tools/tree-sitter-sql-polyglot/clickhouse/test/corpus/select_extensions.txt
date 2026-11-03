@@ -1,0 +1,137 @@
+================================================================================
+QUALIFY clause
+================================================================================
+
+SELECT * FROM t QUALIFY row_number() OVER (PARTITION BY a ORDER BY b) = 1
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier)))
+      (qualify
+        (keyword_qualify)
+        (binary_expression
+          (window_function
+            (invocation
+              (object_reference
+                (identifier)))
+            (keyword_over)
+            (window_specification
+              (partition_by
+                (keyword_partition)
+                (keyword_by)
+                (field
+                  (identifier)))
+              (order_by
+                (keyword_order)
+                (keyword_by)
+                (order_target
+                  (field
+                    (identifier))))))
+          (literal))))))
+
+================================================================================
+ORDER BY WITH FILL
+================================================================================
+
+SELECT * FROM t ORDER BY d WITH FILL FROM 1 TO 10 STEP 2
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier)))
+      (order_by
+        (keyword_order)
+        (keyword_by)
+        (order_target
+          (field
+            (identifier))
+          (with_fill
+            (keyword_with)
+            (keyword_fill)
+            (keyword_from)
+            (literal)
+            (keyword_to)
+            (literal)
+            (keyword_step)
+            (literal)))))))
+
+================================================================================
+LIMIT WITH TIES
+================================================================================
+
+SELECT * FROM t ORDER BY a LIMIT 5 WITH TIES
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier)))
+      (order_by
+        (keyword_order)
+        (keyword_by)
+        (order_target
+          (field
+            (identifier))))
+      (limit
+        (keyword_limit)
+        (literal)
+        (keyword_with)
+        (keyword_ties)))))
+
+================================================================================
+INTO OUTFILE with FORMAT
+================================================================================
+
+SELECT * FROM t INTO OUTFILE 'out.csv' FORMAT CSV
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier)))
+      (into_outfile_clause
+        (keyword_into)
+        (keyword_outfile)
+        (literal))
+      (format_clause
+        (keyword_format)
+        (identifier)))))

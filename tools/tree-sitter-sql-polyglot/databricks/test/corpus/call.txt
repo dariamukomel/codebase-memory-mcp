@@ -1,0 +1,89 @@
+================================================================================
+CALL procedure no args
+================================================================================
+
+CALL my_proc()
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (call_statement
+      (keyword_call)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+CALL procedure positional args
+================================================================================
+
+CALL my_proc(1, 'hello')
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (call_statement
+      (keyword_call)
+      (object_reference
+        name: (identifier))
+      (literal)
+      (literal))))
+
+================================================================================
+CALL qualified procedure named arg
+================================================================================
+
+CALL catalog.schema.proc(1, name_arg => 'val')
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (call_statement
+      (keyword_call)
+      (object_reference
+        database: (identifier)
+        schema: (identifier)
+        name: (identifier))
+      (literal)
+      (identifier)
+      (literal))))
+
+================================================================================
+EXECUTE IMMEDIATE string
+================================================================================
+
+EXECUTE IMMEDIATE 'SELECT 1 + 1'
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (execute_immediate_statement
+      (keyword_execute)
+      (keyword_immediate)
+      (literal))))
+
+================================================================================
+EXECUTE IMMEDIATE with INTO and USING
+================================================================================
+
+EXECUTE IMMEDIATE stmt INTO result USING arg1, arg2
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (execute_immediate_statement
+      (keyword_execute)
+      (keyword_immediate)
+      (field
+        name: (identifier))
+      (keyword_into)
+      (identifier)
+      (keyword_using)
+      (field
+        name: (identifier))
+      (field
+        name: (identifier)))))

@@ -1,0 +1,54 @@
+================================================================================
+Db2: CREATE PERMISSION with ENFORCED FOR ALL ACCESS ENABLE
+================================================================================
+
+CREATE PERMISSION emp_row ON employee FOR ROWS WHERE dept_id = 10 ENFORCED FOR ALL ACCESS ENABLE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_permission
+      (keyword_create)
+      (keyword_permission)
+      name: (object_reference
+        name: (identifier))
+      (keyword_on)
+      table: (object_reference
+        name: (identifier))
+      (keyword_for)
+      (keyword_rows)
+      (keyword_where)
+      condition: (binary_expression
+        left: (field
+          name: (identifier))
+        right: (literal))
+      (keyword_enforced)
+      (keyword_for)
+      (keyword_all)
+      (keyword_access)
+      (keyword_enable))))
+
+================================================================================
+Db2: TRANSFER OWNERSHIP OF TABLE schema-qualified
+================================================================================
+
+TRANSFER OWNERSHIP OF TABLE myschema.mytable TO USER newowner PRESERVE PRIVILEGES;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (transfer_ownership
+      (keyword_transfer)
+      (keyword_ownership)
+      (keyword_of)
+      (keyword_table)
+      object: (object_reference
+        schema: (identifier)
+        name: (identifier))
+      (keyword_to)
+      (keyword_user)
+      owner: (identifier)
+      (keyword_preserve)
+      (keyword_privileges))))

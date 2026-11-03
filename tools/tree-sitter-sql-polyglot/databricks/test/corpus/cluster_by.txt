@@ -1,0 +1,38 @@
+================================================================================
+ALTER TABLE CLUSTER BY
+================================================================================
+
+ALTER TABLE t CLUSTER BY (a, b);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_cluster)
+      (keyword_by)
+      (identifier)
+      (identifier))))
+
+================================================================================
+ALTER TABLE CLUSTER BY NONE
+================================================================================
+
+ALTER TABLE t CLUSTER BY NONE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_cluster)
+      (keyword_by)
+      (keyword_none))))

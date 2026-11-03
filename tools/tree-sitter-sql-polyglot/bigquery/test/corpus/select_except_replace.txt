@@ -1,0 +1,133 @@
+================================================================================
+SELECT star EXCEPT single column
+================================================================================
+
+SELECT * EXCEPT (col1) FROM t
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields_except
+            (keyword_except)
+            (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))))))
+
+================================================================================
+SELECT star EXCEPT multiple columns
+================================================================================
+
+SELECT * EXCEPT (col1, col2) FROM t
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields_except
+            (keyword_except)
+            (identifier)
+            (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))))))
+
+================================================================================
+SELECT table star EXCEPT column
+================================================================================
+
+SELECT t.* EXCEPT (sensitive) FROM t
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields_except
+            (object_reference
+              name: (identifier))
+            (keyword_except)
+            (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))))))
+
+================================================================================
+SELECT star REPLACE single column
+================================================================================
+
+SELECT * REPLACE (col1 * 2 AS col1) FROM t
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields_replace
+            (keyword_replace)
+            value: (binary_expression
+              left: (field
+                name: (identifier))
+              right: (literal))
+            (keyword_as)
+            alias: (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))))))
+
+================================================================================
+SELECT star REPLACE multiple columns
+================================================================================
+
+SELECT * REPLACE (price * 1.1 AS price, discount * 0.9 AS discount) FROM products
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields_replace
+            (keyword_replace)
+            value: (binary_expression
+              left: (field
+                name: (identifier))
+              right: (literal))
+            (keyword_as)
+            alias: (identifier)
+            value: (binary_expression
+              left: (field
+                name: (identifier))
+              right: (literal))
+            (keyword_as)
+            alias: (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))))))

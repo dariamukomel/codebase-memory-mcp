@@ -1,0 +1,71 @@
+================================================================================
+MERGE WHEN NOT MATCHED BY SOURCE THEN DELETE
+================================================================================
+
+MERGE target USING source ON target.id = source.id
+WHEN MATCHED THEN UPDATE SET val = source.val
+WHEN NOT MATCHED THEN INSERT (id, val) VALUES (source.id, source.val)
+WHEN NOT MATCHED BY SOURCE THEN DELETE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (keyword_merge)
+    (object_reference
+      name: (identifier))
+    (keyword_using)
+    (object_reference
+      name: (identifier))
+    (keyword_on)
+    predicate: (binary_expression
+      left: (field
+        (object_reference
+          name: (identifier))
+        name: (identifier))
+      right: (field
+        (object_reference
+          name: (identifier))
+        name: (identifier)))
+    (when_clause
+      (keyword_when)
+      (keyword_matched)
+      (keyword_then)
+      (keyword_update)
+      (keyword_set)
+      (assignment
+        left: (field
+          name: (identifier))
+        right: (field
+          (object_reference
+            name: (identifier))
+          name: (identifier))))
+    (when_clause
+      (keyword_when)
+      (keyword_not)
+      (keyword_matched)
+      (keyword_then)
+      (keyword_insert)
+      (list
+        (column
+          (identifier))
+        (column
+          (identifier)))
+      (keyword_values)
+      (list
+        (field
+          (object_reference
+            name: (identifier))
+          name: (identifier))
+        (field
+          (object_reference
+            name: (identifier))
+          name: (identifier))))
+    (when_clause
+      (keyword_when)
+      (keyword_not)
+      (keyword_matched)
+      (keyword_by)
+      (keyword_source)
+      (keyword_then)
+      (keyword_delete))))

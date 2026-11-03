@@ -1,0 +1,355 @@
+================================================================================
+Spark 4.x: MERGE with BY SOURCE
+================================================================================
+
+MERGE INTO target t
+USING source s
+ON t.id = s.id
+WHEN MATCHED BY SOURCE THEN UPDATE SET t.name = s.name
+WHEN NOT MATCHED BY SOURCE THEN DELETE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (keyword_merge)
+    (keyword_into)
+    (object_reference
+      name: (identifier))
+    alias: (identifier)
+    (keyword_using)
+    (object_reference
+      name: (identifier))
+    alias: (identifier)
+    (keyword_on)
+    predicate: (binary_expression
+      left: (field
+        (object_reference
+          name: (identifier))
+        name: (identifier))
+      right: (field
+        (object_reference
+          name: (identifier))
+        name: (identifier)))
+    (when_clause
+      (keyword_when)
+      (keyword_matched)
+      (keyword_by)
+      (keyword_source)
+      (keyword_then)
+      (keyword_update)
+      (keyword_set)
+      (assignment
+        left: (field
+          (object_reference
+            name: (identifier))
+          name: (identifier))
+        right: (field
+          (object_reference
+            name: (identifier))
+          name: (identifier))))
+    (when_clause
+      (keyword_when)
+      (keyword_not)
+      (keyword_matched)
+      (keyword_by)
+      (keyword_source)
+      (keyword_then)
+      (keyword_delete))))
+
+================================================================================
+Spark 4.x: MERGE BY SOURCE without INTO keyword
+================================================================================
+
+MERGE target
+USING source
+ON target.id = source.id
+WHEN NOT MATCHED BY SOURCE THEN INSERT;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (keyword_merge)
+    (object_reference
+      name: (identifier))
+    (keyword_using)
+    (object_reference
+      name: (identifier))
+    (keyword_on)
+    predicate: (binary_expression
+      left: (field
+        (object_reference
+          name: (identifier))
+        name: (identifier))
+      right: (field
+        (object_reference
+          name: (identifier))
+        name: (identifier)))
+    (when_clause
+      (keyword_when)
+      (keyword_not)
+      (keyword_matched)
+      (keyword_by)
+      (keyword_source)
+      (keyword_then)
+      (keyword_insert))))
+
+================================================================================
+Spark 4.x: MERGE BY SOURCE with predicate
+================================================================================
+
+MERGE INTO target
+USING source
+ON target.id = source.id
+WHEN MATCHED BY SOURCE AND target.active = true THEN DELETE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (keyword_merge)
+    (keyword_into)
+    (object_reference
+      name: (identifier))
+    (keyword_using)
+    (object_reference
+      name: (identifier))
+    (keyword_on)
+    predicate: (binary_expression
+      left: (field
+        (object_reference
+          name: (identifier))
+        name: (identifier))
+      right: (field
+        (object_reference
+          name: (identifier))
+        name: (identifier)))
+    (when_clause
+      (keyword_when)
+      (keyword_matched)
+      (keyword_by)
+      (keyword_source)
+      (keyword_and)
+      predicate: (binary_expression
+        left: (field
+          (object_reference
+            name: (identifier))
+          name: (identifier))
+        right: (literal
+          (keyword_true)))
+      (keyword_then)
+      (keyword_delete))))
+
+================================================================================
+Spark 4.x: VARIANT type in column definition
+================================================================================
+
+CREATE TABLE my_table (
+  id INT,
+  data VARIANT
+);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int)))
+        (column_definition
+          name: (identifier)
+          type: (keyword_variant))))))
+
+================================================================================
+Spark 4.x: COLLATE expression
+================================================================================
+
+SELECT name COLLATE utf8_bin AS upper_name FROM users;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (collate_expression
+            (field
+              name: (identifier))
+            (keyword_collate)
+            collation: (identifier))
+          (keyword_as)
+          alias: (identifier))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))))))
+
+================================================================================
+Spark 4.x: variant_path_expression
+================================================================================
+
+SELECT data:field1:field2 FROM my_table;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (variant_path_expression
+            (variant_path_expression
+              (field
+                name: (identifier))
+              (identifier))
+            (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))))))
+
+================================================================================
+Spark 4.x: SET VAR variable
+================================================================================
+
+SET VAR my_var = 'value';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (set_variable_statement
+      (keyword_set)
+      (keyword_var)
+      name: (identifier)
+      (literal))))
+
+================================================================================
+Spark 4.x: SET VARIABLE variable
+================================================================================
+
+SET VARIABLE my_var = 123;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (set_variable_statement
+      (keyword_set)
+      (keyword_variable)
+      name: (identifier)
+      (literal))))
+
+================================================================================
+Spark 4.x: DECLARE variable
+================================================================================
+
+DECLARE my_var INT DEFAULT 0;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (declare_variable_statement
+      (keyword_declare)
+      name: (identifier)
+      (int
+        (keyword_int))
+      (keyword_default)
+      (literal))))
+
+================================================================================
+Spark 4.x: DECLARE OR REPLACE variable
+================================================================================
+
+DECLARE OR REPLACE VARIABLE my_var VARCHAR(100) = 'test';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (declare_variable_statement
+      (keyword_declare)
+      (keyword_or)
+      (keyword_replace)
+      (keyword_variable)
+      name: (identifier)
+      (varchar
+        (keyword_varchar)
+        size: (literal))
+      (literal))))
+
+================================================================================
+Spark 4.x: SELECT * EXCEPT
+================================================================================
+
+SELECT * EXCEPT (col1, col2) FROM my_table;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields)
+          (select_except_clause
+            (keyword_except)
+            column: (identifier)
+            column: (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))))))
+
+================================================================================
+Spark 4.x: LATERAL subquery in FROM clause
+================================================================================
+
+SELECT * FROM LATERAL (SELECT id, name FROM other_table) AS sub;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (lateral_subquery
+          (keyword_lateral)
+          (select
+            (keyword_select)
+            (select_expression
+              (term
+                value: (field
+                  name: (identifier)))
+              (term
+                value: (field
+                  name: (identifier)))))
+          (from
+            (keyword_from)
+            (relation
+              (object_reference
+                name: (identifier))))
+          (keyword_as)
+          alias: (identifier))))))

@@ -1,0 +1,125 @@
+================================================================================
+SELECT FROM FINAL TABLE (INSERT)
+================================================================================
+
+SELECT id, name
+FROM FINAL TABLE (
+  INSERT INTO t (col) VALUES (1)
+);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (field
+            (identifier)))
+        (term
+          (field
+            (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (data_change_table_reference
+          (keyword_final)
+          (keyword_table)
+          (insert
+            (keyword_insert)
+            (keyword_into)
+            (object_reference
+              (identifier))
+            (list
+              (column
+                (identifier)))
+            (keyword_values)
+            (list
+              (literal))))))))
+
+================================================================================
+SELECT FROM NEW TABLE (UPDATE)
+================================================================================
+
+SELECT id, salary
+FROM NEW TABLE (
+  UPDATE employees SET salary = salary * 1.1 WHERE dept = 10
+);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (field
+            (identifier)))
+        (term
+          (field
+            (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (data_change_table_reference
+          (keyword_new)
+          (keyword_table)
+          (update
+            (keyword_update)
+            (relation
+              (object_reference
+                (identifier)))
+            (keyword_set)
+            (assignment
+              (field
+                (identifier))
+              (binary_expression
+                (field
+                  (identifier))
+                (literal)))
+            (where
+              (keyword_where)
+              (binary_expression
+                (field
+                  (identifier))
+                (literal)))))))))
+
+================================================================================
+SELECT FROM OLD TABLE (DELETE)
+================================================================================
+
+SELECT id
+FROM OLD TABLE (
+  DELETE FROM t WHERE id = 42
+);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (field
+            (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (data_change_table_reference
+          (keyword_old)
+          (keyword_table)
+          (delete
+            (keyword_delete))
+          (from
+            (keyword_from)
+            (object_reference
+              (identifier))
+            (where
+              (keyword_where)
+              (binary_expression
+                (field
+                  (identifier))
+                (literal)))))))))

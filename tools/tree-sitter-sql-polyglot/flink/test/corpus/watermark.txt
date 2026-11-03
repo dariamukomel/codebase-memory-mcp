@@ -1,0 +1,87 @@
+================================================================================
+WATERMARK with subtraction strategy
+================================================================================
+
+CREATE TABLE events (
+  user_id BIGINT,
+  event_time TIMESTAMP(3),
+  WATERMARK FOR event_time AS event_time - INTERVAL '5' SECOND
+) WITH ('connector' = 'kafka', 'topic' = 't')
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (column_definitions
+        (column_definition
+          (identifier)
+          (bigint
+            (keyword_bigint)))
+        (column_definition
+          (identifier)
+          (timestamp
+            (keyword_timestamp)
+            (literal)))
+        (watermark_definition
+          (keyword_watermark)
+          (keyword_for)
+          (identifier)
+          (keyword_as)
+          (binary_expression
+            (field
+              (identifier))
+            (interval
+              (keyword_interval)
+              (identifier)))))
+      (with_properties
+        (keyword_with)
+        (literal)
+        (literal)
+        (literal)
+        (literal)))))
+
+================================================================================
+WATERMARK with SOURCE_WATERMARK()
+================================================================================
+
+CREATE TABLE src (
+  ts TIMESTAMP_LTZ(3) METADATA VIRTUAL,
+  WATERMARK FOR ts AS SOURCE_WATERMARK()
+) WITH ('connector' = 'kafka', 'topic' = 't')
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (column_definitions
+        (metadata_column
+          (identifier)
+          (timestamp_ltz
+            (keyword_timestamp_ltz)
+            (literal))
+          (keyword_metadata)
+          (keyword_virtual))
+        (watermark_definition
+          (keyword_watermark)
+          (keyword_for)
+          (identifier)
+          (keyword_as)
+          (invocation
+            (object_reference
+              (identifier)))))
+      (with_properties
+        (keyword_with)
+        (literal)
+        (literal)
+        (literal)
+        (literal)))))

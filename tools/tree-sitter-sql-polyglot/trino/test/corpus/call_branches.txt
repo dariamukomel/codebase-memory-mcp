@@ -1,0 +1,131 @@
+================================================================================
+Trino: CALL with named arguments
+================================================================================
+
+CALL system.runtime.kill_query(query_id => 'x', message => 'why');
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (call_statement
+      (keyword_call)
+      (object_reference
+        (identifier)
+        (identifier)
+        (identifier))
+      (identifier)
+      (literal)
+      (identifier)
+      (literal))))
+
+================================================================================
+Trino: DESCRIBE INPUT
+================================================================================
+
+DESCRIBE INPUT my_query;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (describe_statement
+      (keyword_describe)
+      (keyword_input)
+      (identifier))))
+
+================================================================================
+Trino: DESCRIBE OUTPUT
+================================================================================
+
+DESCRIBE OUTPUT my_query;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (describe_statement
+      (keyword_describe)
+      (keyword_output)
+      (identifier))))
+
+================================================================================
+Trino: CREATE BRANCH
+================================================================================
+
+CREATE BRANCH my_branch IN TABLE my_table;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_branch_statement
+      (keyword_create)
+      (keyword_branch)
+      (identifier)
+      (keyword_in)
+      (keyword_table)
+      (object_reference
+        (identifier)))))
+
+================================================================================
+Trino: DROP BRANCH IF EXISTS
+================================================================================
+
+DROP BRANCH IF EXISTS my_branch IN TABLE my_table;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_branch_statement
+      (keyword_drop)
+      (keyword_branch)
+      (keyword_if)
+      (keyword_exists)
+      (identifier)
+      (keyword_in)
+      (keyword_table)
+      (object_reference
+        (identifier)))))
+
+================================================================================
+Trino: ALTER BRANCH FAST FORWARD
+================================================================================
+
+ALTER BRANCH dev IN TABLE my_table FAST FORWARD TO main;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_branch_statement
+      (keyword_alter)
+      (keyword_branch)
+      (identifier)
+      (keyword_in)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (keyword_fast)
+      (keyword_forward)
+      (keyword_to)
+      (identifier))))
+
+================================================================================
+Trino: SHOW BRANCHES
+================================================================================
+
+SHOW BRANCHES FROM TABLE my_table;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (show_statement
+      (keyword_show)
+      (keyword_branches)
+      (keyword_from)
+      (keyword_table)
+      (object_reference
+        (identifier)))))

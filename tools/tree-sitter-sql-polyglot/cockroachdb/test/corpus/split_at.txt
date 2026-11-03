@@ -1,0 +1,22 @@
+================================================================================
+ALTER TABLE SPLIT AT VALUES
+================================================================================
+
+ALTER TABLE t SPLIT AT VALUES (1);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (split_at
+        (keyword_split)
+        (keyword_at)
+        (values
+          (keyword_values)
+          (list
+            (literal)))))))

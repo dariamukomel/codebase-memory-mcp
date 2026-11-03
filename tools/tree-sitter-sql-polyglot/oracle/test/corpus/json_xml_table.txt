@@ -1,0 +1,59 @@
+==================
+JSON_TABLE
+==================
+
+SELECT * FROM JSON_TABLE(j, '$[*]' COLUMNS (id INT PATH '$.id'))
+
+---
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (json_table
+          (keyword_json_table)
+          (field
+            name: (identifier))
+          (literal)
+          (keyword_columns)
+          (json_table_column
+            name: (identifier)
+            (int
+              (keyword_int))
+            (keyword_path)
+            (literal)))))))
+
+==================
+XMLTABLE
+==================
+
+SELECT * FROM XMLTABLE('/a/b' COLUMNS id INT PATH '@id')
+
+---
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (xmltable
+          (keyword_xmltable)
+          (literal)
+          (keyword_columns)
+          (xmltable_column
+            name: (identifier)
+            (int
+              (keyword_int))
+            (keyword_path)
+            (literal)))))))

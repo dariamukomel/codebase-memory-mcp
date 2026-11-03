@@ -1,0 +1,55 @@
+================================================================================
+EXPORT TABLE
+================================================================================
+
+EXPORT TABLE t TO '/hdfs/path';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (export_statement
+      (keyword_export)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_to)
+      (literal))))
+
+================================================================================
+IMPORT TABLE
+================================================================================
+
+IMPORT TABLE t2 FROM '/hdfs/path';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (import_statement
+      (keyword_import)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_from)
+      (literal))))
+
+================================================================================
+CREATE TEMPORARY MACRO
+================================================================================
+
+CREATE TEMPORARY MACRO sigmoid(x DOUBLE) 1.0;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_temporary_macro
+      (keyword_create)
+      (keyword_temporary)
+      (keyword_macro)
+      (identifier)
+      (identifier)
+      (double
+        (keyword_double))
+      (literal))))

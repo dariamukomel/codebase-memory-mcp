@@ -1,0 +1,63 @@
+================================================================================
+Db2: CREATE WRAPPER with OPTIONS
+================================================================================
+
+CREATE WRAPPER mynet OPTIONS (host 'db.local');
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_wrapper
+      (keyword_create)
+      (keyword_wrapper)
+      name: (identifier)
+      (options_clause
+        (keyword_options)
+        key: (identifier)))))
+
+================================================================================
+Db2: CREATE SERVER with string version and OPTIONS
+================================================================================
+
+CREATE SERVER myserver TYPE oracle VERSION '11g' WRAPPER mynet OPTIONS (host 'db.local', port '1521');
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_server
+      (keyword_create)
+      (keyword_server)
+      name: (identifier)
+      (keyword_type)
+      type: (identifier)
+      (keyword_version)
+      version: (literal)
+      (keyword_wrapper)
+      wrapper: (identifier)
+      (options_clause
+        (keyword_options)
+        key: (identifier)
+        key: (identifier)))))
+
+================================================================================
+Db2: CREATE NICKNAME with three-part remote reference
+================================================================================
+
+CREATE NICKNAME localview FOR myserver.remotedb.remotetable;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_nickname
+      (keyword_create)
+      (keyword_nickname)
+      name: (object_reference
+        name: (identifier))
+      (keyword_for)
+      remote: (object_reference
+        database: (identifier)
+        schema: (identifier)
+        name: (identifier)))))

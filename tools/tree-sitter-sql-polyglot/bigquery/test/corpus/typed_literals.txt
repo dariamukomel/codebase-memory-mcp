@@ -1,0 +1,80 @@
+================================================================================
+STRUCT positional
+================================================================================
+
+SELECT STRUCT('Alice', 30)
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (struct
+            (keyword_struct)
+            value: (literal)
+            value: (literal)))))))
+
+================================================================================
+STRUCT named fields
+================================================================================
+
+SELECT STRUCT(1 AS x, 2 AS y)
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (struct
+            (keyword_struct)
+            value: (literal)
+            (keyword_as)
+            alias: (identifier)
+            value: (literal)
+            (keyword_as)
+            alias: (identifier)))))))
+
+================================================================================
+ARRAY literal
+================================================================================
+
+SELECT ARRAY[1, 2, 3]
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (array
+            (keyword_array)
+            (literal)
+            (literal)
+            (literal)))))))
+
+================================================================================
+TIMESTAMP typed literal
+================================================================================
+
+SELECT TIMESTAMP '2025-01-01'
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (typed_literal
+            (timestamp
+              (keyword_timestamp))
+            (literal)))))))

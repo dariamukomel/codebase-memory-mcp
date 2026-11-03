@@ -1,0 +1,76 @@
+================================================================================
+Trino: PREPARE with SELECT
+================================================================================
+
+PREPARE my_select FROM SELECT * FROM orders WHERE id = ?;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (prepare_statement
+      (keyword_prepare)
+      name: (identifier)
+      (keyword_from)
+      (select
+        (keyword_select)
+        (select_expression
+          (term
+            value: (all_fields))))
+      (from
+        (keyword_from)
+        (relation
+          (object_reference
+            name: (identifier)))
+        (where
+          (keyword_where)
+          predicate: (binary_expression
+            left: (field
+              name: (identifier))
+            right: (parameter)))))))
+
+================================================================================
+Trino: EXECUTE with USING
+================================================================================
+
+EXECUTE my_select USING 42, 'foo';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (execute_statement
+      (keyword_execute)
+      name: (identifier)
+      (keyword_using)
+      (literal)
+      (literal))))
+
+================================================================================
+Trino: EXECUTE without USING
+================================================================================
+
+EXECUTE my_select;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (execute_statement
+      (keyword_execute)
+      name: (identifier))))
+
+================================================================================
+Trino: DEALLOCATE PREPARE
+================================================================================
+
+DEALLOCATE PREPARE my_select;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (deallocate_statement
+      (keyword_deallocate)
+      (keyword_prepare)
+      name: (identifier))))

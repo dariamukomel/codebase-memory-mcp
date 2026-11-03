@@ -1,0 +1,143 @@
+================================================================================
+Trino: Simple MATCH_RECOGNIZE
+================================================================================
+
+SELECT * FROM orders
+MATCH_RECOGNIZE (
+  ORDER BY order_date
+  PATTERN (A B+)
+  DEFINE
+    A AS amount < 100,
+    B AS amount > 200
+);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))
+        (match_recognize_clause
+          (keyword_match_recognize)
+          (order_by
+            (keyword_order)
+            (keyword_by)
+            (order_target
+              (field
+                name: (identifier))))
+          (pattern_clause
+            (keyword_pattern)
+            (pattern_term
+              (identifier))
+            (pattern_term
+              (identifier)))
+          (define_clause
+            (keyword_define)
+            (define_item
+              (identifier)
+              (keyword_as)
+              (binary_expression
+                left: (field
+                  name: (identifier))
+                right: (literal)))
+            (define_item
+              (identifier)
+              (keyword_as)
+              (binary_expression
+                left: (field
+                  name: (identifier))
+                right: (literal)))))))))
+
+================================================================================
+Trino: MATCH_RECOGNIZE with MEASURES and ONE ROW PER MATCH
+================================================================================
+
+SELECT * FROM t
+MATCH_RECOGNIZE (
+  PARTITION BY user_id
+  ORDER BY ts
+  MEASURES val AS first_val
+  ONE ROW PER MATCH
+  AFTER MATCH SKIP PAST LAST ROW
+  PATTERN (A B*)
+  DEFINE
+    A AS val < 50,
+    B AS val >= 50
+);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))
+        (match_recognize_clause
+          (keyword_match_recognize)
+          (partition_by
+            (keyword_partition)
+            (keyword_by)
+            (field
+              name: (identifier)))
+          (order_by
+            (keyword_order)
+            (keyword_by)
+            (order_target
+              (field
+                name: (identifier))))
+          (measures_clause
+            (keyword_measures)
+            (measure_item
+              (field
+                name: (identifier))
+              (keyword_as)
+              alias: (identifier)))
+          (rows_per_match
+            (keyword_one)
+            (keyword_row)
+            (keyword_per)
+            (keyword_match))
+          (after_match_skip
+            (keyword_after)
+            (keyword_match)
+            (keyword_skip)
+            (keyword_past)
+            (keyword_last)
+            (keyword_row))
+          (pattern_clause
+            (keyword_pattern)
+            (pattern_term
+              (identifier))
+            (pattern_term
+              (identifier)))
+          (define_clause
+            (keyword_define)
+            (define_item
+              (identifier)
+              (keyword_as)
+              (binary_expression
+                left: (field
+                  name: (identifier))
+                right: (literal)))
+            (define_item
+              (identifier)
+              (keyword_as)
+              (binary_expression
+                left: (field
+                  name: (identifier))
+                right: (literal)))))))))

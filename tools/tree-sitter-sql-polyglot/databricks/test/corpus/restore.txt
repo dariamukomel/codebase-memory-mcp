@@ -1,0 +1,158 @@
+================================================================================
+Delta: RESTORE TABLE TO VERSION AS OF
+================================================================================
+
+RESTORE TABLE events TO VERSION AS OF 5;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (restore_table_statement
+      (keyword_restore)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_to)
+      (keyword_version)
+      (keyword_as)
+      (keyword_of)
+      (literal))))
+
+================================================================================
+Delta: RESTORE TABLE TO TIMESTAMP AS OF
+================================================================================
+
+RESTORE TABLE events TO TIMESTAMP AS OF '2021-01-01';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (restore_table_statement
+      (keyword_restore)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_to)
+      (keyword_timestamp)
+      (keyword_as)
+      (keyword_of)
+      (literal))))
+
+================================================================================
+Delta: CONVERT TO DELTA
+================================================================================
+
+CONVERT TO DELTA parquet.my_table;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (convert_to_delta_statement
+      (keyword_convert)
+      (keyword_to)
+      (keyword_delta)
+      (object_reference
+        schema: (identifier)
+        name: (identifier)))))
+
+================================================================================
+Delta: FSCK REPAIR TABLE
+================================================================================
+
+FSCK REPAIR TABLE my_catalog.my_schema.my_table;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (fsck_repair_statement
+      (keyword_fsck)
+      (keyword_repair)
+      (keyword_table)
+      (object_reference
+        database: (identifier)
+        schema: (identifier)
+        name: (identifier)))))
+
+================================================================================
+Delta: REORG TABLE with APPLY PURGE
+================================================================================
+
+REORG TABLE my_table WHERE col1 IS NULL APPLY (PURGE);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (reorg_table_statement
+      (keyword_reorg)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (where
+        (keyword_where)
+        predicate: (binary_expression
+          left: (field
+            name: (identifier))
+          operator: (keyword_is)
+          right: (literal
+            (keyword_null))))
+      (keyword_apply)
+      (keyword_purge))))
+
+================================================================================
+Delta: GENERATE manifest
+================================================================================
+
+GENERATE symlink_format_manifest FOR TABLE my_table;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (generate_statement
+      (keyword_generate)
+      (identifier)
+      (keyword_for)
+      (keyword_table)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+Hive/Spark: MSCK REPAIR TABLE
+================================================================================
+
+MSCK REPAIR TABLE my_table;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (msck_repair_statement
+      (keyword_msck)
+      (keyword_repair)
+      (keyword_table)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+Hive/Spark: MSCK REPAIR TABLE ADD PARTITIONS
+================================================================================
+
+MSCK REPAIR TABLE my_table ADD PARTITIONS;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (msck_repair_statement
+      (keyword_msck)
+      (keyword_repair)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_add)
+      (keyword_partitions))))

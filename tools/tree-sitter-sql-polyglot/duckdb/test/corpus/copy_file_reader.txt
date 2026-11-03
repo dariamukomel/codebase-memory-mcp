@@ -1,0 +1,106 @@
+================================================================================
+COPY table FROM file
+================================================================================
+
+COPY employees FROM '/data/employees.csv';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (copy_statement
+      (keyword_copy)
+      (object_reference
+        name: (identifier))
+      (keyword_from)
+      (literal))))
+
+================================================================================
+COPY table TO file
+================================================================================
+
+COPY employees TO '/data/employees.csv';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (copy_statement
+      (keyword_copy)
+      (object_reference
+        name: (identifier))
+      (keyword_to)
+      (literal))))
+
+================================================================================
+COPY SELECT TO file
+================================================================================
+
+COPY (SELECT id, name FROM employees) TO '/output/out.parquet';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (copy_statement
+      (keyword_copy)
+      (select
+        (keyword_select)
+        (select_expression
+          (term
+            value: (field
+              name: (identifier)))
+          (term
+            value: (field
+              name: (identifier)))))
+      (from
+        (keyword_from)
+        (relation
+          (object_reference
+            name: (identifier))))
+      (keyword_to)
+      (literal))))
+
+================================================================================
+DuckDB: read_json function call
+================================================================================
+
+SELECT * FROM read_json('data.json');
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (file_reader
+          function: (keyword_read_json)
+          (literal))))))
+
+================================================================================
+DuckDB: read_csv_auto function call
+================================================================================
+
+SELECT * FROM read_csv_auto('data.csv');
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (file_reader
+          function: (keyword_read_csv_auto)
+          (literal))))))

@@ -1,0 +1,35 @@
+================================================================================
+Triple double-quoted string
+================================================================================
+
+SELECT """multi-line""" AS s
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (triple_double_quoted_string)
+          (keyword_as)
+          alias: (identifier))))))
+
+================================================================================
+Triple single-quoted string
+================================================================================
+
+SELECT '''another''' AS t
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (triple_single_quoted_string)
+          (keyword_as)
+          alias: (identifier))))))

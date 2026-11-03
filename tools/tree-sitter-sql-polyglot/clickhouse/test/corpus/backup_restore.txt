@@ -1,0 +1,97 @@
+================================================================================
+BACKUP TABLE to disk
+================================================================================
+
+BACKUP TABLE mydb.events TO Disk('backups', '2024/');
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (backup_statement
+      (keyword_backup)
+      (keyword_table)
+      (object_reference
+        (identifier)
+        (identifier))
+      (keyword_to)
+      (invocation
+        (object_reference
+          (identifier))
+        (term
+          (literal))
+        (term
+          (literal))))))
+
+================================================================================
+RESTORE TABLE with SETTINGS
+================================================================================
+
+RESTORE TABLE mydb.events FROM Disk('backups', '2024/') SETTINGS allow_non_empty_tables = 1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (restore_statement
+      (keyword_restore)
+      (keyword_table)
+      (object_reference
+        (identifier)
+        (identifier))
+      (keyword_from)
+      (invocation
+        (object_reference
+          (identifier))
+        (term
+          (literal))
+        (term
+          (literal)))
+      (ch_settings_clause
+        (keyword_settings)
+        (identifier)
+        (literal)))))
+
+================================================================================
+BACKUP DATABASE ON CLUSTER to string destination
+================================================================================
+
+BACKUP DATABASE db ON CLUSTER prod TO 's3://bucket/path';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (backup_statement
+      (keyword_backup)
+      (keyword_database)
+      (object_reference
+        (identifier))
+      (on_cluster
+        (keyword_on)
+        (keyword_cluster)
+        (identifier))
+      (keyword_to)
+      (literal))))
+
+================================================================================
+RESTORE ALL
+================================================================================
+
+RESTORE ALL FROM Disk('backups', 'all.zip');
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (restore_statement
+      (keyword_restore)
+      (keyword_all)
+      (keyword_from)
+      (invocation
+        (object_reference
+          (identifier))
+        (term
+          (literal))
+        (term
+          (literal))))))

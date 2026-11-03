@@ -1,0 +1,102 @@
+================================================================================
+CREATE DATABASE
+================================================================================
+
+CREATE DATABASE my_db WITH ('key1' = 'val1')
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_database
+      (keyword_create)
+      (keyword_database)
+      (object_reference
+        (identifier))
+      (with_properties
+        (keyword_with)
+        (literal)
+        (literal)))))
+
+================================================================================
+CREATE DATABASE with COMMENT
+================================================================================
+
+CREATE DATABASE IF NOT EXISTS analytics
+COMMENT 'Analytics database'
+WITH ('k' = 'v')
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_database
+      (keyword_create)
+      (keyword_database)
+      (keyword_if)
+      (keyword_not)
+      (keyword_exists)
+      (object_reference
+        (identifier))
+      (keyword_comment)
+      (literal)
+      (with_properties
+        (keyword_with)
+        (literal)
+        (literal)))))
+
+================================================================================
+USE DATABASE
+================================================================================
+
+USE my_catalog.my_db
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (use_database_statement
+      (keyword_use)
+      (object_reference
+        (identifier)
+        (identifier)))))
+
+================================================================================
+ALTER DATABASE SET
+================================================================================
+
+ALTER DATABASE my_db SET ('key' = 'val')
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_database
+      (keyword_alter)
+      (keyword_database)
+      (object_reference
+        (identifier))
+      (keyword_set)
+      (with_properties
+        (literal)
+        (literal)))))
+
+================================================================================
+DROP DATABASE
+================================================================================
+
+DROP DATABASE IF EXISTS my_cat.my_db CASCADE
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_database
+      (keyword_drop)
+      (keyword_database)
+      (keyword_if)
+      (keyword_exists)
+      (object_reference
+        (identifier)
+        (identifier))
+      (keyword_cascade))))

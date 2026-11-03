@@ -1,0 +1,67 @@
+================================================================================
+MATCH_RECOGNIZE
+================================================================================
+
+SELECT * FROM t MATCH_RECOGNIZE (PARTITION BY id ORDER BY ts MEASURES a.ts AS s ONE ROW PER MATCH PATTERN (a b+) DEFINE b AS b.v > a.v);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))
+        (match_recognize_clause
+          (keyword_match_recognize)
+          (partition_by
+            (keyword_partition)
+            (keyword_by)
+            (field
+              name: (identifier)))
+          (order_by
+            (keyword_order)
+            (keyword_by)
+            (order_target
+              (field
+                name: (identifier))))
+          (measures_clause
+            (keyword_measures)
+            (measure_item
+              (field
+                (object_reference
+                  name: (identifier))
+                name: (identifier))
+              (keyword_as)
+              alias: (identifier)))
+          (rows_per_match
+            (keyword_one)
+            (keyword_row)
+            (keyword_per)
+            (keyword_match))
+          (pattern_clause
+            (keyword_pattern)
+            (pattern_term
+              (identifier))
+            (pattern_term
+              (identifier)))
+          (define_clause
+            (keyword_define)
+            (define_item
+              (identifier)
+              (keyword_as)
+              (binary_expression
+                left: (field
+                  (object_reference
+                    name: (identifier))
+                  name: (identifier))
+                right: (field
+                  (object_reference
+                    name: (identifier))
+                  name: (identifier))))))))))

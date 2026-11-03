@@ -1,0 +1,29 @@
+{
+  "grammars": [
+    {
+      "name": "mysql_sql",
+      "camelcase": "MySQLSQL",
+      "scope": "source.mysql.sql",
+      "path": ".",
+      "file-types": [
+        "sql"
+      ],
+      "highlights": [
+        "queries/highlights.scm"
+      ]
+    }
+  ],
+  "metadata": {
+    "version": "0.1.2",
+    "license": "MIT",
+    "description": "Tree-sitter MySQL grammar (extends base SQL)",
+    "authors": [
+      {
+        "name": "relativelyunknown"
+      }
+    ],
+    "links": {
+      "repository": "git+https://github.com/relativelyunknown/tree-sitter-sql-polyglot.git"
+    }
+  }
+}

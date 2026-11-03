@@ -1,0 +1,83 @@
+; Intent-based tests: expected trees derived from reading the grammar rules,
+; not copied from parser output.
+;
+; T-SQL select.js defines:
+;   select: keyword_select + optional(top_clause) + optional(keyword_distinct) + select_expression
+;   top_clause: keyword_top + alias(_natural_number, $.literal)  [+ optional percent/ties]
+;
+; Therefore SELECT TOP 5 * FROM t must produce a top_clause node containing
+; keyword_top and a literal (the alias of _natural_number), then select_expression
+; with all_fields, then a sibling from node.
+
+================================================================================
+T-SQL: SELECT TOP n
+================================================================================
+
+SELECT TOP 5 * FROM t;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (top_clause
+        (keyword_top)
+        (literal))
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))))))
+
+; procedural.js defines:
+;   declare_statement: keyword_declare + comma_list(variable_declaration)
+;   variable_declaration: variable + optional(keyword_as) + _type + optional(= expr)
+;   variable: token /@@?[A-Za-z_][A-Za-z0-9_]*/
+;
+; DECLARE @n INT has no AS, no default; so: keyword_declare, variable_declaration
+; containing variable and int(_type).  keyword_as is absent (optional, omitted).
+
+================================================================================
+T-SQL: DECLARE variable
+================================================================================
+
+DECLARE @n INT;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (declare_statement
+      (keyword_declare)
+      (variable_declaration
+        (variable)
+        (int
+          (keyword_int))))))
+
+; procedural.js defines:
+;   variable_declaration: variable + optional(keyword_as) + _type + optional(= expr)
+;
+; DECLARE @x INT = 0 must include the literal 0 as the default expression.
+; The '=' is anonymous so it won't appear in the tree.
+
+================================================================================
+T-SQL: DECLARE variable with default
+================================================================================
+
+DECLARE @x INT = 0;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (declare_statement
+      (keyword_declare)
+      (variable_declaration
+        (variable)
+        (int
+          (keyword_int))
+        (literal)))))

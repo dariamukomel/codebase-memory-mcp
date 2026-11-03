@@ -1,0 +1,142 @@
+================================================================================
+CACHE TABLE basic
+================================================================================
+
+CACHE TABLE my_table
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (cache_table
+      (keyword_cache)
+      (keyword_table)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+CACHE LAZY TABLE
+================================================================================
+
+CACHE LAZY TABLE my_schema.my_table
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (cache_table
+      (keyword_cache)
+      (keyword_lazy)
+      (keyword_table)
+      (object_reference
+        schema: (identifier)
+        name: (identifier)))))
+
+================================================================================
+CACHE TABLE AS SELECT
+================================================================================
+
+CACHE LAZY TABLE my_table AS SELECT * FROM source_table
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (cache_table
+      (keyword_cache)
+      (keyword_lazy)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_as)
+      (select
+        (keyword_select)
+        (select_expression
+          (term
+            value: (all_fields))))
+      (from
+        (keyword_from)
+        (relation
+          (object_reference
+            name: (identifier)))))))
+
+================================================================================
+UNCACHE TABLE
+================================================================================
+
+UNCACHE TABLE my_table
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (uncache_table
+      (keyword_uncache)
+      (keyword_table)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+UNCACHE TABLE IF EXISTS
+================================================================================
+
+UNCACHE TABLE IF EXISTS my_table
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (uncache_table
+      (keyword_uncache)
+      (keyword_table)
+      (keyword_if)
+      (keyword_exists)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+CLEAR CACHE
+================================================================================
+
+CLEAR CACHE
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (clear_cache
+      (keyword_clear)
+      (keyword_cache))))
+
+================================================================================
+REFRESH TABLE
+================================================================================
+
+REFRESH TABLE my_db.my_table
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (refresh_table_databricks
+      (keyword_refresh)
+      (keyword_table)
+      (object_reference
+        schema: (identifier)
+        name: (identifier)))))
+
+================================================================================
+REFRESH FUNCTION
+================================================================================
+
+REFRESH FUNCTION my_func
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (refresh_function
+      (keyword_refresh)
+      (keyword_function)
+      (object_reference
+        name: (identifier)))))

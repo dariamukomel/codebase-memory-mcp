@@ -1,0 +1,29 @@
+{
+  "grammars": [
+    {
+      "name": "cockroachdb_sql",
+      "camelcase": "CockroachdbSQL",
+      "scope": "source.cockroachdb.sql",
+      "path": ".",
+      "file-types": [
+        "sql"
+      ],
+      "highlights": [
+        "queries/highlights.scm"
+      ]
+    }
+  ],
+  "metadata": {
+    "version": "0.1.2",
+    "license": "MIT",
+    "description": "Tree-sitter PostgreSQL grammar (extends base SQL)",
+    "authors": [
+      {
+        "name": "relativelyunknown"
+      }
+    ],
+    "links": {
+      "repository": "git+https://github.com/relativelyunknown/tree-sitter-sql-polyglot.git"
+    }
+  }
+}

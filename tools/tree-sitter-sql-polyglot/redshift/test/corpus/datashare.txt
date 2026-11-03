@@ -1,0 +1,36 @@
+================================================================================
+CREATE DATASHARE
+================================================================================
+
+CREATE DATASHARE ds;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_datashare
+      (keyword_create)
+      (keyword_datashare)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+ALTER DATASHARE ADD TABLE
+================================================================================
+
+ALTER DATASHARE ds ADD TABLE public.t;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_datashare
+      (keyword_alter)
+      (keyword_datashare)
+      (object_reference
+        name: (identifier))
+      (keyword_add)
+      (keyword_table)
+      (object_reference
+        schema: (identifier)
+        name: (identifier)))))

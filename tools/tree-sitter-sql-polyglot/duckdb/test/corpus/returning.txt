@@ -1,0 +1,156 @@
+================================================================================
+DuckDB: INSERT VALUES RETURNING *
+================================================================================
+
+INSERT INTO t1 VALUES (1, 'a') RETURNING *;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (insert
+      (keyword_insert)
+      (keyword_into)
+      (object_reference
+        (identifier))
+      (keyword_values)
+      (list
+        (literal)
+        (literal)))
+    (returning
+      (keyword_returning)
+      (select_expression
+        (term
+          (all_fields))))))
+
+================================================================================
+DuckDB: INSERT SELECT RETURNING column
+================================================================================
+
+INSERT INTO t1 SELECT * FROM src RETURNING id;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (insert
+      (keyword_insert)
+      (keyword_into)
+      (object_reference
+        (identifier))
+      (select
+        (keyword_select)
+        (select_expression
+          (term
+            (all_fields))))
+      (from
+        (keyword_from)
+        (relation
+          (object_reference
+            (identifier)))))
+    (returning
+      (keyword_returning)
+      (select_expression
+        (term
+          (field
+            (identifier)))))))
+
+================================================================================
+DuckDB: UPDATE RETURNING *
+================================================================================
+
+UPDATE t1 SET col = 42 WHERE id = 1 RETURNING *;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (update
+      (keyword_update)
+      (relation
+        (object_reference
+          (identifier)))
+      (keyword_set)
+      (assignment
+        (field
+          (identifier))
+        (literal))
+      (where
+        (keyword_where)
+        (binary_expression
+          (field
+            (identifier))
+          (literal))))
+    (returning
+      (keyword_returning)
+      (select_expression
+        (term
+          (all_fields))))))
+
+================================================================================
+DuckDB: DELETE RETURNING columns
+================================================================================
+
+DELETE FROM t1 WHERE id = 1 RETURNING id, name;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (delete
+      (keyword_delete))
+    (from
+      (keyword_from)
+      (object_reference
+        (identifier))
+      (where
+        (keyword_where)
+        (binary_expression
+          (field
+            (identifier))
+          (literal))))
+    (returning
+      (keyword_returning)
+      (select_expression
+        (term
+          (field
+            (identifier)))
+        (term
+          (field
+            (identifier)))))))
+
+================================================================================
+DuckDB: INSERT RETURNING expression with alias
+================================================================================
+
+INSERT INTO t1 (a, b) VALUES (1, 2) RETURNING a + b AS total;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (insert
+      (keyword_insert)
+      (keyword_into)
+      (object_reference
+        (identifier))
+      (list
+        (column
+          (identifier))
+        (column
+          (identifier)))
+      (keyword_values)
+      (list
+        (literal)
+        (literal)))
+    (returning
+      (keyword_returning)
+      (select_expression
+        (term
+          (binary_expression
+            (field
+              (identifier))
+            (field
+              (identifier)))
+          (keyword_as)
+          (identifier))))))

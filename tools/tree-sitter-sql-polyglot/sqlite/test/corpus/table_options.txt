@@ -1,0 +1,44 @@
+================================================================================
+SQLite: CREATE TABLE WITHOUT ROWID
+================================================================================
+
+CREATE TABLE t (id INT) WITHOUT ROWID;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int))))
+      (keyword_without)
+      (keyword_rowid))))
+
+================================================================================
+SQLite: CREATE TABLE STRICT
+================================================================================
+
+CREATE TABLE t (id INT) STRICT;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int))))
+      (keyword_strict))))

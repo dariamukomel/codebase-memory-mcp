@@ -1,0 +1,73 @@
+================================================================================
+Call with positional arguments
+================================================================================
+
+CALL p(1, 'a');
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (call_statement
+      (keyword_call)
+      name: (object_reference
+        name: (identifier))
+      (literal)
+      (literal))))
+
+================================================================================
+Call with no arguments
+================================================================================
+
+CALL p();
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (call_statement
+      (keyword_call)
+      name: (object_reference
+        name: (identifier)))))
+
+================================================================================
+Call with qualified name
+================================================================================
+
+CALL s.p(1 + 2, c);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (call_statement
+      (keyword_call)
+      name: (object_reference
+        schema: (identifier)
+        name: (identifier))
+      (binary_expression
+        left: (literal)
+        right: (literal))
+      (field
+        name: (identifier)))))
+
+================================================================================
+Call with named arguments
+================================================================================
+
+CALL p(a => 1, b => 2);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (call_statement
+      (keyword_call)
+      name: (object_reference
+        name: (identifier))
+      (named_argument
+        name: (identifier)
+        value: (literal))
+      (named_argument
+        name: (identifier)
+        value: (literal)))))

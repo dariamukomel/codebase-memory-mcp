@@ -1,0 +1,18 @@
+================================================================================
+MariaDB Optimize Table
+================================================================================
+
+OPTIMIZE LOCAL TABLE my_table1, my_table2
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (keyword_optimize)
+    (keyword_local)
+    (keyword_table)
+    (object_reference
+      (identifier))
+    (object_reference
+      (identifier))))
+

@@ -1,0 +1,148 @@
+================================================================================
+MariaDB: UPDATE RETURNING with expression alias
+================================================================================
+
+UPDATE t SET col = 2 * col + 1 WHERE id > 5 RETURNING id, col AS new_val;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (update
+      (keyword_update)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (keyword_set)
+      (assignment
+        left: (field
+          name: (identifier))
+        right: (binary_expression
+          left: (binary_expression
+            left: (literal)
+            right: (field
+              name: (identifier)))
+          right: (literal)))
+      (where
+        (keyword_where)
+        predicate: (binary_expression
+          left: (field
+            name: (identifier))
+          right: (literal)))
+      (returning
+        (keyword_returning)
+        (select_expression
+          (term
+            value: (field
+              name: (identifier)))
+          (term
+            value: (field
+              name: (identifier))
+            (keyword_as)
+            alias: (identifier)))))))
+
+================================================================================
+MariaDB: DELETE RETURNING multiple columns
+================================================================================
+
+DELETE FROM orders WHERE amount < 10 RETURNING id, amount, customer_id;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (delete
+      (keyword_delete))
+    (from
+      (keyword_from)
+      (object_reference
+        name: (identifier))
+      (where
+        (keyword_where)
+        predicate: (binary_expression
+          left: (field
+            name: (identifier))
+          right: (literal))))
+    (returning
+      (keyword_returning)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))
+        (term
+          value: (field
+            name: (identifier)))
+        (term
+          value: (field
+            name: (identifier)))))))
+
+================================================================================
+MariaDB: INSERT with multiple columns RETURNING
+================================================================================
+
+INSERT INTO t (a, b) VALUES (1, 'x') RETURNING id, a, b;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (insert
+      (keyword_insert)
+      (keyword_into)
+      (object_reference
+        name: (identifier))
+      (list
+        (column
+          (identifier))
+        (column
+          (identifier)))
+      (keyword_values)
+      (list
+        (literal)
+        (literal))
+      (returning
+        (keyword_returning)
+        (select_expression
+          (term
+            value: (field
+              name: (identifier)))
+          (term
+            value: (field
+              name: (identifier)))
+          (term
+            value: (field
+              name: (identifier))))))))
+
+================================================================================
+MariaDB: REPLACE INTO with RETURNING
+================================================================================
+
+REPLACE INTO t (id, name) VALUES (1, 'Alice') RETURNING id, name;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (insert
+      (keyword_replace)
+      (keyword_into)
+      (object_reference
+        name: (identifier))
+      (list
+        (column
+          (identifier))
+        (column
+          (identifier)))
+      (keyword_values)
+      (list
+        (literal)
+        (literal))
+      (returning
+        (keyword_returning)
+        (select_expression
+          (term
+            value: (field
+              name: (identifier)))
+          (term
+            value: (field
+              name: (identifier))))))))

@@ -1,0 +1,15 @@
+================================================================================
+ANALYZE COMPRESSION
+================================================================================
+
+ANALYZE COMPRESSION orders
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (analyze_compression_statement
+      (keyword_analyze)
+      (keyword_compression)
+      (object_reference
+        (identifier)))))

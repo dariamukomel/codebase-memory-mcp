@@ -1,0 +1,273 @@
+================================================================================
+Alter table and add column
+================================================================================
+
+ALTER TABLE my_table
+  ADD COLUMN val3 VARCHAR(100) NOT NULL;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (add_column
+        (keyword_add)
+        (keyword_column)
+        (column_definition
+          name: (identifier)
+          type: (varchar
+            (keyword_varchar)
+            size: (literal))
+          (keyword_not)
+          (keyword_null))))))
+
+================================================================================
+Alter table and add column with FQN
+================================================================================
+
+ALTER TABLE my_database.my_table.my_table
+  ADD COLUMN val3 VARCHAR(100) NOT NULL;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        database: (identifier)
+        schema: (identifier)
+        name: (identifier))
+      (add_column
+        (keyword_add)
+        (keyword_column)
+        (column_definition
+          name: (identifier)
+          type: (varchar
+            (keyword_varchar)
+            size: (literal))
+          (keyword_not)
+          (keyword_null))))))
+
+================================================================================
+Alter table and add column, eliding column keyword
+================================================================================
+
+ALTER TABLE my_table
+  ADD val3 VARCHAR(100) NOT NULL;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (add_column
+        (keyword_add)
+        (column_definition
+          name: (identifier)
+          type: (varchar
+            (keyword_varchar)
+            size: (literal))
+          (keyword_not)
+          (keyword_null))))))
+
+================================================================================
+Alter table and alter column setting default
+================================================================================
+
+ALTER TABLE my_table
+  ALTER COLUMN val3 SET DEFAULT 'hi';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (alter_column
+        (keyword_alter)
+        (keyword_column)
+        name: (identifier)
+        (keyword_set)
+        (keyword_default)
+        (literal)))))
+
+================================================================================
+Alter table and alter column dropping default
+================================================================================
+
+ALTER TABLE my_table
+  ALTER COLUMN val3 DROP DEFAULT;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (alter_column
+        (keyword_alter)
+        (keyword_column)
+        name: (identifier)
+        (keyword_drop)
+        (keyword_default)))))
+
+================================================================================
+Alter table and alter column dropping not-null constraint
+================================================================================
+
+ALTER TABLE my_table
+  ALTER COLUMN val3 DROP NOT NULL;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (alter_column
+        (keyword_alter)
+        (keyword_column)
+        name: (identifier)
+        (keyword_drop)
+        (keyword_not)
+        (keyword_null)))))
+
+================================================================================
+alter with constraint
+================================================================================
+
+ALTER TABLE "Role" ADD CONSTRAINT "pkRole" PRIMARY KEY ("roleId");
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (add_constraint
+        (keyword_add)
+        (constraint
+          (keyword_constraint)
+          (identifier)
+          (keyword_primary)
+          (keyword_key)
+          (ordered_columns
+            (column
+              (identifier))))))))
+
+================================================================================
+Add foreign key constraint
+================================================================================
+
+ALTER TABLE "AccountRole" ADD CONSTRAINT "fkAccountRoleAccount"
+FOREIGN KEY ("accountId") REFERENCES "Account" ("accountId") ON DELETE CASCADE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (add_constraint
+        (keyword_add)
+        (constraint
+          (keyword_constraint)
+          (identifier)
+          (keyword_foreign)
+          (keyword_key)
+          (ordered_columns
+            (column
+              (identifier)))
+          (keyword_references)
+          (object_reference
+            (identifier))
+          (identifier)
+          (keyword_on)
+          (keyword_delete)
+          (keyword_cascade))))))
+
+================================================================================
+Alter sequence restart
+================================================================================
+
+ALTER SEQUENCE serial RESTART WITH 105;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_sequence
+      (keyword_alter)
+      (keyword_sequence)
+      (object_reference
+        (identifier))
+      (keyword_restart)
+      (keyword_with)
+      (literal))))
+
+================================================================================
+Add foreign key constraint
+================================================================================
+
+ALTER TABLE "AccountRole" ADD CONSTRAINT "fkAccountRoleAccount"
+FOREIGN KEY ("accountId") REFERENCES "Account" ("accountId")
+ON DELETE SET NULL
+ON UPDATE SET DEFAULT;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (add_constraint
+        (keyword_add)
+        (constraint
+          (keyword_constraint)
+          (identifier)
+          (keyword_foreign)
+          (keyword_key)
+          (ordered_columns
+            (column
+              (identifier)))
+          (keyword_references)
+          (object_reference
+            (identifier))
+          (identifier)
+          (keyword_on)
+          (keyword_delete)
+          (keyword_set)
+          (keyword_null)
+          (keyword_on)
+          (keyword_update)
+          (keyword_set)
+          (keyword_default))))))
+

@@ -1,0 +1,60 @@
+================================================================================
+DELETE with RETURNING
+================================================================================
+
+DELETE FROM t WHERE a = 1 RETURNING *;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (delete
+      (keyword_delete))
+    (from
+      (keyword_from)
+      (object_reference
+        name: (identifier))
+      (where
+        (keyword_where)
+        predicate: (binary_expression
+          left: (field
+            name: (identifier))
+          right: (literal))))
+    (returning
+      (keyword_returning)
+      (select_expression
+        (term
+          value: (all_fields))))))
+
+================================================================================
+UPDATE with RETURNING
+================================================================================
+
+UPDATE t SET a = 2 WHERE b = 1 RETURNING a;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (update
+      (keyword_update)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (keyword_set)
+      (assignment
+        left: (field
+          name: (identifier))
+        right: (literal))
+      (where
+        (keyword_where)
+        predicate: (binary_expression
+          left: (field
+            name: (identifier))
+          right: (literal))))
+    (returning
+      (keyword_returning)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))))))

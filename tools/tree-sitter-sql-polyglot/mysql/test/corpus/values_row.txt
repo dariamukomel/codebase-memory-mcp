@@ -1,0 +1,20 @@
+================================================================================
+MySQL: VALUES ROW constructor
+================================================================================
+
+VALUES ROW(1, 'alice', 100), ROW(2, 'bob', 200);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (values_row_statement
+      (keyword_values)
+      (keyword_row)
+      (literal)
+      (literal)
+      (literal)
+      (keyword_row)
+      (literal)
+      (literal)
+      (literal))))

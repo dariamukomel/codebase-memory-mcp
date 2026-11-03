@@ -1,0 +1,136 @@
+================================================================================
+Simple update
+================================================================================
+
+UPDATE my_table
+SET for = foo + 1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (update
+      (keyword_update)
+      (object_reference
+        (identifier))
+      (keyword_set)
+      (assignment
+        (field
+          (identifier))
+        (binary_expression
+          (field
+            (identifier))
+          (literal))))))
+
+================================================================================
+Simple update with ONLY
+================================================================================
+
+UPDATE ONLY my_table
+SET for = foo + 1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (update
+      (keyword_update)
+      (object_reference
+        (identifier))
+      (identifier)
+      (keyword_set)
+      (assignment
+        (field
+          (identifier))
+        (binary_expression
+          (field
+            (identifier))
+          (literal))))))
+
+================================================================================
+update with multiple assignments
+================================================================================
+
+UPDATE my_table
+SET for = foo + 1, col2 = col1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (update
+      (keyword_update)
+      (object_reference
+        (identifier))
+      (keyword_set)
+      (assignment
+        (field
+          (identifier))
+        (binary_expression
+          (field
+            (identifier))
+          (literal)))
+      (assignment
+        (field
+          (identifier))
+        (field
+          (identifier))))))
+
+================================================================================
+update with function call
+================================================================================
+
+UPDATE my_table
+SET ts = now();
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (update
+      (keyword_update)
+      (object_reference
+        (identifier))
+      (keyword_set)
+      (assignment
+        (field
+          (identifier))
+        (invocation
+          (object_reference
+            (identifier)))))))
+
+================================================================================
+Postgres style update
+================================================================================
+
+UPDATE table_a as a
+SET d = 5
+WHERE b.a = a.uid;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (update
+      (keyword_update)
+      (object_reference
+        (identifier))
+      (keyword_as)
+      (identifier)
+      (keyword_set)
+      (assignment
+        (field
+          (identifier))
+        (literal))
+      (where
+        (keyword_where)
+        (binary_expression
+          (field
+            (object_reference
+              (identifier))
+            (identifier))
+          (field
+            (object_reference
+              (identifier))
+            (identifier)))))))
+

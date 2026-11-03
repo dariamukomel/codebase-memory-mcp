@@ -1,0 +1,361 @@
+================================================================================
+TOP, positional columns and SAMPLE
+================================================================================
+
+SELECT TOP 10 $1, t.$2 FROM t SAMPLE BERNOULLI (10 ROWS);
+SELECT * FROM t TABLESAMPLE SYSTEM (3) SEED (82);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (keyword_top)
+      (literal)
+      (select_expression
+        (term
+          (parameter))
+        (term
+          (field
+            (object_reference
+              (identifier))
+            (parameter)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier))
+        (tablesample
+          (keyword_sample)
+          (keyword_bernoulli)
+          (literal)
+          (keyword_rows)))))
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier))
+        (tablesample
+          (keyword_tablesample)
+          (keyword_system)
+          (literal)
+          (keyword_seed)
+          (literal))))))
+
+================================================================================
+Star REPLACE and set operators
+================================================================================
+
+SELECT * REPLACE (a + 1 AS a) RENAME b AS bb FROM t;
+SELECT a FROM t MINUS SELECT a FROM u;
+SELECT * FROM t UNION ALL BY NAME SELECT * FROM u;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (all_fields_transform
+            (keyword_replace)
+            (binary_expression
+              (field
+                (identifier))
+              (literal))
+            (keyword_as)
+            (identifier)
+            (keyword_rename)
+            (identifier)
+            (keyword_as)
+            (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier)))))
+  (statement
+    (set_operation
+      (select
+        (keyword_select)
+        (select_expression
+          (term
+            (field
+              (identifier)))))
+      (from
+        (keyword_from)
+        (relation
+          (object_reference
+            (identifier))))
+      (keyword_minus)
+      (select
+        (keyword_select)
+        (select_expression
+          (term
+            (field
+              (identifier)))))
+      (from
+        (keyword_from)
+        (relation
+          (object_reference
+            (identifier))))))
+  (statement
+    (set_operation
+      (select
+        (keyword_select)
+        (select_expression
+          (term
+            (all_fields))))
+      (from
+        (keyword_from)
+        (relation
+          (object_reference
+            (identifier))))
+      (keyword_union)
+      (keyword_all)
+      (keyword_by)
+      (keyword_name)
+      (select
+        (keyword_select)
+        (select_expression
+          (term
+            (all_fields))))
+      (from
+        (keyword_from)
+        (relation
+          (object_reference
+            (identifier)))))))
+
+================================================================================
+Joins: natural, directed, asof
+================================================================================
+
+SELECT * FROM t NATURAL JOIN u;
+SELECT * FROM t INNER DIRECTED JOIN u ON u.id = t.id;
+SELECT * FROM t ASOF JOIN u MATCH_CONDITION (t.ts >= u.ts) ON t.k = u.k;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier)))
+      (join
+        (keyword_natural)
+        (keyword_join)
+        (relation
+          (object_reference
+            (identifier))))))
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier)))
+      (join
+        (keyword_inner)
+        (keyword_directed)
+        (keyword_join)
+        (relation
+          (object_reference
+            (identifier)))
+        (keyword_on)
+        (binary_expression
+          (field
+            (object_reference
+              (identifier))
+            (identifier))
+          (field
+            (object_reference
+              (identifier))
+            (identifier))))))
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier)))
+      (asof_join
+        (keyword_asof)
+        (keyword_join)
+        (relation
+          (object_reference
+            (identifier)))
+        (keyword_match_condition)
+        (binary_expression
+          (field
+            (object_reference
+              (identifier))
+            (identifier))
+          (field
+            (object_reference
+              (identifier))
+            (identifier)))
+        (keyword_on)
+        (binary_expression
+          (field
+            (object_reference
+              (identifier))
+            (identifier))
+          (field
+            (object_reference
+              (identifier))
+            (identifier)))))))
+
+================================================================================
+CHANGES and PIVOT forms
+================================================================================
+
+SELECT * FROM t CHANGES(INFORMATION => DEFAULT) AT(TIMESTAMP => $ts1) END(TIMESTAMP => $ts2);
+SELECT * FROM t PIVOT(SUM(amount) AS total FOR quarter IN ('Q1' AS q1, 'Q2') DEFAULT ON NULL (0));
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier))
+        (changes_clause
+          (keyword_changes)
+          (keyword_information)
+          (keyword_default)
+          (keyword_at)
+          (time_travel_spec
+            (keyword_timestamp)
+            (parameter))
+          (keyword_end)
+          (time_travel_spec
+            (keyword_timestamp)
+            (parameter))))))
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier))
+        (pivot_clause
+          (keyword_pivot)
+          (invocation
+            (object_reference
+              (identifier))
+            (term
+              (field
+                (identifier))))
+          (keyword_as)
+          (identifier)
+          (keyword_for)
+          (identifier)
+          (keyword_in)
+          (pivot_in_list
+            (literal)
+            (keyword_as)
+            (identifier)
+            (literal))
+          (keyword_default)
+          (keyword_on)
+          (keyword_null)
+          (literal))))))
+
+================================================================================
+DELETE USING, SET, UNSET, TRUNCATE
+================================================================================
+
+DELETE FROM t USING u, v WHERE t.k = u.k;
+SET (v1, v2) = (10, 'x');
+UNSET v1;
+TRUNCATE TABLE IF EXISTS db.s.t;
+TRUNCATE MATERIALIZED VIEW mv;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (delete
+      (keyword_delete))
+    (from
+      (keyword_from)
+      (object_reference
+        (identifier))
+      (keyword_using)
+      (relation
+        (object_reference
+          (identifier)))
+      (relation
+        (object_reference
+          (identifier)))
+      (where
+        (keyword_where)
+        (binary_expression
+          (field
+            (object_reference
+              (identifier))
+            (identifier))
+          (field
+            (object_reference
+              (identifier))
+            (identifier))))))
+  (statement
+    (set_statement
+      (keyword_set)
+      (identifier)
+      (identifier)
+      (literal)
+      (literal)))
+  (statement
+    (unset_statement
+      (keyword_unset)
+      (identifier)))
+  (statement
+    (keyword_truncate)
+    (keyword_table)
+    (keyword_if)
+    (keyword_exists)
+    (object_reference
+      (identifier)
+      (identifier)
+      (identifier)))
+  (statement
+    (keyword_truncate)
+    (keyword_materialized)
+    (keyword_view)
+    (object_reference
+      (identifier))))

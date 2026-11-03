@@ -1,0 +1,36 @@
+================================================================================
+PREPARE / EXECUTE / DEALLOCATE
+================================================================================
+
+PREPARE p1 AS SELECT a FROM t1;
+EXECUTE p1(1);
+DEALLOCATE ALL;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (prepare_statement
+      (keyword_prepare)
+      name: (identifier)
+      (keyword_as)
+      (select
+        (keyword_select)
+        (select_expression
+          (term
+            value: (field
+              name: (identifier)))))
+      (from
+        (keyword_from)
+        (relation
+          (object_reference
+            name: (identifier))))))
+  (statement
+    (execute_statement
+      (keyword_execute)
+      name: (identifier)
+      (literal)))
+  (statement
+    (deallocate_statement
+      (keyword_deallocate)
+      (keyword_all))))

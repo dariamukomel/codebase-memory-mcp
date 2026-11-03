@@ -1,0 +1,84 @@
+================================================================================
+SYSTEM SYNC REPLICA
+================================================================================
+
+SYSTEM SYNC REPLICA t
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (system_statement
+      (keyword_system)
+      (keyword_sync)
+      (keyword_replica)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+SYSTEM RELOAD CONFIG
+================================================================================
+
+SYSTEM RELOAD CONFIG
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (system_statement
+      (keyword_system)
+      (keyword_reload)
+      (keyword_config))))
+
+================================================================================
+SYSTEM STOP FETCHES
+================================================================================
+
+SYSTEM STOP FETCHES t
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (system_statement
+      (keyword_system)
+      (keyword_stop)
+      (keyword_fetches)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+SYSTEM FLUSH DISTRIBUTED
+================================================================================
+
+SYSTEM FLUSH DISTRIBUTED t
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (system_statement
+      (keyword_system)
+      (keyword_flush)
+      (keyword_distributed)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+SYSTEM STOP TTL MERGES ON CLUSTER
+================================================================================
+
+SYSTEM STOP TTL MERGES t
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (system_statement
+      (keyword_system)
+      (keyword_stop)
+      (keyword_ttl)
+      (keyword_merges)
+      (object_reference
+        name: (identifier)))))
+

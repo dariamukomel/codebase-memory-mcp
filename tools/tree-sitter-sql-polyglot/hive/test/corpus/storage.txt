@@ -1,0 +1,106 @@
+================================================================================
+Hive: ROW FORMAT DELIMITED
+================================================================================
+
+CREATE TABLE t (id INT)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int))))
+      (row_format
+        (keyword_row)
+        (keyword_format)
+        (keyword_delimited)
+        (keyword_fields)
+        (keyword_terminated)
+        (keyword_by)
+        fields_terminated_char: (literal)))))
+
+================================================================================
+Hive: ROW FORMAT SERDE
+================================================================================
+
+CREATE TABLE t (id INT)
+ROW FORMAT SERDE 'org.apache.hive.hcatalog.data.JsonSerDe';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int))))
+      (row_format
+        (keyword_row)
+        (keyword_format)
+        (keyword_serde)
+        class: (literal)))))
+
+================================================================================
+Hive: STORED AS ORC
+================================================================================
+
+CREATE TABLE t (id INT) STORED AS ORC;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int))))
+      (stored_as
+        (keyword_stored)
+        (keyword_as)
+        (keyword_orc)))))
+
+================================================================================
+Hive: STORED BY handler
+================================================================================
+
+CREATE TABLE t (id INT) STORED BY 'org.example.MyStorageHandler';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int))))
+      (stored_by
+        (keyword_stored)
+        (keyword_by)
+        handler: (literal)))))

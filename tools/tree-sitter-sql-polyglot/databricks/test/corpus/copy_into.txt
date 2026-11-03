@@ -1,0 +1,24 @@
+================================================================================
+COPY INTO
+================================================================================
+
+COPY INTO t FROM 's3://b/p' FILEFORMAT = PARQUET PATTERN = '*.parquet' COPY_OPTIONS ('mergeSchema'='true');
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (copy_into_statement
+      (keyword_copy)
+      (keyword_into)
+      (object_reference
+        name: (identifier))
+      (keyword_from)
+      (literal)
+      (keyword_fileformat)
+      (identifier)
+      (keyword_pattern)
+      (literal)
+      (keyword_copy_options)
+      (literal)
+      (literal))))

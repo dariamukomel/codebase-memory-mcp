@@ -1,0 +1,244 @@
+================================================================================
+ALTER TABLE UPDATE mutation
+================================================================================
+
+ALTER TABLE t UPDATE x = 1, y = y + 1 WHERE id = 2
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (alter_update
+        (keyword_update)
+        (assignment
+          (field
+            (identifier))
+          (literal))
+        (assignment
+          (field
+            (identifier))
+          (binary_expression
+            (field
+              (identifier))
+            (literal)))
+        (where
+          (keyword_where)
+          (binary_expression
+            (field
+              (identifier))
+            (literal)))))))
+
+================================================================================
+ALTER TABLE DELETE mutation
+================================================================================
+
+ALTER TABLE t DELETE WHERE id = 2
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (alter_delete
+        (keyword_delete)
+        (where
+          (keyword_where)
+          (binary_expression
+            (field
+              (identifier))
+            (literal)))))))
+
+================================================================================
+ALTER TABLE DROP PARTITION
+================================================================================
+
+ALTER TABLE t DROP PARTITION 202401
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (alter_partition
+        (keyword_drop)
+        (keyword_partition)
+        (literal)))))
+
+================================================================================
+OPTIMIZE TABLE FINAL
+================================================================================
+
+OPTIMIZE TABLE t FINAL
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (optimize_statement
+      (keyword_optimize)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (keyword_final))))
+
+================================================================================
+OPTIMIZE TABLE DEDUPLICATE BY
+================================================================================
+
+OPTIMIZE TABLE t FINAL DEDUPLICATE BY id
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (optimize_statement
+      (keyword_optimize)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (keyword_final)
+      (keyword_deduplicate)
+      (keyword_by)
+      (field
+        (identifier)))))
+
+================================================================================
+ALTER TABLE UPDATE IN PARTITION
+================================================================================
+
+ALTER TABLE t UPDATE x = 1 IN PARTITION 202401 WHERE id = 2
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (alter_update
+        (keyword_update)
+        (assignment
+          (field
+            (identifier))
+          (literal))
+        (in_partition_clause
+          (keyword_in)
+          (keyword_partition)
+          (literal))
+        (where
+          (keyword_where)
+          (binary_expression
+            (field
+              (identifier))
+            (literal)))))))
+
+================================================================================
+ALTER TABLE DELETE IN PARTITION
+================================================================================
+
+ALTER TABLE t DELETE IN PARTITION 202401 WHERE id = 2
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (alter_delete
+        (keyword_delete)
+        (in_partition_clause
+          (keyword_in)
+          (keyword_partition)
+          (literal))
+        (where
+          (keyword_where)
+          (binary_expression
+            (field
+              (identifier))
+            (literal)))))))
+
+================================================================================
+ALTER TABLE ADD skipping INDEX
+================================================================================
+
+ALTER TABLE t1 ADD INDEX idx1 a TYPE minmax GRANULARITY 4;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (alter_index_spec
+        (keyword_add)
+        (keyword_index)
+        name: (identifier)
+        expression: (field
+          name: (identifier))
+        (keyword_type)
+        type: (identifier)
+        (keyword_granularity)
+        (literal)))))
+
+================================================================================
+OPTIMIZE TABLE with FORCE and CLEANUP
+================================================================================
+
+OPTIMIZE TABLE t PARTITION 'p1' FORCE DEDUPLICATE CLEANUP
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (optimize_statement
+      (keyword_optimize)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_partition)
+      (partition_selector
+        partition: (literal))
+      (keyword_force)
+      (keyword_deduplicate)
+      (keyword_cleanup))))
+
+================================================================================
+OPTIMIZE TABLE with PARTITION ID
+================================================================================
+
+OPTIMIZE TABLE t PARTITION ID '20240101' FINAL
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (optimize_statement
+      (keyword_optimize)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_partition)
+      (partition_selector
+        (partition_id))
+      (keyword_final))))

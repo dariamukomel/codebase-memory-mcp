@@ -1,0 +1,26 @@
+================================================================================
+CREATE EXTERNAL FUNCTION
+================================================================================
+
+CREATE EXTERNAL FUNCTION f(int) RETURNS int STABLE LAMBDA 'fn' IAM_ROLE 'arn:x';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_external_function
+      (keyword_create)
+      (keyword_external)
+      (keyword_function)
+      (object_reference
+        name: (identifier))
+      (int
+        (keyword_int))
+      (keyword_returns)
+      (int
+        (keyword_int))
+      (keyword_stable)
+      (keyword_lambda)
+      (literal)
+      (keyword_iam_role)
+      (literal))))

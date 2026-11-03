@@ -19,6 +19,7 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd -P)"
 CHECKSUMS="$ROOT/scripts/vendored-checksums.txt"
 VENDORED_ROOT="$ROOT/vendored"
 INTERNAL_VENDORED_ROOT="$ROOT/internal/cbm/vendored"
+SQL_POLYGLOT_ROOT="$ROOT/tools/tree-sitter-sql-polyglot"
 VENDORED_ROOTS=("$VENDORED_ROOT")
 
 if [[ ! -f "$CHECKSUMS" || -L "$CHECKSUMS" ]]; then
@@ -35,6 +36,12 @@ if [[ -e "$INTERNAL_VENDORED_ROOT" ]]; then
         exit 1
     fi
     VENDORED_ROOTS+=("$INTERNAL_VENDORED_ROOT")
+fi
+if [[ -e "$SQL_POLYGLOT_ROOT" ]]; then
+    if [[ ! -d "$SQL_POLYGLOT_ROOT" || -L "$SQL_POLYGLOT_ROOT" ]]; then
+        echo "FAIL: SQL Polyglot root must be a regular, non-symlink directory: $SQL_POLYGLOT_ROOT"
+        exit 1
+    fi
 fi
 
 echo "=== Layer 8: Vendored Dependency Integrity ==="
@@ -83,7 +90,8 @@ DISCOVERED=0
 
 valid_vendored_path() {
     local path="$1"
-    [[ "$path" == vendored/* || "$path" == internal/cbm/vendored/* ]] || return 1
+    [[ "$path" == vendored/* || "$path" == internal/cbm/vendored/* ||
+       "$path" == tools/tree-sitter-sql-polyglot/* ]] || return 1
     [[ "$path" != *'\\'* ]] || return 1
     [[ "$path" != *'//'* ]] || return 1
     [[ "$path" != *'/./'* && "$path" != */. ]] || return 1
@@ -108,12 +116,21 @@ hash_file() {
 # linked verbatim through .incbin, while all generated grammar sources enter
 # the product link. This makes path validation independent of whitespace and
 # ensures find/read failures are structural, not silent skips.
-if ! find "${VENDORED_ROOTS[@]}" -type f -print0 \
-    > "$VENDORED_FILES"; then
+if ! find "${VENDORED_ROOTS[@]}" -type f -print0 > "$VENDORED_FILES"; then
     echo "BLOCKED: cannot inventory vendored files"
     STRUCTURAL_FAIL=1
 fi
-if ! find "${VENDORED_ROOTS[@]}" -type l -print0 > "$VENDORED_SYMLINKS"; then
+if [[ -d "$SQL_POLYGLOT_ROOT" ]] &&
+   ! find "$SQL_POLYGLOT_ROOT" -type f \
+       ! -path '*/src/parser.c' \
+       ! -path '*/src/node-types.json' \
+       ! -path '*/queries/highlights.bundled.scm' \
+       -print0 >> "$VENDORED_FILES"; then
+    echo "BLOCKED: cannot inventory SQL Polyglot files"
+    STRUCTURAL_FAIL=1
+fi
+if ! find "${VENDORED_ROOTS[@]}" "$SQL_POLYGLOT_ROOT" -type l -print0 \
+    > "$VENDORED_SYMLINKS"; then
     echo "BLOCKED: cannot inspect vendored symlinks"
     STRUCTURAL_FAIL=1
 fi
@@ -302,6 +319,26 @@ if [[ -d "$ROOT/internal/cbm/vendored" ]]; then
         STRUCTURAL_FAIL=1
     else
         echo "OK: No dangerous calls in vendored tree-sitter grammars"
+    fi
+fi
+
+# SQL Polyglot is kept as compressed generated parsers plus grammar sources in
+# tools/ to avoid committing roughly 500 MB of inflated parser.c files. It is
+# nevertheless compiled into the release and receives the same C scanner audit.
+if [[ -d "$SQL_POLYGLOT_ROOT" ]]; then
+    SQL_POLYGLOT_FAIL=false
+    for pattern in 'system(' 'popen(' 'execl(' 'execv(' 'fork(' 'connect(' 'socket(' 'sendto(' 'dlopen(' 'LoadLibrary('; do
+        HITS="$(grep -rl -F "$pattern" "$SQL_POLYGLOT_ROOT" --include='*.c' --include='*.h' 2>/dev/null | head -3 || true)"
+        if [[ -n "$HITS" ]]; then
+            echo "BLOCKED: '$pattern' found in SQL Polyglot C sources:"
+            echo "$HITS" | sed 's|.*/tools/|  tools/|'
+            SQL_POLYGLOT_FAIL=true
+        fi
+    done
+    if $SQL_POLYGLOT_FAIL; then
+        STRUCTURAL_FAIL=1
+    else
+        echo "OK: No dangerous calls in SQL Polyglot C sources"
     fi
 fi
 

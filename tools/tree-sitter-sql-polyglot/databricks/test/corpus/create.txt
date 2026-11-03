@@ -1,0 +1,406 @@
+================================================================================
+Shallow Clone
+================================================================================
+
+CREATE TABLE target SHALLOW CLONE source
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (shallow_clone
+        (keyword_shallow)
+        (keyword_clone)
+        (object_reference
+          (identifier))))))
+
+================================================================================
+Create Namespace
+================================================================================
+
+CREATE NAMESPACE IF NOT EXISTS my_ns
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_namespace
+      (keyword_create)
+      (keyword_namespace)
+      (keyword_if)
+      (keyword_not)
+      (keyword_exists)
+      (object_reference
+        (identifier)))))
+
+================================================================================
+Create Streaming Table (minimal)
+================================================================================
+
+CREATE STREAMING TABLE bronze AS SELECT * FROM raw_data
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_streaming_table
+      (keyword_create)
+      (keyword_streaming)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (keyword_as)
+      (create_query
+        (select
+          (keyword_select)
+          (select_expression
+            (term
+              (all_fields))))
+        (from
+          (keyword_from)
+          (relation
+            (object_reference
+              (identifier))))))))
+
+================================================================================
+Create Streaming Table with cluster by and comment
+================================================================================
+
+CREATE OR REPLACE STREAMING TABLE IF NOT EXISTS catalog.schema.bronze
+  CLUSTER BY (id, event_date)
+  COMMENT 'Raw bronze layer'
+  AS SELECT * FROM raw_data
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_streaming_table
+      (keyword_create)
+      (keyword_or)
+      (keyword_replace)
+      (keyword_streaming)
+      (keyword_table)
+      (keyword_if)
+      (keyword_not)
+      (keyword_exists)
+      (object_reference
+        (identifier)
+        (identifier)
+        (identifier))
+      (keyword_cluster)
+      (keyword_by)
+      (identifier)
+      (identifier)
+      (keyword_comment)
+      (literal)
+      (keyword_as)
+      (create_query
+        (select
+          (keyword_select)
+          (select_expression
+            (term
+              (all_fields))))
+        (from
+          (keyword_from)
+          (relation
+            (object_reference
+              (identifier))))))))
+
+================================================================================
+Create Live Table
+================================================================================
+
+CREATE LIVE TABLE silver AS SELECT * FROM bronze
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_live_table
+      (keyword_create)
+      (keyword_live)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (keyword_as)
+      (create_query
+        (select
+          (keyword_select)
+          (select_expression
+            (term
+              (all_fields))))
+        (from
+          (keyword_from)
+          (relation
+            (object_reference
+              (identifier))))))))
+
+================================================================================
+Create Table Like
+================================================================================
+
+CREATE TABLE new_table LIKE existing_table
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table_like
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (keyword_like)
+      (object_reference
+        (identifier)))))
+
+================================================================================
+Create Table Like with format
+================================================================================
+
+CREATE TABLE IF NOT EXISTS new_table LIKE existing_table USING parquet
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table_like
+      (keyword_create)
+      (keyword_table)
+      (keyword_if)
+      (keyword_not)
+      (keyword_exists)
+      (object_reference
+        (identifier))
+      (keyword_like)
+      (object_reference
+        (identifier))
+      (keyword_using)
+      (identifier))))
+
+================================================================================
+Iceberg partition transforms
+================================================================================
+
+CREATE TABLE events (ts TIMESTAMP) PARTITIONED BY (year(ts), bucket(16, id))
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (column_definitions
+        (column_definition
+          (identifier)
+          (timestamp
+            (keyword_timestamp))))
+      (table_partition
+        (keyword_partitioned)
+        (keyword_by)
+        (partition_field
+          (identifier)
+          (identifier))
+        (partition_field
+          (identifier)
+          (literal)
+          (identifier))))))
+
+================================================================================
+Create Catalog
+================================================================================
+
+CREATE CATALOG my_catalog
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_catalog
+      (keyword_create)
+      (keyword_catalog)
+      (object_reference
+        (identifier)))))
+
+================================================================================
+Create Catalog with comment
+================================================================================
+
+CREATE CATALOG IF NOT EXISTS prod_catalog COMMENT 'Production catalog'
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_catalog
+      (keyword_create)
+      (keyword_catalog)
+      (keyword_if)
+      (keyword_not)
+      (keyword_exists)
+      (object_reference
+        (identifier))
+      (keyword_comment)
+      (literal))))
+
+================================================================================
+Create Volume
+================================================================================
+
+CREATE VOLUME my_catalog.my_schema.my_vol LOCATION 'abfss://container@account.dfs.core.windows.net/path'
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_volume
+      (keyword_create)
+      (keyword_volume)
+      (object_reference
+        (identifier)
+        (identifier)
+        (identifier))
+      (keyword_location)
+      (literal))))
+
+================================================================================
+Create Credential
+================================================================================
+
+CREATE CREDENTIAL my_cred COMMENT 'Azure storage credential'
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_credential
+      (keyword_create)
+      (keyword_credential)
+      (object_reference
+        (identifier))
+      (keyword_comment)
+      (literal))))
+
+================================================================================
+Create External Location
+================================================================================
+
+CREATE EXTERNAL LOCATION my_ext URL 'abfss://container@account.dfs.core.windows.net/'
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_external_location
+      (keyword_create)
+      (keyword_external)
+      (keyword_location)
+      (object_reference
+        (identifier))
+      (keyword_url)
+      (literal))))
+
+================================================================================
+Create Share
+================================================================================
+
+CREATE SHARE my_share COMMENT 'Partner share'
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_share
+      (keyword_create)
+      (keyword_share)
+      (object_reference
+        (identifier))
+      (keyword_comment)
+      (literal))))
+
+================================================================================
+Create Recipient
+================================================================================
+
+CREATE RECIPIENT partner_recipient
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_recipient
+      (keyword_create)
+      (keyword_recipient)
+      (object_reference
+        (identifier)))))
+
+================================================================================
+Create Provider
+================================================================================
+
+CREATE PROVIDER data_provider
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_provider
+      (keyword_create)
+      (keyword_provider)
+      (object_reference
+        (identifier)))))
+
+================================================================================
+Create Policy
+================================================================================
+
+CREATE POLICY row_filter COMMENT 'Row-level security policy'
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_policy
+      (keyword_create)
+      (keyword_policy)
+      (object_reference
+        (identifier))
+      (keyword_comment)
+      (literal))))
+
+==================
+CREATE MATERIALIZED VIEW with SCHEDULE
+==================
+
+CREATE MATERIALIZED VIEW mv SCHEDULE CRON '0 0 * * *' AS SELECT 1
+
+---
+
+(program
+  (statement
+    (create_materialized_view
+      (keyword_create)
+      (keyword_materialized)
+      (keyword_view)
+      (object_reference
+        name: (identifier))
+      (schedule_clause
+        (keyword_schedule)
+        (keyword_cron)
+        (literal))
+      (keyword_as)
+      (create_query
+        (select
+          (keyword_select)
+          (select_expression
+            (term
+              value: (literal))))))))

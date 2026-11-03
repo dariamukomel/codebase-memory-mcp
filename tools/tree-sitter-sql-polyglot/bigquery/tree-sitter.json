@@ -1,0 +1,29 @@
+{
+  "grammars": [
+    {
+      "name": "bigquery_sql",
+      "camelcase": "BigQuerySQL",
+      "scope": "source.bigquery.sql",
+      "path": ".",
+      "file-types": [
+        "sql"
+      ],
+      "highlights": [
+        "queries/highlights.scm"
+      ]
+    }
+  ],
+  "metadata": {
+    "version": "0.1.2",
+    "license": "MIT",
+    "description": "Tree-sitter BigQuery SQL grammar (extends base SQL)",
+    "authors": [
+      {
+        "name": "relativelyunknown"
+      }
+    ],
+    "links": {
+      "repository": "git+https://github.com/relativelyunknown/tree-sitter-sql-polyglot.git"
+    }
+  }
+}

@@ -1,0 +1,260 @@
+================================================================================
+Db2: SAVEPOINT with UNIQUE and ON ROLLBACK RETAIN
+================================================================================
+
+SAVEPOINT sp1 UNIQUE ON ROLLBACK RETAIN CURSORS;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (savepoint_statement
+      (keyword_savepoint)
+      name: (identifier)
+      (keyword_unique)
+      (keyword_on)
+      (keyword_rollback)
+      (keyword_retain)
+      (keyword_cursors))))
+
+================================================================================
+Db2: CLOSE WITH RELEASE
+================================================================================
+
+CLOSE cur1 WITH RELEASE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (close_cursor_statement
+      (keyword_close)
+      name: (identifier)
+      (keyword_with)
+      (keyword_release))))
+
+================================================================================
+Db2: DECLARE INSENSITIVE CURSOR WITHOUT RETURN
+================================================================================
+
+DECLARE cur1 INSENSITIVE CURSOR WITHOUT RETURN FOR SELECT 1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (declare_cursor_statement
+      (keyword_declare)
+      name: (identifier)
+      (keyword_insensitive)
+      (keyword_cursor)
+      (keyword_without)
+      (keyword_return)
+      (keyword_for)
+      (select
+        (keyword_select)
+        (select_expression
+          (term
+            value: (literal)))))))
+
+================================================================================
+Db2: DECLARE CURSOR WITH RETURN TO CLIENT
+================================================================================
+
+DECLARE cur1 CURSOR WITH RETURN TO CLIENT FOR SELECT 1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (declare_cursor_statement
+      (keyword_declare)
+      name: (identifier)
+      (keyword_cursor)
+      (keyword_with)
+      (keyword_return)
+      (keyword_to)
+      (keyword_client)
+      (keyword_for)
+      (select
+        (keyword_select)
+        (select_expression
+          (term
+            value: (literal)))))))
+
+================================================================================
+Db2: ALTER INDEX COMPRESS
+================================================================================
+
+ALTER INDEX ix1 COMPRESS YES;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_index
+      (keyword_alter)
+      (keyword_index)
+      (identifier)
+      (keyword_compress)
+      (keyword_yes))))
+
+================================================================================
+Db2: ALTER VIEW ENABLE QUERY OPTIMIZATION
+================================================================================
+
+ALTER VIEW v1 ENABLE QUERY OPTIMIZATION;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_view
+      (keyword_alter)
+      (keyword_view)
+      (object_reference
+        name: (identifier))
+      (keyword_enable)
+      (keyword_query)
+      (keyword_optimization))))
+
+================================================================================
+Db2: ALTER VIEW ADD SCOPE
+================================================================================
+
+ALTER VIEW v1 ALTER COLUMN c1 ADD SCOPE tt1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_view
+      (keyword_alter)
+      (keyword_view)
+      (object_reference
+        name: (identifier))
+      (keyword_alter)
+      (keyword_column)
+      column: (identifier)
+      (keyword_add)
+      (keyword_scope)
+      scope: (object_reference
+        name: (identifier)))))
+
+================================================================================
+Db2: ALTER SCHEMA DATA CAPTURE
+================================================================================
+
+ALTER SCHEMA s1 DATA CAPTURE CHANGES;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_schema
+      (keyword_alter)
+      (keyword_schema)
+      (identifier)
+      (keyword_data)
+      (keyword_capture)
+      (keyword_changes))))
+
+================================================================================
+Db2: ALTER SCHEMA ROW MODIFICATION TRACKING
+================================================================================
+
+ALTER SCHEMA s1 DISABLE ROW MODIFICATION TRACKING;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_schema
+      (keyword_alter)
+      (keyword_schema)
+      (identifier)
+      (keyword_disable)
+      (keyword_row)
+      (keyword_modification)
+      (keyword_tracking))))
+
+================================================================================
+Db2: ALTER DATABASE ADD STORAGE
+================================================================================
+
+ALTER DATABASE ADD STORAGE ON '/data/path1', '/data/path2';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_database
+      (keyword_alter)
+      (keyword_database)
+      (keyword_add)
+      (keyword_storage)
+      (keyword_on)
+      path: (literal)
+      path: (literal))))
+
+================================================================================
+Db2: SET SCHEMA with equals and SESSION_USER
+================================================================================
+
+SET SCHEMA = SESSION_USER;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (set_schema
+      (keyword_set)
+      (keyword_schema)
+      schema: (keyword_session_user))))
+
+================================================================================
+Db2: TRANSFER OWNERSHIP of a table hierarchy
+================================================================================
+
+TRANSFER OWNERSHIP OF TABLE HIERARCHY root1 TO USER u1 REVOKE PRIVILEGES;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (transfer_ownership
+      (keyword_transfer)
+      (keyword_ownership)
+      (keyword_of)
+      (keyword_table)
+      (keyword_hierarchy)
+      object: (object_reference
+        name: (identifier))
+      (keyword_to)
+      (keyword_user)
+      owner: (identifier)
+      (keyword_revoke)
+      (keyword_privileges))))
+
+================================================================================
+Db2: REFRESH TABLE with query optimization options
+================================================================================
+
+REFRESH TABLE mqt1 ALLOW QUERY OPTIMIZATION USING REFRESH DEFERRED TABLES;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (refresh_table_statement
+      (keyword_refresh)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_allow)
+      (keyword_query)
+      (keyword_optimization)
+      (keyword_using)
+      (keyword_refresh)
+      (keyword_deferred)
+      (keyword_tables))))

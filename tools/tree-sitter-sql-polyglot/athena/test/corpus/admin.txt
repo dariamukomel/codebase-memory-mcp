@@ -1,0 +1,126 @@
+================================================================================
+Athena: SHOW VIEWS IN database
+================================================================================
+
+SHOW VIEWS IN my_db LIKE 'sales%'
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (athena_show_statement
+      (keyword_show)
+      (keyword_views)
+      (keyword_in)
+      (object_reference
+        name: (identifier))
+      (keyword_like)
+      (literal))))
+
+================================================================================
+Athena: SHOW CREATE TABLE
+================================================================================
+
+SHOW CREATE TABLE my_db.my_table
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (show_create_statement
+      (keyword_show)
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        schema: (identifier)
+        name: (identifier)))))
+
+================================================================================
+Athena: SHOW PARTITIONS
+================================================================================
+
+SHOW PARTITIONS my_table
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (show_partitions_statement
+      (keyword_show)
+      (keyword_partitions)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+Athena: SHOW TBLPROPERTIES with key
+================================================================================
+
+SHOW TBLPROPERTIES my_table ('comment')
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (athena_show_statement
+      (keyword_show)
+      (keyword_tblproperties)
+      table: (object_reference
+        name: (identifier))
+      (literal))))
+
+================================================================================
+Athena: ALTER DATABASE SET DBPROPERTIES
+================================================================================
+
+ALTER DATABASE my_db SET DBPROPERTIES ('owner' = 'analytics')
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_database_properties
+      (keyword_alter)
+      (keyword_database)
+      name: (identifier)
+      (keyword_set)
+      (keyword_dbproperties)
+      (property_pair
+        key: (literal)
+        value: (literal)))))
+
+================================================================================
+Athena: DESCRIBE VIEW
+================================================================================
+
+DESCRIBE VIEW my_view
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (describe_view_statement
+      (keyword_describe)
+      (keyword_view)
+      name: (object_reference
+        name: (identifier)))))
+
+================================================================================
+Athena: ALTER TABLE SET TBLPROPERTIES
+================================================================================
+
+ALTER TABLE my_table SET TBLPROPERTIES ('classification' = 'parquet')
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_set)
+      (keyword_tblproperties)
+      (property_pair
+        key: (literal)
+        value: (literal)))))

@@ -1,0 +1,161 @@
+================================================================================
+CREATE STREAM
+================================================================================
+
+CREATE STREAM my_stream ON TABLE my_table;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_stream
+      (keyword_create)
+      (keyword_stream)
+      (object_reference
+        name: (identifier))
+      (keyword_on)
+      (keyword_table)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+CREATE SECURE VIEW
+================================================================================
+
+CREATE OR REPLACE SECURE VIEW my_view AS SELECT id FROM t;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_view
+      (keyword_create)
+      (keyword_or)
+      (keyword_replace)
+      (keyword_secure)
+      (keyword_view)
+      (object_reference
+        name: (identifier))
+      (keyword_as)
+      (create_query
+        (select
+          (keyword_select)
+          (select_expression
+            (term
+              value: (field
+                name: (identifier)))))
+        (from
+          (keyword_from)
+          (relation
+            (object_reference
+              name: (identifier))))))))
+
+================================================================================
+CREATE DYNAMIC TABLE
+================================================================================
+
+CREATE DYNAMIC TABLE my_dt TARGET_LAG = '1 minute' WAREHOUSE = my_wh AS SELECT id FROM t;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_dynamic_table
+      (keyword_create)
+      (keyword_dynamic)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (snowflake_property
+        name: (identifier)
+        value: (literal))
+      (snowflake_property
+        name: (identifier)
+        value: (object_reference
+          name: (identifier)))
+      (keyword_as)
+      (create_query
+        (select
+          (keyword_select)
+          (select_expression
+            (term
+              value: (field
+                name: (identifier)))))
+        (from
+          (keyword_from)
+          (relation
+            (object_reference
+              name: (identifier))))))))
+
+================================================================================
+CREATE MASKING POLICY
+================================================================================
+
+CREATE MASKING POLICY email_mask AS (val STRING) RETURNS STRING -> CASE WHEN CURRENT_ROLE() IN ('ANALYST') THEN val ELSE '***' END;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_masking_policy
+      (keyword_create)
+      (keyword_masking)
+      (keyword_policy)
+      (object_reference
+        name: (identifier))
+      (keyword_as)
+      (policy_param
+        (identifier)
+        (keyword_string))
+      (keyword_returns)
+      (keyword_string)
+      (case
+        (keyword_case)
+        (keyword_when)
+        (binary_expression
+          left: (invocation
+            (object_reference
+              name: (identifier)))
+          operator: (keyword_in)
+          right: (list
+            (literal)))
+        (keyword_then)
+        (field
+          name: (identifier))
+        (keyword_else)
+        (literal)
+        (keyword_end)))))
+
+================================================================================
+ALTER SESSION SET
+================================================================================
+
+ALTER SESSION SET TIMEZONE = 'America/Chicago';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_session
+      (keyword_alter)
+      (keyword_session)
+      (keyword_set)
+      (session_parameter
+        name: (identifier)
+        value: (literal)))))
+
+================================================================================
+USE SECONDARY ROLES ALL
+================================================================================
+
+USE SECONDARY ROLES ALL;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (use_secondary_roles
+      (keyword_use)
+      (keyword_secondary)
+      (keyword_roles)
+      (keyword_all))))

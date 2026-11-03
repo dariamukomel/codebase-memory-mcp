@@ -1,0 +1,80 @@
+==================
+CREATE TABLE ORGANIZE BY COLUMN
+==================
+
+CREATE TABLE t (a INT) ORGANIZE BY COLUMN
+
+---
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int))))
+      (organize_by_clause
+        (keyword_organize)
+        (keyword_by)
+        (keyword_column)))))
+
+==================
+CREATE TABLE ORGANIZE BY ROW
+==================
+
+CREATE TABLE t (a INT) ORGANIZE BY ROW
+
+---
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int))))
+      (organize_by_clause
+        (keyword_organize)
+        (keyword_by)
+        (keyword_row)))))
+
+==================
+CREATE TABLE ORGANIZE BY DIMENSIONS
+==================
+
+CREATE TABLE t (a INT, b INT) ORGANIZE BY DIMENSIONS (a, b)
+
+---
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int)))
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int))))
+      (organize_by_clause
+        (keyword_organize)
+        (keyword_by)
+        (keyword_dimensions)
+        (identifier)
+        (identifier)))))

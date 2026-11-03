@@ -1,0 +1,141 @@
+================================================================================
+SHOW CATALOGS
+================================================================================
+
+SHOW CATALOGS
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (show_statement
+      (show_catalogs (keyword_show) (keyword_catalogs)))))
+
+================================================================================
+SHOW CURRENT CATALOG
+================================================================================
+
+SHOW CURRENT CATALOG
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (show_statement
+      (show_current_catalog (keyword_show) (keyword_current) (keyword_catalog)))))
+
+================================================================================
+SHOW DATABASES FROM catalog
+================================================================================
+
+SHOW DATABASES FROM my_catalog LIKE '%prod%'
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (show_statement
+      (show_databases
+        (keyword_show) (keyword_databases)
+        (keyword_from) (object_reference (identifier))
+        (keyword_like) (literal)))))
+
+================================================================================
+SHOW TABLES
+================================================================================
+
+SHOW TABLES FROM my_db
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (show_statement
+      (show_tables
+        (keyword_show) (keyword_tables)
+        (keyword_from) (object_reference (identifier))))))
+
+================================================================================
+SHOW FULL COLUMNS
+================================================================================
+
+SHOW FULL COLUMNS FROM my_catalog.my_db.my_table LIKE 'col%'
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (show_statement
+      (show_columns
+        (keyword_show) (keyword_full) (keyword_columns)
+        (keyword_from) (object_reference (identifier) (identifier) (identifier))
+        (keyword_like) (literal)))))
+
+================================================================================
+SHOW FUNCTIONS
+================================================================================
+
+SHOW USER FUNCTIONS FROM mydb
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (show_statement
+      (show_functions
+        (keyword_show) (keyword_user) (keyword_functions)
+        (keyword_from) (object_reference (identifier))))))
+
+================================================================================
+SHOW FULL MODULES
+================================================================================
+
+SHOW FULL MODULES
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (show_statement
+      (show_modules (keyword_show) (keyword_full) (keyword_modules)))))
+
+================================================================================
+SHOW JARS
+================================================================================
+
+SHOW JARS
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (show_statement
+      (show_jars (keyword_show) (keyword_jars)))))
+
+================================================================================
+SHOW JOBS
+================================================================================
+
+SHOW JOBS
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (show_statement
+      (show_jobs (keyword_show) (keyword_jobs)))))
+
+================================================================================
+SHOW CREATE TABLE
+================================================================================
+
+SHOW CREATE TABLE my_catalog.my_db.my_table
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (show_statement
+      (show_create
+        (keyword_show) (keyword_create) (keyword_table)
+        (object_reference (identifier) (identifier) (identifier))))))

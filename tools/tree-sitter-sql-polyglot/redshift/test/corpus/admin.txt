@@ -1,0 +1,62 @@
+
+================================================================================
+Redshift: ALTER MATERIALIZED VIEW AUTO REFRESH
+================================================================================
+
+ALTER MATERIALIZED VIEW mv1 AUTO REFRESH YES;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_materialized_view
+      (keyword_alter)
+      (keyword_materialized)
+      (keyword_view)
+      (object_reference
+        name: (identifier))
+      (keyword_auto)
+      (keyword_refresh)
+      (keyword_yes))))
+
+================================================================================
+Redshift: ALTER MATERIALIZED VIEW ROW LEVEL SECURITY
+================================================================================
+
+ALTER MATERIALIZED VIEW mv1 ROW LEVEL SECURITY ON CONJUNCTION TYPE AND;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_materialized_view
+      (keyword_alter)
+      (keyword_materialized)
+      (keyword_view)
+      (object_reference
+        name: (identifier))
+      (keyword_row)
+      (keyword_level)
+      (keyword_security)
+      (keyword_on)
+      (keyword_conjunction)
+      (keyword_type)
+      (keyword_and))))
+
+================================================================================
+Redshift: ALTER DATABASE ISOLATION LEVEL
+================================================================================
+
+ALTER DATABASE db1 ISOLATION LEVEL SNAPSHOT;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_database
+      (keyword_alter)
+      (keyword_database)
+      (identifier)
+      (keyword_isolation)
+      (keyword_level)
+      isolation: (keyword_snapshot))))

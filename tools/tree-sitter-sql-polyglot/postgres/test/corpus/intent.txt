@@ -1,0 +1,107 @@
+; Intent-based tests: expected trees derived from reading the grammar rules,
+; not copied from parser output.
+;
+; postgres/grammar.js defines:
+;   implicit_cast: _expression + '::' + _type
+;   In _expression: alias($.implicit_cast, $.cast)
+;
+; '::' is an anonymous literal; it does NOT appear in the tree.
+; The node is aliased to 'cast', so it appears as (cast ...).
+; x is a column reference → (field name: (identifier)).
+; NUMERIC is the _type → (numeric (keyword_numeric)).
+
+================================================================================
+PostgreSQL: cast with :: operator
+================================================================================
+
+SELECT x::NUMERIC FROM t;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (cast
+            (field
+              name: (identifier))
+            (numeric
+              (keyword_numeric))))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))))))
+
+; postgres/grammar.js defines:
+;   _insert_statement: insert + optional(returning)
+;   returning: keyword_returning + select_expression
+;
+; _insert_statement is a hidden rule (underscore prefix), so insert and
+; returning appear as siblings directly inside statement; no wrapper node.
+; _insert_values is also a hidden rule, so keyword_values and list appear
+; directly under insert (no values wrapper node).
+; returning holds a select_expression with one term whose value is a field.
+
+================================================================================
+PostgreSQL: INSERT ... RETURNING
+================================================================================
+
+INSERT INTO t VALUES (1) RETURNING id;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (insert
+      (keyword_insert)
+      (keyword_into)
+      (object_reference
+        name: (identifier))
+      (keyword_values)
+      (list
+        (literal)))
+    (returning
+      (keyword_returning)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))))))
+
+; grammar/statements/insert.js defines:
+;   _on_conflict: keyword_on + keyword_conflict + keyword_do + choice(
+;                   keyword_nothing,
+;                   seq(keyword_update, _set_values, optional(where))
+;                 )
+;
+; _on_conflict is a HIDDEN rule; its children appear directly inside insert.
+; No on_conflict wrapper node. keyword_on, keyword_conflict, keyword_do, and
+; keyword_nothing appear inline.
+
+================================================================================
+PostgreSQL: INSERT ON CONFLICT DO NOTHING
+================================================================================
+
+INSERT INTO t (id) VALUES (1) ON CONFLICT DO NOTHING;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (insert
+      (keyword_insert)
+      (keyword_into)
+      (object_reference
+        name: (identifier))
+      (list
+        (column
+          (identifier)))
+      (keyword_values)
+      (list
+        (literal))
+      (keyword_on)
+      (keyword_conflict)
+      (keyword_do)
+      (keyword_nothing))))

@@ -1,0 +1,84 @@
+================================================================================
+DuckDB: CREATE MACRO scalar
+================================================================================
+
+CREATE MACRO add(a, b) AS a + b;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_macro_statement
+      (keyword_create)
+      (keyword_macro)
+      (object_reference
+        name: (identifier))
+      (identifier)
+      (identifier)
+      (keyword_as)
+      (binary_expression
+        left: (field
+          name: (identifier))
+        right: (field
+          name: (identifier))))))
+
+================================================================================
+DuckDB: CREATE OR REPLACE MACRO
+================================================================================
+
+CREATE OR REPLACE MACRO celsius_to_f(c) AS c * 9/5 + 32;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_macro_statement
+      (keyword_create)
+      (keyword_or)
+      (keyword_replace)
+      (keyword_macro)
+      (object_reference
+        name: (identifier))
+      (identifier)
+      (keyword_as)
+      (binary_expression
+        left: (binary_expression
+          left: (binary_expression
+            left: (field
+              name: (identifier))
+            right: (literal))
+          right: (literal))
+        right: (literal)))))
+
+================================================================================
+DuckDB: EXPORT DATABASE with format option
+================================================================================
+
+EXPORT DATABASE '/path/to/export' (FORMAT PARQUET);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (export_database_statement
+      (keyword_export)
+      (keyword_database)
+      path: (literal)
+      (identifier)
+      (field
+        name: (identifier)))))
+
+================================================================================
+DuckDB: IMPORT DATABASE
+================================================================================
+
+IMPORT DATABASE '/path/to/export';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (import_database_statement
+      (keyword_import)
+      (keyword_database)
+      path: (literal))))

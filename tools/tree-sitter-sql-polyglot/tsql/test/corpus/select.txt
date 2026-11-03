@@ -1,0 +1,354 @@
+================================================================================
+SELECT TOP N
+================================================================================
+
+SELECT TOP 10 id FROM t;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (top_clause
+        (keyword_top)
+        (literal))
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))))))
+
+================================================================================
+SELECT TOP (expr) PERCENT WITH TIES
+================================================================================
+
+SELECT TOP (5 + 5) PERCENT WITH TIES id FROM t;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (top_clause
+        (keyword_top)
+        (binary_expression
+          left: (literal)
+          right: (literal))
+        (keyword_percent)
+        (keyword_with)
+        (keyword_ties))
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))))))
+
+================================================================================
+SELECT TOP DISTINCT
+================================================================================
+
+SELECT TOP 3 DISTINCT name FROM users;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (top_clause
+        (keyword_top)
+        (literal))
+      (keyword_distinct)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))))))
+
+================================================================================
+Bracketed identifier
+================================================================================
+
+SELECT [dbo].[orders].[order_id] FROM [dbo].[orders];
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (field
+            (object_reference
+              schema: (identifier)
+              name: (identifier))
+            name: (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          schema: (identifier)
+          name: (identifier))))))
+
+================================================================================
+@variable in SELECT
+================================================================================
+
+SELECT @counter;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (variable))))))
+
+================================================================================
+FOR XML PATH
+================================================================================
+
+SELECT id, name FROM t FOR XML PATH('row');
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))
+        (term
+          value: (field
+            name: (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (for_clause
+        (keyword_for)
+        (keyword_xml)
+        (xml_mode
+          (literal))))))
+
+================================================================================
+FOR JSON AUTO
+================================================================================
+
+SELECT id, name FROM t FOR JSON AUTO;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))
+        (term
+          value: (field
+            name: (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (for_clause
+        (keyword_for)
+        (keyword_json)
+        (json_mode)))))
+
+================================================================================
+FOR XML RAW
+================================================================================
+
+SELECT id FROM t FOR XML RAW;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (for_clause
+        (keyword_for)
+        (keyword_xml)
+        (xml_mode)))))
+
+================================================================================
+FOR XML RAW with element name
+================================================================================
+
+SELECT id FROM t FOR XML RAW('Employee');
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (for_clause
+        (keyword_for)
+        (keyword_xml)
+        (xml_mode
+          (literal))))))
+
+================================================================================
+FOR XML AUTO with ELEMENTS option
+================================================================================
+
+SELECT id FROM t FOR XML AUTO, ELEMENTS;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (for_clause
+        (keyword_for)
+        (keyword_xml)
+        (xml_mode
+          (for_xml_option))))))
+
+================================================================================
+FOR XML AUTO with BINARY BASE64
+================================================================================
+
+SELECT id FROM t FOR XML AUTO, BINARY BASE64;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (for_clause
+        (keyword_for)
+        (keyword_xml)
+        (xml_mode
+          (for_xml_option))))))
+
+================================================================================
+FOR JSON PATH with multiple options
+================================================================================
+
+SELECT id FROM t FOR JSON PATH, ROOT('root'), INCLUDE_NULL_VALUES;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (for_clause
+        (keyword_for)
+        (keyword_json)
+        (json_mode
+          (for_json_option
+            (literal))
+          (for_json_option))))))
+
+================================================================================
+ANSI OFFSET ... FETCH after ORDER BY
+================================================================================
+
+SELECT a FROM t1 ORDER BY a OFFSET 5 ROWS FETCH FIRST 10 ROWS ONLY;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (order_by
+        (keyword_order)
+        (keyword_by)
+        (order_target
+          (field
+            name: (identifier))))
+      (offset_fetch_clause
+        (keyword_offset)
+        (literal)
+        (keyword_rows)
+        (keyword_fetch)
+        (keyword_first)
+        (literal)
+        (keyword_rows)
+        (keyword_only)))))

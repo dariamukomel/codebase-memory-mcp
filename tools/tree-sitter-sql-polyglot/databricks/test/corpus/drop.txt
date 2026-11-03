@@ -1,0 +1,127 @@
+================================================================================
+Databricks: DROP TABLE PURGE
+================================================================================
+
+DROP TABLE IF EXISTS my_table PURGE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_table
+      (keyword_drop)
+      (keyword_table)
+      (keyword_if)
+      (keyword_exists)
+      (object_reference
+        name: (identifier))
+      (keyword_purge))))
+
+================================================================================
+Databricks: DROP CATALOG
+================================================================================
+
+DROP CATALOG IF EXISTS my_catalog CASCADE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_catalog
+      (keyword_drop)
+      (keyword_catalog)
+      (keyword_if)
+      (keyword_exists)
+      (object_reference
+        name: (identifier))
+      (keyword_cascade))))
+
+================================================================================
+Databricks: DROP NAMESPACE
+================================================================================
+
+DROP NAMESPACE IF EXISTS my_ns RESTRICT;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_namespace
+      (keyword_drop)
+      (keyword_namespace)
+      (keyword_if)
+      (keyword_exists)
+      (object_reference
+        name: (identifier))
+      (keyword_restrict))))
+
+================================================================================
+Databricks: DROP VOLUME
+================================================================================
+
+DROP VOLUME IF EXISTS my_vol;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_volume
+      (keyword_drop)
+      (keyword_volume)
+      (keyword_if)
+      (keyword_exists)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+Databricks: DROP SHARE
+================================================================================
+
+DROP SHARE my_share;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_share
+      (keyword_drop)
+      (keyword_share)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+Databricks: DROP CREDENTIAL
+================================================================================
+
+DROP CREDENTIAL IF EXISTS my_cred;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_credential
+      (keyword_drop)
+      (keyword_credential)
+      (keyword_if)
+      (keyword_exists)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+Databricks: DROP EXTERNAL LOCATION
+================================================================================
+
+DROP EXTERNAL LOCATION IF EXISTS my_loc;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_external_location
+      (keyword_drop)
+      (keyword_external)
+      (keyword_location)
+      (keyword_if)
+      (keyword_exists)
+      (object_reference
+        name: (identifier)))))

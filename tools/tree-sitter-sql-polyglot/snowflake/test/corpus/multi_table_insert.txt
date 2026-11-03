@@ -1,0 +1,87 @@
+================================================================================
+INSERT ALL (unconditional multi-table)
+================================================================================
+
+INSERT ALL INTO t1 VALUES (a) INTO t2 VALUES (b) SELECT a, b FROM src;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (multi_table_insert
+      (keyword_insert)
+      (keyword_all)
+      (insert_into_clause
+        (keyword_into)
+        (object_reference
+          name: (identifier))
+        (keyword_values)
+        (field
+          name: (identifier)))
+      (insert_into_clause
+        (keyword_into)
+        (object_reference
+          name: (identifier))
+        (keyword_values)
+        (field
+          name: (identifier)))
+      (select
+        (keyword_select)
+        (select_expression
+          (term
+            value: (field
+              name: (identifier)))
+          (term
+            value: (field
+              name: (identifier)))))
+      (from
+        (keyword_from)
+        (relation
+          (object_reference
+            name: (identifier)))))))
+
+================================================================================
+INSERT FIRST (conditional multi-table)
+================================================================================
+
+INSERT FIRST WHEN a > 0 THEN INTO t1 VALUES (a) ELSE INTO t2 VALUES (a) SELECT a FROM src;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (multi_table_insert
+      (keyword_insert)
+      (keyword_first)
+      (keyword_when)
+      (binary_expression
+        left: (field
+          name: (identifier))
+        right: (literal))
+      (keyword_then)
+      (insert_into_clause
+        (keyword_into)
+        (object_reference
+          name: (identifier))
+        (keyword_values)
+        (field
+          name: (identifier)))
+      (keyword_else)
+      (insert_into_clause
+        (keyword_into)
+        (object_reference
+          name: (identifier))
+        (keyword_values)
+        (field
+          name: (identifier)))
+      (select
+        (keyword_select)
+        (select_expression
+          (term
+            value: (field
+              name: (identifier)))))
+      (from
+        (keyword_from)
+        (relation
+          (object_reference
+            name: (identifier)))))))

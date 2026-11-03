@@ -1,0 +1,82 @@
+================================================================================
+IDENTITY column with seed and increment
+================================================================================
+
+CREATE TABLE t (id INT IDENTITY(1,1) PRIMARY KEY, name NVARCHAR(50));
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int))
+          (keyword_identity)
+          (literal)
+          (literal)
+          (keyword_primary)
+          (keyword_key))
+        (column_definition
+          name: (identifier)
+          type: (nvarchar
+            (keyword_nvarchar)
+            size: (literal)))))))
+
+================================================================================
+IDENTITY column without arguments
+================================================================================
+
+CREATE TABLE t (id INT IDENTITY);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int))
+          (keyword_identity))))))
+
+================================================================================
+Computed column with PERSISTED
+================================================================================
+
+CREATE TABLE t (a INT, b AS (a * 2) PERSISTED);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int)))
+        (column_definition
+          name: (identifier)
+          (keyword_as)
+          expression: (parenthesized_expression
+            (binary_expression
+              left: (field
+                name: (identifier))
+              right: (literal)))
+          (keyword_persisted))))))

@@ -1,0 +1,63 @@
+================================================================================
+DuckDB: ASOF JOIN with ON clause
+================================================================================
+
+SELECT * FROM t1 ASOF JOIN t2 ON t1.ts >= t2.ts;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (asof_join
+        (keyword_asof)
+        (keyword_join)
+        relation: (relation
+          (object_reference
+            name: (identifier)))
+        (keyword_on)
+        predicate: (binary_expression
+          left: (field
+            (object_reference
+              name: (identifier))
+            name: (identifier))
+          right: (field
+            (object_reference
+              name: (identifier))
+            name: (identifier)))))))
+
+================================================================================
+DuckDB: POSITIONAL JOIN
+================================================================================
+
+SELECT * FROM t1 POSITIONAL JOIN t2;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (positional_join
+        (keyword_positional)
+        (keyword_join)
+        relation: (relation
+          (object_reference
+            name: (identifier)))))))

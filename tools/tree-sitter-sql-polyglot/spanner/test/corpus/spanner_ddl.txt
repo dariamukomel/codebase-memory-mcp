@@ -1,0 +1,307 @@
+================================================================================
+Spanner: CREATE TABLE with trailing PRIMARY KEY
+================================================================================
+
+CREATE TABLE Singers (SingerId INT64 NOT NULL, FirstName STRING(1024)) PRIMARY KEY (SingerId);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (column_definitions
+        (column_definition
+          (identifier)
+          (keyword_int64)
+          (keyword_not)
+          (keyword_null))
+        (column_definition
+          (identifier)
+          (string_type
+            (keyword_string))))
+      (table_primary_key
+        (keyword_primary)
+        (keyword_key)
+        (ordered_key_part
+          (identifier))))))
+
+================================================================================
+Spanner: interleaved child table with ON DELETE CASCADE
+================================================================================
+
+CREATE TABLE Albums (SingerId INT64 NOT NULL, AlbumId INT64 NOT NULL) PRIMARY KEY (SingerId, AlbumId), INTERLEAVE IN PARENT Singers ON DELETE CASCADE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (column_definitions
+        (column_definition
+          (identifier)
+          (keyword_int64)
+          (keyword_not)
+          (keyword_null))
+        (column_definition
+          (identifier)
+          (keyword_int64)
+          (keyword_not)
+          (keyword_null)))
+      (table_primary_key
+        (keyword_primary)
+        (keyword_key)
+        (ordered_key_part
+          (identifier))
+        (ordered_key_part
+          (identifier)))
+      (interleave_clause
+        (keyword_interleave)
+        (keyword_in)
+        (keyword_parent)
+        (object_reference
+          (identifier))
+        (keyword_on)
+        (keyword_delete)
+        (keyword_cascade)))))
+
+================================================================================
+Spanner: CREATE TABLE with ROW DELETION POLICY
+================================================================================
+
+CREATE TABLE Events (Id INT64 NOT NULL, CreatedAt TIMESTAMP) PRIMARY KEY (Id), ROW DELETION POLICY (OLDER_THAN(CreatedAt, INTERVAL 30 DAY));
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (column_definitions
+        (column_definition
+          (identifier)
+          (keyword_int64)
+          (keyword_not)
+          (keyword_null))
+        (column_definition
+          (identifier)
+          (timestamp
+            (keyword_timestamp))))
+      (table_primary_key
+        (keyword_primary)
+        (keyword_key)
+        (ordered_key_part
+          (identifier)))
+      (row_deletion_policy
+        (keyword_row)
+        (keyword_deletion)
+        (keyword_policy)
+        (keyword_older_than)
+        (identifier)
+        (interval
+          (keyword_interval)
+          (identifier))))))
+
+================================================================================
+Spanner: NULL_FILTERED index with STORING and INTERLEAVE
+================================================================================
+
+CREATE UNIQUE NULL_FILTERED INDEX AlbumsByTitle ON Albums (AlbumTitle DESC) STORING (MarketingBudget), INTERLEAVE IN Singers;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_index
+      (keyword_create)
+      (keyword_unique)
+      (keyword_null_filtered)
+      (keyword_index)
+      (identifier)
+      (keyword_on)
+      (object_reference
+        (identifier))
+      (index_fields
+        (field
+          (identifier)
+          (direction
+            (keyword_desc))))
+      (keyword_storing)
+      (list
+        (column
+          (identifier)))
+      (interleave_clause
+        (keyword_interleave)
+        (keyword_in)
+        (object_reference
+          (identifier))))))
+
+================================================================================
+Spanner: CREATE CHANGE STREAM
+================================================================================
+
+CREATE CHANGE STREAM OrderStream FOR Orders, Customers(Name, Email);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_change_stream
+      (keyword_create)
+      (keyword_change)
+      (keyword_stream)
+      (object_reference
+        (identifier))
+      (keyword_for)
+      (change_stream_target
+        (object_reference
+          (identifier)))
+      (change_stream_target
+        (object_reference
+          (identifier))
+        (list
+          (column
+            (identifier))
+          (column
+            (identifier)))))))
+
+================================================================================
+Spanner: CREATE CHANGE STREAM FOR ALL with options
+================================================================================
+
+CREATE CHANGE STREAM EverythingStream FOR ALL OPTIONS (retention_period = '36h');
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_change_stream
+      (keyword_create)
+      (keyword_change)
+      (keyword_stream)
+      (object_reference
+        (identifier))
+      (keyword_for)
+      (keyword_all)
+      (options_clause
+        (keyword_options)
+        (identifier)
+        (literal)))))
+
+================================================================================
+Spanner: inherited GoogleSQL features (THEN RETURN, types, QUALIFY)
+================================================================================
+
+INSERT INTO Singers (SingerId) VALUES (1) THEN RETURN SingerId;
+
+SELECT SingerId FROM Singers QUALIFY ROW_NUMBER() OVER (ORDER BY SingerId) = 1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (insert
+      (keyword_insert)
+      (keyword_into)
+      (object_reference
+        (identifier))
+      (list
+        (column
+          (identifier)))
+      (keyword_values)
+      (list
+        (literal)))
+    (then_return_clause
+      (keyword_then)
+      (keyword_return)
+      (select_expression
+        (term
+          (field
+            (identifier))))))
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (field
+            (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier)))
+      (qualify
+        (keyword_qualify)
+        (binary_expression
+          (window_function
+            (invocation
+              (object_reference
+                (identifier)))
+            (keyword_over)
+            (window_specification
+              (order_by
+                (keyword_order)
+                (keyword_by)
+                (order_target
+                  (field
+                    (identifier))))))
+          (literal))))))
+
+================================================================================
+SELECT FOR UPDATE
+================================================================================
+
+SELECT a FROM t1 FOR UPDATE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))))
+    (locking_clause
+      (keyword_for)
+      (keyword_update))))
+
+================================================================================
+INSERT OR UPDATE upsert
+================================================================================
+
+INSERT OR UPDATE INTO t1 (a) VALUES (1);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (insert
+      (keyword_insert)
+      (keyword_or)
+      (keyword_update)
+      (keyword_into)
+      (object_reference
+        name: (identifier))
+      (list
+        (column
+          (identifier)))
+      (keyword_values)
+      (list
+        (literal)))))

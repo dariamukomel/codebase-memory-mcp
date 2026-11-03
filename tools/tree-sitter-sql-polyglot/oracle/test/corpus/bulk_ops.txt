@@ -1,0 +1,65 @@
+================================================================================
+Oracle: FORALL INDICES OF INSERT
+================================================================================
+
+FORALL i IN INDICES OF arr INSERT INTO t VALUES (arr(i));
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (forall_statement
+      (keyword_forall)
+      (identifier)
+      (keyword_in)
+      (keyword_indices)
+      (keyword_of)
+      (identifier)
+      (insert
+        (keyword_insert)
+        (keyword_into)
+        (object_reference
+          (identifier))
+        (keyword_values)
+        (list
+          (invocation
+            (object_reference
+              (identifier))
+            (term
+              (field
+                (identifier)))))))))
+
+================================================================================
+Oracle: EXECUTE IMMEDIATE
+================================================================================
+
+EXECUTE IMMEDIATE 'DROP TABLE tmp';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (execute_immediate_statement
+      (keyword_execute)
+      (keyword_immediate)
+      (literal))))
+
+================================================================================
+Oracle: EXECUTE IMMEDIATE USING
+================================================================================
+
+EXECUTE IMMEDIATE 'SELECT id FROM t WHERE name = :1' INTO v_id USING v_name;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (execute_immediate_statement
+      (keyword_execute)
+      (keyword_immediate)
+      (literal)
+      (keyword_into)
+      (identifier)
+      (keyword_using)
+      (field
+        (identifier)))))

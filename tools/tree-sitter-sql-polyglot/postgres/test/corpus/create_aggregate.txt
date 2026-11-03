@@ -1,0 +1,112 @@
+================================================================================
+PostgreSQL: CREATE AGGREGATE simple accumulator
+================================================================================
+
+CREATE AGGREGATE sum_squares (FLOAT8) (
+  SFUNC = float8pl,
+  STYPE = float8,
+  INITCOND = '0'
+);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_aggregate_statement
+      (keyword_create)
+      (keyword_aggregate)
+      (object_reference
+        name: (identifier))
+      (double)
+      (aggregate_option
+        (identifier)
+        (field
+          name: (identifier)))
+      (aggregate_option
+        (identifier)
+        (field
+          name: (identifier)))
+      (aggregate_option
+        (identifier)
+        (literal)))))
+
+================================================================================
+PostgreSQL: CREATE OR REPLACE AGGREGATE ordered-set
+================================================================================
+
+CREATE OR REPLACE AGGREGATE percentile_median (FLOAT8 ORDER BY FLOAT8) (
+  SFUNC = ordered_set_transition,
+  STYPE = internal,
+  FINALFUNC = percentile_cont_float8_final,
+  FINALFUNC_EXTRA
+);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_aggregate_statement
+      (keyword_create)
+      (keyword_or)
+      (keyword_replace)
+      (keyword_aggregate)
+      (object_reference
+        name: (identifier))
+      (double)
+      (keyword_order)
+      (keyword_by)
+      (double)
+      (aggregate_option
+        (identifier)
+        (field
+          name: (identifier)))
+      (aggregate_option
+        (identifier)
+        (field
+          name: (identifier)))
+      (aggregate_option
+        (identifier)
+        (field
+          name: (identifier)))
+      (aggregate_option
+        (identifier)))))
+
+================================================================================
+PostgreSQL: CREATE AGGREGATE parallel-safe with COMBINEFUNC
+================================================================================
+
+CREATE AGGREGATE my_sum (INT) (
+  SFUNC = int4pl,
+  STYPE = int4,
+  COMBINEFUNC = int4pl,
+  PARALLEL = SAFE
+);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_aggregate_statement
+      (keyword_create)
+      (keyword_aggregate)
+      (object_reference
+        name: (identifier))
+      (int
+        (keyword_int))
+      (aggregate_option
+
+        (identifier)
+        (field
+          name: (identifier)))
+      (aggregate_option
+        (identifier)
+        (field
+          name: (identifier)))
+      (aggregate_option
+        (identifier)
+        (field
+          name: (identifier)))
+      (aggregate_option
+        (identifier)
+        (field
+          name: (identifier))))))

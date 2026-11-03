@@ -1,0 +1,286 @@
+================================================================================
+Redshift: SHOW TABLES FROM SCHEMA
+================================================================================
+
+SHOW TABLES FROM SCHEMA my_db.my_schema
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (show_statement
+      (keyword_show)
+      (keyword_tables)
+      (keyword_from)
+      (keyword_schema)
+      (object_reference
+        schema: (identifier)
+        name: (identifier)))))
+
+================================================================================
+Redshift: SHOW TABLE
+================================================================================
+
+SHOW TABLE my_table
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (show_statement
+      (keyword_show)
+      (keyword_table)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+Redshift: SHOW DATASHARES with LIKE
+================================================================================
+
+SHOW DATASHARES LIKE 'sales%'
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (show_statement
+      (keyword_show)
+      (keyword_datashares)
+      (keyword_like)
+      (literal))))
+
+================================================================================
+Redshift: SHOW MASKING POLICIES
+================================================================================
+
+SHOW MASKING POLICIES FROM DATABASE my_db
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (show_statement
+      (keyword_show)
+      (keyword_masking)
+      (keyword_policies)
+      (keyword_from)
+      (keyword_database)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+Redshift: CANCEL with message
+================================================================================
+
+CANCEL 1234 'long running query'
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (cancel_statement
+      (keyword_cancel)
+      process_id: (literal)
+      message: (literal))))
+
+================================================================================
+Redshift: ABORT
+================================================================================
+
+ABORT TRANSACTION
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (abort_statement
+      (keyword_abort)
+      (keyword_transaction))))
+
+================================================================================
+Redshift: LOCK TABLE
+================================================================================
+
+LOCK TABLE t1, t2
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (lock_statement
+      (keyword_lock)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+Redshift: CALL stored procedure
+================================================================================
+
+CALL my_proc(1)
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (call_statement
+      (keyword_call)
+      procedure: (object_reference
+        name: (identifier))
+      (literal))))
+
+================================================================================
+Redshift: CLOSE cursor
+================================================================================
+
+CLOSE my_cursor
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (close_statement
+      (keyword_close)
+      cursor: (identifier))))
+
+================================================================================
+Redshift: FETCH ALL FROM cursor
+================================================================================
+
+FETCH ALL FROM my_cursor
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (fetch_statement
+      (keyword_fetch)
+      (keyword_all)
+      (keyword_from)
+      cursor: (identifier))))
+
+================================================================================
+Redshift: ANALYZE with PREDICATE COLUMNS
+================================================================================
+
+ANALYZE VERBOSE my_table PREDICATE COLUMNS
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (analyze_statement
+      (keyword_analyze)
+      (keyword_verbose)
+      table: (object_reference
+        name: (identifier))
+      (keyword_predicate)
+      (keyword_columns))))
+
+================================================================================
+Redshift: DROP MASKING POLICY
+================================================================================
+
+DROP MASKING POLICY my_policy
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_masking_policy
+      (keyword_drop)
+      (keyword_masking)
+      (keyword_policy)
+      name: (object_reference
+        name: (identifier)))))
+
+================================================================================
+Redshift: ALTER RLS POLICY
+================================================================================
+
+ALTER RLS POLICY my_policy USING (region = 'us')
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_rls_policy
+      (keyword_alter)
+      (keyword_rls)
+      (keyword_policy)
+      name: (object_reference
+        name: (identifier))
+      (keyword_using)
+      predicate: (binary_expression
+        left: (field
+          name: (identifier))
+        right: (literal)))))
+
+================================================================================
+Redshift: DROP MODEL
+================================================================================
+
+DROP MODEL IF EXISTS my_model
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_model
+      (keyword_drop)
+      (keyword_model)
+      (keyword_if)
+      (keyword_exists)
+      name: (object_reference
+        name: (identifier)))))
+
+================================================================================
+Redshift: ALTER SYSTEM SET
+================================================================================
+
+ALTER SYSTEM SET auto_mv = true
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_system_statement
+      (keyword_alter)
+      (keyword_system)
+      (keyword_set)
+      setting: (identifier)
+      value: (literal
+        (keyword_true)))))
+
+================================================================================
+Redshift: DESC DATASHARE
+================================================================================
+
+DESC DATASHARE my_share
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (desc_statement
+      (keyword_desc)
+      (keyword_datashare)
+      name: (identifier))))
+
+================================================================================
+Redshift: DROP TEMPLATE
+================================================================================
+
+DROP TEMPLATE my_template
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_template
+      (keyword_drop)
+      (keyword_template)
+      name: (object_reference
+        name: (identifier)))))

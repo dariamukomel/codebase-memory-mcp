@@ -1,0 +1,121 @@
+================================================================================
+Databricks: SHOW CATALOGS
+================================================================================
+
+SHOW CATALOGS;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (keyword_show)
+    (keyword_catalogs)))
+
+================================================================================
+Databricks: SHOW NAMESPACES IN catalog
+================================================================================
+
+SHOW NAMESPACES IN main;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (keyword_show)
+    (keyword_namespaces)
+    (keyword_in)
+    (object_reference
+      name: (identifier))))
+
+================================================================================
+Databricks: SHOW VOLUMES IN schema
+================================================================================
+
+SHOW VOLUMES IN main.default;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (keyword_show)
+    (keyword_volumes)
+    (keyword_in)
+    (object_reference
+      schema: (identifier)
+      name: (identifier))))
+
+================================================================================
+Databricks: SHOW GRANTS ON TABLE
+================================================================================
+
+SHOW GRANTS ON TABLE my_table;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (keyword_show)
+    (keyword_grants)
+    (keyword_on)
+    (keyword_table)
+    (object_reference
+      name: (identifier))))
+
+================================================================================
+Databricks: SHOW TBLPROPERTIES
+================================================================================
+
+SHOW TBLPROPERTIES my_table;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (keyword_show)
+    (keyword_tblproperties)
+    (object_reference
+      name: (identifier))))
+
+================================================================================
+Databricks: SHOW COLUMNS FROM TABLE
+================================================================================
+
+SHOW COLUMNS FROM my_table;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (keyword_show)
+    (keyword_columns)
+    (keyword_from)
+    (object_reference
+      name: (identifier))))
+
+================================================================================
+Databricks: SHOW PARTITIONS
+================================================================================
+
+SHOW PARTITIONS my_table;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (keyword_show)
+    (keyword_partitions)
+    (object_reference
+      name: (identifier))))
+
+================================================================================
+Databricks: SHOW CONNECTIONS
+================================================================================
+
+SHOW CONNECTIONS;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (keyword_show)
+    (keyword_connections)))

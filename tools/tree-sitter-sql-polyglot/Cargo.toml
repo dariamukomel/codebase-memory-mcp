@@ -1,0 +1,101 @@
+[package]
+name = "tree-sitter-sql-polyglot"
+description = "Tree-sitter Grammar for SQL"
+version = "0.1.2"
+authors = ["relativelyunknown"]
+license = "MIT"
+readme = "README.md"
+keywords = ["incremental", "parsing", "tree-sitter", "sql"]
+categories = ["parsing", "text-editors"]
+repository = "https://github.com/relativelyunknown/tree-sitter-sql-polyglot.git"
+edition = "2021"
+autoexamples = false
+
+build = "bindings/rust/build.rs"
+# Cargo doesn't allow `include` and `exclude` together (exclude is silently
+# ignored if both are set), so each dialect's src/ entry is spelled out
+# explicitly rather than a blanket "src/*" glob: only the Brotli-compressed
+# *.br blobs (committed), scanner.c, and the tree_sitter/*.h ABI headers ship
+# in the crate. The raw generated parser.c/node-types.json are huge, almost
+# entirely redundant text (LR tables / repeated node-shape descriptions);
+# build.rs inflates the committed .br blobs back into real files before
+# compiling (see scripts/compress-parsers.js / scripts/inflate-parsers.js).
+# grammar.json isn't read by any binding, so it's never included at all.
+include = [
+    "/LICENSE", "bindings/rust/*", "/grammar.js", "/grammar/**", "queries/*",
+    "src/*.br", "src/scanner.c", "src/tree_sitter/*",
+    "spark/src/*.br", "spark/src/scanner.c", "spark/src/tree_sitter/*", "spark/queries/*",
+    "postgres/src/*.br", "postgres/src/scanner.c", "postgres/src/tree_sitter/*", "postgres/queries/*",
+    "mysql/src/*.br", "mysql/src/scanner.c", "mysql/src/tree_sitter/*", "mysql/queries/*",
+    "databricks/src/*.br", "databricks/src/scanner.c", "databricks/src/tree_sitter/*", "databricks/queries/*",
+    "snowflake/src/*.br", "snowflake/src/scanner.c", "snowflake/src/tree_sitter/*", "snowflake/queries/*",
+    "bigquery/src/*.br", "bigquery/src/scanner.c", "bigquery/src/tree_sitter/*", "bigquery/queries/*",
+    "mariadb/src/*.br", "mariadb/src/scanner.c", "mariadb/src/tree_sitter/*", "mariadb/queries/*",
+    "sqlite/src/*.br", "sqlite/src/scanner.c", "sqlite/src/tree_sitter/*", "sqlite/queries/*",
+    "hive/src/*.br", "hive/src/scanner.c", "hive/src/tree_sitter/*", "hive/queries/*",
+    "oracle/src/*.br", "oracle/src/scanner.c", "oracle/src/tree_sitter/*", "oracle/queries/*",
+    "db2/src/*.br", "db2/src/scanner.c", "db2/src/tree_sitter/*", "db2/queries/*",
+    "tsql/src/*.br", "tsql/src/scanner.c", "tsql/src/tree_sitter/*", "tsql/queries/*",
+    "duckdb/src/*.br", "duckdb/src/scanner.c", "duckdb/src/tree_sitter/*", "duckdb/queries/*",
+    "trino/src/*.br", "trino/src/scanner.c", "trino/src/tree_sitter/*", "trino/queries/*",
+    "athena/src/*.br", "athena/src/scanner.c", "athena/src/tree_sitter/*", "athena/queries/*",
+    "redshift/src/*.br", "redshift/src/scanner.c", "redshift/src/tree_sitter/*", "redshift/queries/*",
+    "clickhouse/src/*.br", "clickhouse/src/scanner.c", "clickhouse/src/tree_sitter/*", "clickhouse/queries/*",
+    "flink/src/*.br", "flink/src/scanner.c", "flink/src/tree_sitter/*", "flink/queries/*",
+    "cockroachdb/src/*.br", "cockroachdb/src/scanner.c", "cockroachdb/src/tree_sitter/*", "cockroachdb/queries/*",
+    "spanner/src/*.br", "spanner/src/scanner.c", "spanner/src/tree_sitter/*", "spanner/queries/*",
+    "teradata/src/*.br", "teradata/src/scanner.c", "teradata/src/tree_sitter/*", "teradata/queries/*",
+    "hana/src/*.br", "hana/src/scanner.c", "hana/src/tree_sitter/*", "hana/queries/*",
+]
+
+[lib]
+path = "bindings/rust/lib.rs"
+
+# One feature per dialect extension; base (LANGUAGE/NODE_TYPES/HIGHLIGHTS_QUERY)
+# is always compiled and needs no feature. Enabling a dialect's feature is what
+# makes build.rs compile that dialect's parser.c at all (see build.rs) and
+# lib.rs expose its LANGUAGE_*/NODE_TYPES_*/HIGHLIGHTS_QUERY_* consts (see
+# lib.rs) - so `cargo build --no-default-features --features postgres` only
+# ever builds base + postgres, not all 22. `full` is a convenience feature for
+# everything at once. Regenerate this list (and lib.rs/build.rs) via
+# scripts/generate-bindings.js whenever a dialect is added or removed.
+[features]
+default = []
+full = [
+    "spark", "postgres", "mysql", "databricks", "snowflake", "bigquery",
+    "mariadb", "sqlite", "hive", "oracle", "db2", "tsql", "duckdb", "trino",
+    "athena", "redshift", "clickhouse", "flink", "cockroachdb", "spanner",
+    "teradata", "hana",
+]
+spark = []
+postgres = []
+mysql = []
+databricks = []
+snowflake = []
+bigquery = []
+mariadb = []
+sqlite = []
+hive = []
+oracle = []
+db2 = []
+tsql = []
+duckdb = []
+trino = []
+athena = []
+redshift = []
+clickhouse = []
+flink = []
+cockroachdb = []
+spanner = []
+teradata = []
+hana = []
+
+[dependencies]
+tree-sitter-language = "0.1"
+
+[build-dependencies]
+cc = "~1.2.1"
+brotli = "7"
+
+[dev-dependencies]
+tree-sitter = "~0.25.0"

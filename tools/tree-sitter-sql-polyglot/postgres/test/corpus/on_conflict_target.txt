@@ -1,0 +1,33 @@
+================================================================================
+ON CONFLICT target DO UPDATE
+================================================================================
+
+INSERT INTO t (id) VALUES (1) ON CONFLICT (id) DO UPDATE SET id = 2;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (insert
+      (keyword_insert)
+      (keyword_into)
+      (object_reference
+        name: (identifier))
+      (list
+        (column
+          (identifier)))
+      (keyword_values)
+      (list
+        (literal))
+      (keyword_on)
+      (keyword_conflict)
+      (conflict_target
+        (field
+          name: (identifier)))
+      (keyword_do)
+      (keyword_update)
+      (keyword_set)
+      (assignment
+        left: (field
+          name: (identifier))
+        right: (literal)))))

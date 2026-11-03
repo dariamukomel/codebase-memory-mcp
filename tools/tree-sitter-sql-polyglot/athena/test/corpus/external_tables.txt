@@ -1,0 +1,157 @@
+================================================================================
+Athena: CREATE EXTERNAL TABLE minimal
+================================================================================
+
+CREATE EXTERNAL TABLE logs (message STRING)
+LOCATION 's3://mybucket/logs/'
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_external_table
+      (keyword_create)
+      (keyword_external)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (column_definitions
+        (column_definition
+          (identifier)
+          (keyword_string)))
+      (keyword_location)
+      (literal))))
+
+================================================================================
+Athena: CREATE EXTERNAL TABLE with ROW FORMAT SERDE
+================================================================================
+
+CREATE EXTERNAL TABLE events (
+  event_id BIGINT,
+  event_type STRING
+)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
+STORED AS TEXTFILE
+LOCATION 's3://mybucket/events/'
+TBLPROPERTIES ('has_encrypted_data'='false')
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_external_table
+      (keyword_create)
+      (keyword_external)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (column_definitions
+        (column_definition
+          (identifier)
+          (bigint
+            (keyword_bigint)))
+        (column_definition
+          (identifier)
+          (keyword_string)))
+      (row_format
+        (keyword_row)
+        (keyword_format)
+        (keyword_serde)
+        (literal))
+      (stored_as
+        (keyword_stored)
+        (keyword_as)
+        (keyword_textfile))
+      (keyword_location)
+      (literal)
+      (keyword_tblproperties)
+      (literal)
+      (literal))))
+
+================================================================================
+Athena: CREATE EXTERNAL TABLE PARTITIONED BY
+================================================================================
+
+CREATE EXTERNAL TABLE sales (amount DOUBLE)
+PARTITIONED BY (year STRING, month STRING)
+STORED AS PARQUET
+LOCATION 's3://mybucket/sales/'
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_external_table
+      (keyword_create)
+      (keyword_external)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (column_definitions
+        (column_definition
+          (identifier)
+          (double
+            (keyword_double))))
+      (keyword_partitioned)
+      (keyword_by)
+      (column_definitions
+        (column_definition
+          (identifier)
+          (keyword_string))
+        (column_definition
+          (identifier)
+          (keyword_string)))
+      (stored_as
+        (keyword_stored)
+        (keyword_as)
+        (keyword_parquet))
+      (keyword_location)
+      (literal))))
+
+================================================================================
+Athena: CREATE EXTERNAL TABLE ROW FORMAT DELIMITED
+================================================================================
+
+CREATE EXTERNAL TABLE csv_table (id INT, name STRING)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+LINES TERMINATED BY '\n'
+STORED AS TEXTFILE
+LOCATION 's3://mybucket/csv/'
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_external_table
+      (keyword_create)
+      (keyword_external)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (column_definitions
+        (column_definition
+          (identifier)
+          (int
+            (keyword_int)))
+        (column_definition
+          (identifier)
+          (keyword_string)))
+      (row_format
+        (keyword_row)
+        (keyword_format)
+        (keyword_delimited)
+        (keyword_fields)
+        (keyword_terminated)
+        (keyword_by)
+        (literal)
+        (keyword_lines)
+        (keyword_terminated)
+        (keyword_by)
+        (literal))
+      (stored_as
+        (keyword_stored)
+        (keyword_as)
+        (keyword_textfile))
+      (keyword_location)
+      (literal))))

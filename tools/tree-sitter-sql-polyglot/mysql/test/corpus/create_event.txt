@@ -1,0 +1,67 @@
+================================================================================
+MySQL: CREATE EVENT with EVERY schedule
+================================================================================
+
+CREATE EVENT cleanup ON SCHEDULE EVERY 1 HOUR DO DELETE FROM logs WHERE expired = 1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_event
+      (keyword_create)
+      (keyword_event)
+      (object_reference
+        name: (identifier))
+      (keyword_on)
+      (keyword_schedule)
+      (keyword_every)
+      (literal)
+      (identifier)
+      (keyword_do)
+      (delete
+        (keyword_delete))
+      (from
+        (keyword_from)
+        (object_reference
+          name: (identifier))
+        (where
+          (keyword_where)
+          predicate: (binary_expression
+            left: (field
+              name: (identifier))
+            right: (literal)))))))
+
+================================================================================
+MySQL: CREATE EVENT IF NOT EXISTS with AT schedule
+================================================================================
+
+CREATE EVENT IF NOT EXISTS report ON SCHEDULE AT '2024-01-01 00:00:00' ON COMPLETION NOT PRESERVE DISABLE DO SELECT 1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_event
+      (keyword_create)
+      (keyword_event)
+      (keyword_if)
+      (keyword_not)
+      (keyword_exists)
+      (object_reference
+        name: (identifier))
+      (keyword_on)
+      (keyword_schedule)
+      (keyword_at)
+      (literal)
+      (keyword_on)
+      (keyword_completion)
+      (keyword_not)
+      (keyword_preserve)
+      (keyword_disable)
+      (keyword_do)
+      (select
+        (keyword_select)
+        (select_expression
+          (term
+            value: (literal)))))))

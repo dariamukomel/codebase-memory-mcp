@@ -1,0 +1,68 @@
+; Intent-based tests: expected trees derived from reading the grammar rules,
+; not copied from parser output.
+;
+; mysql/grammar.js overrides limit:
+;   limit: keyword_limit + choice(
+;     seq(alias(_integer, $.literal), ',', alias(_integer, $.literal)),  <- comma form
+;     seq($.literal, optional($.offset)),
+;   )
+;
+; LIMIT 5, 10 uses the first choice (comma form).
+; The ',' separator is an anonymous token; it does NOT appear in the tree.
+; Both integers are aliased to $.literal, so they appear as (literal) nodes.
+
+================================================================================
+MySQL: LIMIT offset, count (comma form)
+================================================================================
+
+SELECT * FROM t LIMIT 5, 10;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (limit
+        (keyword_limit)
+        (literal)
+        (literal)))))
+
+; mysql/grammar.js defines insert with keyword_ignore:
+;   insert: choice(keyword_insert, keyword_replace)
+;           + optional(low_priority | delayed | high_priority)
+;           + optional(keyword_ignore)
+;           + optional(keyword_into) + object_reference + ...
+;
+; INSERT IGNORE INTO t VALUES (1, 'a') must place keyword_ignore before
+; keyword_into.  _insert_values is a hidden rule (no wrapper node) so
+; keyword_values and list appear directly under insert.
+
+================================================================================
+MySQL: INSERT IGNORE
+================================================================================
+
+INSERT IGNORE INTO t VALUES (1, 'a');
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (insert
+      (keyword_insert)
+      (keyword_ignore)
+      (keyword_into)
+      (object_reference
+        name: (identifier))
+      (keyword_values)
+      (list
+        (literal)
+        (literal)))))

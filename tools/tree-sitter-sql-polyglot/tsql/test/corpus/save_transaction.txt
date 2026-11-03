@@ -1,0 +1,44 @@
+================================================================================
+T-SQL: SAVE TRANSACTION with savepoint name
+================================================================================
+
+SAVE TRANSACTION sp1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (save_transaction_statement
+      (keyword_save)
+      (keyword_transaction)
+      name: (identifier))))
+
+================================================================================
+T-SQL: SAVE TRAN abbreviation
+================================================================================
+
+SAVE TRAN sp1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (save_transaction_statement
+      (keyword_save)
+      (keyword_transaction)
+      name: (identifier))))
+
+================================================================================
+T-SQL: SAVE TRANSACTION with @variable
+================================================================================
+
+SAVE TRANSACTION @sp;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (save_transaction_statement
+      (keyword_save)
+      (keyword_transaction)
+      name: (variable))))

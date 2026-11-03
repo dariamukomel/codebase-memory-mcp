@@ -1,0 +1,292 @@
+================================================================================
+CockroachDB: SELECT AS OF SYSTEM TIME
+================================================================================
+
+SELECT id FROM accounts AS OF SYSTEM TIME '-10s' WHERE balance > 0;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (field
+            (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier))
+        (as_of_clause
+          (keyword_as)
+          (keyword_of)
+          (keyword_system)
+          (keyword_time)
+          (literal)))
+      (where
+        (keyword_where)
+        (binary_expression
+          (field
+            (identifier))
+          (literal))))))
+
+================================================================================
+CockroachDB: UPSERT INTO VALUES
+================================================================================
+
+UPSERT INTO t1 (a, b) VALUES (1, 'x');
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (upsert_statement
+      (keyword_upsert)
+      (keyword_into)
+      (object_reference
+        (identifier))
+      (list
+        (column
+          (identifier))
+        (column
+          (identifier)))
+      (keyword_values)
+      (list
+        (literal)
+        (literal)))))
+
+================================================================================
+CockroachDB: BACKUP DATABASE with options
+================================================================================
+
+BACKUP DATABASE bank INTO 's3://bucket/backups' AS OF SYSTEM TIME '-10s' WITH revision_history;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (backup_statement
+      (keyword_backup)
+      (keyword_database)
+      (object_reference
+        (identifier))
+      (keyword_into)
+      (literal)
+      (as_of_clause
+        (keyword_as)
+        (keyword_of)
+        (keyword_system)
+        (keyword_time)
+        (literal))
+      (crdb_options_clause
+        (keyword_with)
+        (crdb_option
+          (identifier))))))
+
+================================================================================
+CockroachDB: RESTORE DATABASE FROM LATEST
+================================================================================
+
+RESTORE DATABASE bank FROM LATEST IN 's3://bucket/backups';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (restore_statement
+      (keyword_restore)
+      (keyword_database)
+      (object_reference
+        (identifier))
+      (keyword_from)
+      (keyword_latest)
+      (keyword_in)
+      (literal))))
+
+================================================================================
+CockroachDB: IMPORT INTO CSV DATA
+================================================================================
+
+IMPORT INTO t1 (a, b) CSV DATA ('s3://bucket/data.csv') WITH skip = '1';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (import_into_statement
+      (keyword_import)
+      (keyword_into)
+      (object_reference
+        (identifier))
+      (list
+        (column
+          (identifier))
+        (column
+          (identifier)))
+      (keyword_csv)
+      (keyword_data)
+      (literal)
+      (crdb_options_clause
+        (keyword_with)
+        (crdb_option
+          (identifier)
+          (literal))))))
+
+================================================================================
+CockroachDB: CREATE CHANGEFEED into Kafka
+================================================================================
+
+CREATE CHANGEFEED FOR TABLE orders, payments INTO 'kafka://broker:9092' WITH updated, resolved = '10s';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_changefeed_statement
+      (keyword_create)
+      (keyword_changefeed)
+      (keyword_for)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (object_reference
+        (identifier))
+      (keyword_into)
+      (literal)
+      (crdb_options_clause
+        (keyword_with)
+        (crdb_option
+          (identifier))
+        (crdb_option
+          (identifier)
+          (literal))))))
+
+================================================================================
+CockroachDB: hash-sharded index with STORING
+================================================================================
+
+CREATE INDEX idx_a ON t1 (a) USING HASH STORING (b, c);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_index
+      (keyword_create)
+      (keyword_index)
+      (identifier)
+      (keyword_on)
+      (object_reference
+        (identifier))
+      (index_fields
+        (field
+          (identifier)))
+      (keyword_using)
+      (keyword_hash)
+      (keyword_storing)
+      (list
+        (column
+          (identifier))
+        (column
+          (identifier))))))
+
+================================================================================
+CockroachDB: SHOW statements
+================================================================================
+
+SHOW DATABASES;
+
+SHOW JOBS;
+
+SHOW GRANTS ON t1;
+
+SHOW COLUMNS FROM t1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (keyword_show)
+    (keyword_databases))
+  (statement
+    (keyword_show)
+    (keyword_jobs))
+  (statement
+    (keyword_show)
+    (keyword_grants)
+    (keyword_on)
+    (object_reference
+      (identifier)))
+  (statement
+    (keyword_show)
+    (keyword_columns)
+    (keyword_from)
+    (object_reference
+      (identifier))))
+
+================================================================================
+CockroachDB: inherited postgres features still parse
+================================================================================
+
+INSERT INTO t1 (a) VALUES (1) ON CONFLICT DO NOTHING RETURNING a;
+
+SELECT DISTINCT ON (a) a, b FROM t1 ORDER BY a LIMIT 10 OFFSET 5;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (insert
+      (keyword_insert)
+      (keyword_into)
+      (object_reference
+        (identifier))
+      (list
+        (column
+          (identifier)))
+      (keyword_values)
+      (list
+        (literal))
+      (keyword_on)
+      (keyword_conflict)
+      (keyword_do)
+      (keyword_nothing))
+    (returning
+      (keyword_returning)
+      (select_expression
+        (term
+          (field
+            (identifier))))))
+  (statement
+    (select
+      (keyword_select)
+      (keyword_distinct)
+      (keyword_on)
+      (field
+        (identifier))
+      (select_expression
+        (term
+          (field
+            (identifier)))
+        (term
+          (field
+            (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier)))
+      (order_by
+        (keyword_order)
+        (keyword_by)
+        (order_target
+          (field
+            (identifier))))
+      (limit
+        (keyword_limit)
+        (literal)
+        (offset
+          (keyword_offset)
+          (literal))))))

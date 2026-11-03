@@ -1,0 +1,39 @@
+
+================================================================================
+SQLite: UPDATE OR REPLACE
+================================================================================
+
+UPDATE OR REPLACE t1 SET a = 1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (update
+      (keyword_update)
+      (keyword_or)
+      (conflict_action
+        (keyword_replace))
+      (relation
+        (object_reference
+          name: (identifier)))
+      (keyword_set)
+      (assignment
+        left: (field
+          name: (identifier))
+        right: (literal)))))
+
+================================================================================
+SQLite: BEGIN IMMEDIATE TRANSACTION
+================================================================================
+
+BEGIN IMMEDIATE TRANSACTION; COMMIT;
+
+--------------------------------------------------------------------------------
+
+(program
+  (transaction
+    (keyword_begin)
+    (keyword_immediate)
+    (keyword_transaction)
+    (keyword_commit)))

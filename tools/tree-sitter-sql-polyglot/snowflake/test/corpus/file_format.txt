@@ -1,0 +1,84 @@
+================================================================================
+Snowflake: CREATE OR REPLACE FILE FORMAT with properties
+================================================================================
+
+CREATE OR REPLACE FILE FORMAT my_csv_format TYPE = CSV FIELD_DELIMITER = ',' SKIP_HEADER = 1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_file_format_statement
+      (keyword_create)
+      (keyword_or)
+      (keyword_replace)
+      (keyword_file)
+      (keyword_format)
+      (object_reference
+        name: (identifier))
+      (file_format_property
+        (identifier)
+        (identifier))
+      (file_format_property
+        (identifier)
+        (literal))
+      (file_format_property
+        (identifier)
+        (literal)))))
+
+================================================================================
+Snowflake: CREATE FILE FORMAT Parquet
+================================================================================
+
+CREATE OR REPLACE FILE FORMAT my_parquet TYPE = PARQUET;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_file_format_statement
+      (keyword_create)
+      (keyword_or)
+      (keyword_replace)
+      (keyword_file)
+      (keyword_format)
+      (object_reference
+        name: (identifier))
+      (file_format_property
+        (identifier)
+        (identifier)))))
+
+================================================================================
+Snowflake: COPY INTO table from inline subquery
+================================================================================
+
+COPY INTO orders FROM (SELECT $1, $2 FROM @mystage) FILE_FORMAT = (TYPE = CSV);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (copy_into
+      (keyword_copy)
+      (keyword_into)
+      (object_reference
+        name: (identifier))
+      (keyword_from)
+      (select
+        (keyword_select)
+        (select_expression
+          (term
+            value: (parameter))
+          (term
+            value: (parameter))))
+      (from
+        (keyword_from)
+        (relation
+          (stage_ref)))
+      (copy_property
+        (identifier)
+        (copy_list
+          (copy_kv
+            (identifier)
+            (object_reference
+              name: (identifier))))))))

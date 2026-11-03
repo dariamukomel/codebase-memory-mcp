@@ -1,0 +1,75 @@
+================================================================================
+Hive: MSCK REPAIR TABLE
+================================================================================
+
+MSCK REPAIR TABLE sales;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (msck_repair_statement
+      (keyword_msck)
+      (keyword_repair)
+      (keyword_table)
+      name: (object_reference
+        name: (identifier)))))
+
+================================================================================
+Hive: SKEWED BY basic
+================================================================================
+
+CREATE TABLE t (id INT) SKEWED BY (id) ON (1, 2);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int))))
+      (skewed_by
+        (keyword_skewed)
+        (keyword_by)
+        (identifier)
+        (keyword_on)
+        (literal)
+        (literal)))))
+
+================================================================================
+Hive: SKEWED BY STORED AS DIRECTORIES
+================================================================================
+
+CREATE TABLE t (id INT) SKEWED BY (id) ON (1, 2) STORED AS DIRECTORIES;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int))))
+      (skewed_by
+        (keyword_skewed)
+        (keyword_by)
+        (identifier)
+        (keyword_on)
+        (literal)
+        (literal)
+        (keyword_stored)
+        (keyword_as)
+        (keyword_directories)))))

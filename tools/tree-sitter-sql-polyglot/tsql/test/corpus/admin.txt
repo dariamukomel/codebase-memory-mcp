@@ -1,0 +1,392 @@
+================================================================================
+T-SQL: SET NOCOUNT ON
+================================================================================
+
+SET NOCOUNT ON
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (set_option_statement
+      (keyword_set)
+      option: (identifier)
+      (keyword_on))))
+
+================================================================================
+T-SQL: SET two options OFF
+================================================================================
+
+SET ANSI_NULLS, QUOTED_IDENTIFIER OFF
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (set_option_statement
+      (keyword_set)
+      option: (identifier)
+      option: (identifier)
+      (keyword_off))))
+
+================================================================================
+T-SQL: SET IDENTITY_INSERT
+================================================================================
+
+SET IDENTITY_INSERT dbo.t1 ON
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (set_option_statement
+      (keyword_set)
+      option: (identifier)
+      value: (object_reference
+        schema: (identifier)
+        name: (identifier))
+      (keyword_on))))
+
+================================================================================
+T-SQL: SET STATISTICS IO ON
+================================================================================
+
+SET STATISTICS IO ON
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (set_option_statement
+      (keyword_set)
+      (keyword_statistics)
+      option: (identifier)
+      (keyword_on))))
+
+================================================================================
+T-SQL: DENY
+================================================================================
+
+DENY SELECT ON dbo.t1 TO alice CASCADE
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (deny_statement
+      (keyword_deny)
+      (tsql_permission
+        permission: (keyword_select))
+      (keyword_on)
+      securable: (object_reference
+        schema: (identifier)
+        name: (identifier))
+      (keyword_to)
+      principal: (identifier)
+      (keyword_cascade))))
+
+================================================================================
+T-SQL: DISABLE TRIGGER
+================================================================================
+
+DISABLE TRIGGER ALL ON DATABASE
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (enable_trigger_statement
+      (keyword_disable)
+      (keyword_trigger)
+      (keyword_all)
+      (keyword_on)
+      (keyword_database))))
+
+================================================================================
+T-SQL: UPDATE STATISTICS
+================================================================================
+
+UPDATE STATISTICS dbo.t1 ix_a
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (update_statistics_statement
+      (keyword_update)
+      (keyword_statistics)
+      table: (object_reference
+        schema: (identifier)
+        name: (identifier))
+      name: (identifier))))
+
+================================================================================
+T-SQL: EXECUTE AS CALLER
+================================================================================
+
+EXECUTE AS CALLER
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (execute_as_statement
+      (keyword_execute)
+      (keyword_as)
+      (keyword_caller))))
+
+================================================================================
+T-SQL: REVERT
+================================================================================
+
+REVERT
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (revert_statement
+      (keyword_revert))))
+
+================================================================================
+T-SQL: CREATE MASTER KEY
+================================================================================
+
+CREATE MASTER KEY ENCRYPTION BY PASSWORD = 'p@ssw0rd'
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_key_object
+      (keyword_create)
+      kind: (identifier)
+      (keyword_key)
+      (keyword_encryption)
+      (keyword_by)
+      (keyword_password)
+      (literal))))
+
+================================================================================
+T-SQL: CLOSE MASTER KEY
+================================================================================
+
+CLOSE MASTER KEY
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (open_key_statement
+      (keyword_close)
+      kind: (identifier)
+      (keyword_key))))
+
+================================================================================
+T-SQL: CREATE PARTITION FUNCTION
+================================================================================
+
+CREATE PARTITION FUNCTION pf1 (int) AS RANGE LEFT FOR VALUES (1, 100)
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_partition_function
+      (keyword_create)
+      (keyword_partition)
+      (keyword_function)
+      name: (identifier)
+      (int
+        (keyword_int))
+      (keyword_as)
+      (keyword_range)
+      (keyword_left)
+      (keyword_for)
+      (keyword_values)
+      (literal)
+      (literal))))
+
+================================================================================
+T-SQL: CREATE PARTITION SCHEME
+================================================================================
+
+CREATE PARTITION SCHEME ps1 AS PARTITION pf1 ALL TO (PRIMARY)
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_partition_scheme
+      (keyword_create)
+      (keyword_partition)
+      (keyword_scheme)
+      name: (identifier)
+      (keyword_as)
+      (keyword_partition)
+      function: (identifier)
+      (keyword_all)
+      (keyword_to)
+      (keyword_primary))))
+
+================================================================================
+T-SQL: CREATE RULE
+================================================================================
+
+CREATE RULE dbo.r1 AS 1
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_default_or_rule
+      (keyword_create)
+      (keyword_rule)
+      name: (object_reference
+        schema: (identifier)
+        name: (identifier))
+      (keyword_as)
+      expression: (literal))))
+
+================================================================================
+T-SQL: CREATE SERVER ROLE
+================================================================================
+
+CREATE SERVER ROLE sr1 AUTHORIZATION sa
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_principal_role
+      (keyword_create)
+      (keyword_server)
+      (keyword_role)
+      name: (identifier)
+      (keyword_authorization)
+      owner: (identifier))))
+
+================================================================================
+T-SQL: DROP SECURITY POLICY
+================================================================================
+
+DROP SECURITY POLICY IF EXISTS dbo.sp1
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_tsql_object
+      (keyword_drop)
+      (keyword_security)
+      (keyword_policy)
+      (keyword_if)
+      (keyword_exists)
+      name: (object_reference
+        schema: (identifier)
+        name: (identifier)))))
+
+================================================================================
+T-SQL: BACKUP DATABASE
+================================================================================
+
+BACKUP DATABASE mydb TO DISK = '/backups/mydb.bak'
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (backup_statement
+      (keyword_backup)
+      (keyword_database)
+      name: (object_reference
+        name: (identifier))
+      (keyword_to)
+      (backup_device
+        kind: (identifier)
+        (literal)))))
+
+================================================================================
+T-SQL: CREATE DATABASE with filespec and COLLATE
+================================================================================
+
+CREATE DATABASE db1 ON PRIMARY (NAME = d1, FILENAME = 'd1.mdf', SIZE = 8) LOG ON (NAME = l1, FILENAME = 'l1.ldf') COLLATE Latin1_General_CI_AS;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_database
+      (keyword_create)
+      (keyword_database)
+      (identifier)
+      (keyword_on)
+      (keyword_primary)
+      (db_filespec
+        (tsql_option
+          name: (identifier)
+          value: (identifier))
+        (tsql_option
+          name: (identifier)
+          value: (literal))
+        (tsql_option
+          name: (identifier)
+          value: (literal)))
+      (keyword_log)
+      (keyword_on)
+      (db_filespec
+        (tsql_option
+          name: (identifier)
+          value: (identifier))
+        (tsql_option
+          name: (identifier)
+          value: (literal)))
+      (keyword_collate)
+      collation: (identifier))))
+
+================================================================================
+T-SQL: ALTER DATABASE SET options
+================================================================================
+
+ALTER DATABASE db1 SET AUTO_CLOSE ON, RECOVERY SIMPLE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_database
+      (keyword_alter)
+      (keyword_database)
+      (identifier)
+      (keyword_set)
+      option: (identifier)
+      (keyword_on)
+      option: (identifier)
+      argument: (identifier))))
+
+================================================================================
+T-SQL: ALTER DATABASE ADD FILE
+================================================================================
+
+ALTER DATABASE db1 ADD FILE (NAME = d2, FILENAME = 'd2.ndf') TO FILEGROUP fg1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_database
+      (keyword_alter)
+      (keyword_database)
+      (identifier)
+      (keyword_add)
+      (keyword_file)
+      (db_filespec
+        (tsql_option
+          name: (identifier)
+          value: (identifier))
+        (tsql_option
+          name: (identifier)
+          value: (literal)))
+      (keyword_to)
+      (keyword_filegroup)
+      filegroup: (identifier))))

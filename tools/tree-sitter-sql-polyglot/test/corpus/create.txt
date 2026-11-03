@@ -1,0 +1,1060 @@
+================================================================================
+Create table
+================================================================================
+
+CREATE TABLE my_schema.my_table (id BIGINT NOT NULL PRIMARY KEY);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        schema: (identifier)
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (bigint
+            (keyword_bigint))
+          (keyword_not)
+          (keyword_null)
+          (keyword_primary)
+          (keyword_key))))))
+
+================================================================================
+Create table with FQN
+================================================================================
+
+CREATE TABLE my_database.my_schema.my_table (id BIGINT NOT NULL PRIMARY KEY);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        database: (identifier)
+        schema: (identifier)
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (bigint
+            (keyword_bigint))
+          (keyword_not)
+          (keyword_null)
+          (keyword_primary)
+          (keyword_key))))))
+
+================================================================================
+Create table multiple columns
+================================================================================
+
+CREATE TABLE my_table (
+  id BIGINT NOT NULL PRIMARY KEY,
+  date DATE DEFAULT NULL ASC,
+  date2 DATE DEFAULT NULL UNIQUE ASC
+);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (bigint
+            (keyword_bigint))
+          (keyword_not)
+          (keyword_null)
+          (keyword_primary)
+          (keyword_key))
+        (column_definition
+          name: (identifier)
+          type: (keyword_date)
+          (keyword_default)
+          (literal
+            (keyword_null))
+          (direction
+            (keyword_asc)))
+        (column_definition
+          name: (identifier)
+          type: (keyword_date)
+          (keyword_default)
+          (literal
+            (keyword_null))
+          (keyword_unique)
+          (direction
+            (keyword_asc)))))))
+
+================================================================================
+Create table with constraint
+================================================================================
+
+CREATE TABLE my_table (
+  host CHAR(50) NOT NULL,
+  created_date DATE NOT NULL,
+  CONSTRAINT pk PRIMARY KEY (host ASC, created_date DESC)
+);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (char
+            (keyword_char)
+            size: (literal))
+          (keyword_not)
+          (keyword_null))
+        (column_definition
+          name: (identifier)
+          type: (keyword_date)
+          (keyword_not)
+          (keyword_null))
+        (constraints
+          (constraint
+            (keyword_constraint)
+            name: (identifier)
+            (keyword_primary)
+            (keyword_key)
+            (ordered_columns
+              (column
+                name: (identifier)
+                (direction
+                  (keyword_asc)))
+              (column
+                name: (identifier)
+                (direction
+                  (keyword_desc))))))))))
+
+================================================================================
+Create table with constraint checks
+================================================================================
+
+CREATE TABLE products (
+    product_no integer,
+    name text,
+    price numeric CHECK (price > 0),
+    discounted_price numeric CHECK (discounted_price > 0),
+    CHECK (price > discounted_price)
+);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int)))
+        (column_definition
+          name: (identifier)
+          custom_type: (object_reference
+            name: (identifier)))
+        (column_definition
+          name: (identifier)
+          type: (numeric
+            (keyword_numeric))
+          (keyword_check)
+          (binary_expression
+            left: (field
+              name: (identifier))
+            right: (literal)))
+        (column_definition
+          name: (identifier)
+          type: (numeric
+            (keyword_numeric))
+          (keyword_check)
+          (binary_expression
+            left: (field
+              name: (identifier))
+            right: (literal)))
+        (constraints
+          (constraint
+            (keyword_check)
+            (binary_expression
+              left: (field
+                name: (identifier))
+              right: (field
+                name: (identifier)))))))))
+
+================================================================================
+Create view
+================================================================================
+
+CREATE VIEW my_view AS
+SELECT * FROM my_table;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_view
+      (keyword_create)
+      (keyword_view)
+      (object_reference
+        name: (identifier))
+      (keyword_as)
+      (create_query
+        (select
+          (keyword_select)
+          (select_expression
+            (term
+              value: (all_fields))))
+        (from
+          (keyword_from)
+          (relation
+            (object_reference
+              name: (identifier))))))))
+
+================================================================================
+Create view with columns
+================================================================================
+
+CREATE VIEW foo(a, b) AS SELECT 1 a, 2 b;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_view
+      (keyword_create)
+      (keyword_view)
+      (object_reference
+        (identifier))
+      (identifier)
+      (identifier)
+      (keyword_as)
+      (create_query
+        (select
+          (keyword_select)
+          (select_expression
+            (term
+              (literal)
+              (identifier))
+            (term
+              (literal)
+              (identifier))))))))
+
+================================================================================
+Create view with check option
+================================================================================
+
+CREATE VIEW foo AS SELECT 1 WITH CHECK OPTION;
+CREATE VIEW foo AS SELECT 1 WITH LOCAL CHECK OPTION;
+CREATE VIEW foo AS SELECT 1 WITH CASCADED CHECK OPTION;
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_view
+      (keyword_create)
+      (keyword_view)
+      (object_reference
+        (identifier))
+      (keyword_as)
+      (create_query
+        (select
+          (keyword_select)
+          (select_expression
+            (term
+              (literal)))))
+      (keyword_with)
+      (keyword_check)
+      (keyword_option)))
+  (statement
+    (create_view
+      (keyword_create)
+      (keyword_view)
+      (object_reference
+        (identifier))
+      (keyword_as)
+      (create_query
+        (select
+          (keyword_select)
+          (select_expression
+            (term
+              (literal)))))
+      (keyword_with)
+      (keyword_local)
+      (keyword_check)
+      (keyword_option)))
+  (statement
+    (create_view
+      (keyword_create)
+      (keyword_view)
+      (object_reference
+        (identifier))
+      (keyword_as)
+      (create_query
+        (select
+          (keyword_select)
+          (select_expression
+            (term
+              (literal)))))
+      (keyword_with)
+      (keyword_cascaded)
+      (keyword_check)
+      (keyword_option))))
+
+================================================================================
+Create table with all types
+================================================================================
+
+CREATE TABLE type_test (
+  a_bool BOOLEAN,
+  a_bit BIT,
+  a_bit2 BIT(2),
+  a_bit3 BIT VARYING(2),
+  a_binary BINARY,
+  a_varbinary VARBINARY,
+  a_image IMAGE,
+  a_smallser SMALLSERIAL,
+  a_serial SERIAL,
+  a_bigser BIGSERIAL,
+  an_int INT,
+  an_integer INTEGER,
+  a_bigint BIGINT,
+  a_decimal DECIMAL,
+  a_sized_decimal DECIMAL (8),
+  a_sized_decimal_with_scale DECIMAL (8, 4),
+  a_numeric NUMERIC,
+  a_sized_numeric NUMERIC (8),
+  a_sized_numeric_with_scale NUMERIC (8, 4),
+  a_real REAL,
+  a_double_precision DOUBLE PRECISION,
+  a_money MONEY,
+  a_smallmoney SMALLMONEY,
+  a_char CHAR,
+  a_nchar NCHAR,
+  a_nchar_precision NCHAR(8),
+  a_character CHARACTER,
+  a_sized_char CHAR (10),
+  a_varchar VARCHAR (10),
+  a_nvarchar NVARCHAR,
+  a_nvarchar_precision NVARCHAR (10),
+  a_character_varying CHARACTER VARYING (10),
+  a_text TEXT,
+  a_json JSON,
+  a_jsonb JSONB,
+  an_xml XML,
+  a_bytea BYTEA,
+  a_enum ENUM('one','two','three'),
+  a_date DATE,
+  a_datetime DATETIME,
+  a_datetime2 DATETIME2,
+  a_datetimeoffset DATETIMEOFFSET,
+  a_smalldatetime SMALLDATETIME,
+  a_time TIME,
+  a_timestamp TIMESTAMP,
+  a_verbose_timestamp TIMESTAMP WITHOUT TIME ZONE,
+  a_tstz TIMESTAMPTZ,
+  a_date_with_default_ts DATETIME DEFAULT CURRENT_TIMESTAMP,
+  a_verbose_tstz TIMESTAMP WITH TIME ZONE,
+  a_geometry GEOMETRY,
+  a_geography GEOGRAPHY,
+  a_box2d BOX2D,
+  a_box3d BOX3D,
+  a_uuid UUID
+);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (keyword_boolean))
+        (column_definition
+          name: (identifier)
+          type: (bit
+            (keyword_bit)))
+        (column_definition
+          name: (identifier)
+          type: (bit
+            (keyword_bit)
+            precision: (literal)))
+        (column_definition
+          name: (identifier)
+          type: (bit
+            (keyword_bit)
+            (keyword_varying)
+            precision: (literal)))
+        (column_definition
+          name: (identifier)
+          type: (binary
+            (keyword_binary)))
+        (column_definition
+          name: (identifier)
+          type: (varbinary
+            (keyword_varbinary)))
+        (column_definition
+          name: (identifier)
+          custom_type: (object_reference
+            name: (identifier)))
+        (column_definition
+          name: (identifier)
+          custom_type: (object_reference
+            name: (identifier)))
+        (column_definition
+          name: (identifier)
+          custom_type: (object_reference
+            name: (identifier)))
+        (column_definition
+          name: (identifier)
+          custom_type: (object_reference
+            name: (identifier)))
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int)))
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int)))
+        (column_definition
+          name: (identifier)
+          type: (bigint
+            (keyword_bigint)))
+        (column_definition
+          name: (identifier)
+          type: (decimal
+            (keyword_decimal)))
+        (column_definition
+          name: (identifier)
+          type: (decimal
+            (keyword_decimal)
+            precision: (literal)))
+        (column_definition
+          name: (identifier)
+          type: (decimal
+            (keyword_decimal)
+            precision: (literal)
+            scale: (literal)))
+        (column_definition
+          name: (identifier)
+          type: (numeric
+            (keyword_numeric)))
+        (column_definition
+          name: (identifier)
+          type: (numeric
+            (keyword_numeric)
+            precision: (literal)))
+        (column_definition
+          name: (identifier)
+          type: (numeric
+            (keyword_numeric)
+            precision: (literal)
+            scale: (literal)))
+        (column_definition
+          name: (identifier)
+          type: (double
+            (keyword_real)))
+        (column_definition
+          name: (identifier)
+          type: (double
+            (keyword_double)
+            (keyword_precision)))
+        (column_definition
+          name: (identifier)
+          custom_type: (object_reference
+            name: (identifier)))
+        (column_definition
+          name: (identifier)
+          custom_type: (object_reference
+            name: (identifier)))
+        (column_definition
+          name: (identifier)
+          type: (char
+            (keyword_char)))
+        (column_definition
+          name: (identifier)
+          type: (nchar
+            (keyword_nchar)))
+        (column_definition
+          name: (identifier)
+          type: (nchar
+            (keyword_nchar)
+            size: (literal)))
+        (column_definition
+          name: (identifier)
+          type: (char
+            (keyword_char)))
+        (column_definition
+          name: (identifier)
+          type: (char
+            (keyword_char)
+            size: (literal)))
+        (column_definition
+          name: (identifier)
+          type: (varchar
+            (keyword_varchar)
+            size: (literal)))
+        (column_definition
+          name: (identifier)
+          type: (nvarchar
+            (keyword_nvarchar)))
+        (column_definition
+          name: (identifier)
+          type: (nvarchar
+            (keyword_nvarchar)
+            size: (literal)))
+        (column_definition
+          name: (identifier)
+          type: (varchar
+            (keyword_varchar
+              (keyword_varying))
+            size: (literal)))
+        (column_definition
+          name: (identifier)
+          custom_type: (object_reference
+            name: (identifier)))
+        (column_definition
+          name: (identifier)
+          type: (keyword_json))
+        (column_definition
+          name: (identifier)
+          custom_type: (object_reference
+            name: (identifier)))
+        (column_definition
+          name: (identifier)
+          type: (keyword_xml))
+        (column_definition
+          name: (identifier)
+          custom_type: (object_reference
+            name: (identifier)))
+        (column_definition
+          name: (identifier)
+          type: (enum
+            (keyword_enum)
+            value: (literal)
+            value: (literal)
+            value: (literal)))
+        (column_definition
+          name: (identifier)
+          type: (keyword_date))
+        (column_definition
+          name: (identifier)
+          custom_type: (object_reference
+            name: (identifier)))
+        (column_definition
+          name: (identifier)
+          custom_type: (object_reference
+            name: (identifier)))
+        (column_definition
+          name: (identifier)
+          custom_type: (object_reference
+            name: (identifier)))
+        (column_definition
+          name: (identifier)
+          custom_type: (object_reference
+            name: (identifier)))
+        (column_definition
+          name: (identifier)
+          type: (time
+            (keyword_time)))
+        (column_definition
+          name: (identifier)
+          type: (timestamp
+            (keyword_timestamp)))
+        (column_definition
+          name: (identifier)
+          type: (timestamp
+            (keyword_timestamp)
+            (keyword_without)
+            (keyword_time)
+            (keyword_zone)))
+        (column_definition
+          name: (identifier)
+          custom_type: (object_reference
+            name: (identifier)))
+        (column_definition
+          name: (identifier)
+          custom_type: (object_reference
+            name: (identifier))
+          (keyword_default)
+          (keyword_current_timestamp))
+        (column_definition
+          name: (identifier)
+          type: (timestamp
+            (keyword_timestamp)
+            (keyword_with)
+            (keyword_time)
+            (keyword_zone)))
+        (column_definition
+          name: (identifier)
+          custom_type: (object_reference
+            name: (identifier)))
+        (column_definition
+          name: (identifier)
+          custom_type: (object_reference
+            name: (identifier)))
+        (column_definition
+          name: (identifier)
+          custom_type: (object_reference
+            name: (identifier)))
+        (column_definition
+          name: (identifier)
+          custom_type: (object_reference
+            name: (identifier)))
+        (column_definition
+          name: (identifier)
+          custom_type: (object_reference
+            name: (identifier)))))))
+
+================================================================================
+Create table with nullable columns
+================================================================================
+
+CREATE TABLE tableName (
+    id NUMERIC NULL,
+    name VARCHAR NULL
+);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (column_definitions
+        (column_definition
+          (identifier)
+          (numeric
+            (keyword_numeric))
+          (keyword_null))
+        (column_definition
+          (identifier)
+          (varchar
+            (keyword_varchar))
+          (keyword_null))))))
+
+================================================================================
+Create table as select
+================================================================================
+
+CREATE TABLE tableName AS SELECT * FROM otherTable;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_as)
+      (create_query
+        (select
+          (keyword_select)
+          (select_expression
+            (term
+              value: (all_fields))))
+        (from
+          (keyword_from)
+          (relation
+            (object_reference
+              name: (identifier))))))))
+
+================================================================================
+Create table as select with cte
+================================================================================
+
+CREATE TABLE tableName AS WITH _cte AS (
+    SELECT a FROM b
+)
+SELECT * FROM _cte
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (keyword_as)
+      (create_query
+        (keyword_with)
+        (cte
+          (identifier)
+          (keyword_as)
+          (statement
+            (select
+              (keyword_select)
+              (select_expression
+                (term
+                  (field
+                    (identifier)))))
+            (from
+              (keyword_from)
+              (relation
+                (object_reference
+                  (identifier))))))
+        (select
+          (keyword_select)
+          (select_expression
+            (term
+              (all_fields))))
+        (from
+          (keyword_from)
+          (relation
+            (object_reference
+              (identifier))))))))
+
+================================================================================
+Create table from select statement with parenthesis
+================================================================================
+
+CREATE TABLE tb AS
+(
+  SELECT 1 as col
+)
+UNION ALL
+(
+  SELECT 2 as col
+);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (keyword_as)
+      (create_query
+        (set_operation
+          (select
+            (keyword_select)
+            (select_expression
+              (term
+                (literal)
+                (keyword_as)
+                (identifier))))
+          (keyword_union)
+          (keyword_all)
+          (select
+            (keyword_select)
+            (select_expression
+              (term
+                (literal)
+                (keyword_as)
+                (identifier)))))))))
+
+================================================================================
+Create view as select with cte
+================================================================================
+
+CREATE VIEW tableName AS WITH _cte AS (
+    SELECT a FROM b
+)
+SELECT * FROM _cte
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_view
+      (keyword_create)
+      (keyword_view)
+      (object_reference
+        (identifier))
+      (keyword_as)
+      (create_query
+        (keyword_with)
+        (cte
+          (identifier)
+          (keyword_as)
+          (statement
+            (select
+              (keyword_select)
+              (select_expression
+                (term
+                  (field
+                    (identifier)))))
+            (from
+              (keyword_from)
+              (relation
+                (object_reference
+                  (identifier))))))
+        (select
+          (keyword_select)
+          (select_expression
+            (term
+              (all_fields))))
+        (from
+          (keyword_from)
+          (relation
+            (object_reference
+              (identifier))))))))
+
+================================================================================
+Create table with string name
+================================================================================
+
+CREATE TABLE "Role" (
+    id BIGINT NOT NULL
+);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (bigint
+            (keyword_bigint))
+          (keyword_not)
+          (keyword_null))))))
+
+================================================================================
+Inet type
+================================================================================
+
+CREATE TABLE "Session" (
+  "ip" inet NOT NULL
+);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          custom_type: (object_reference
+            name: (identifier))
+          (keyword_not)
+          (keyword_null))))))
+
+================================================================================
+Create table with arrays and matrix
+================================================================================
+
+CREATE TABLE tab (
+    name   text,
+    array2 integer[3],
+    matrix text[][],
+    square integer[3][3],
+    array4 integer ARRAY[4],
+    array_ integer ARRAY,
+    multid integer[3][3][3][3]
+);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          custom_type: (object_reference
+            name: (identifier)))
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int))
+          type: (array_size_definition
+            size: (literal)))
+        (column_definition
+          name: (identifier)
+          custom_type: (object_reference
+            name: (identifier))
+          type: (array_size_definition))
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int))
+          type: (array_size_definition
+            size: (literal)
+            size: (literal)))
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int))
+          type: (array_size_definition
+            (keyword_array)
+            size: (literal)))
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int))
+          type: (array_size_definition
+            (keyword_array)))
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int))
+          type: (array_size_definition
+            size: (literal)
+            size: (literal)
+            size: (literal)
+            size: (literal)))))))
+
+================================================================================
+Create schema
+================================================================================
+
+CREATE SCHEMA myschema;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_schema
+      (keyword_create)
+      (keyword_schema)
+      (identifier))))
+
+================================================================================
+Create schema with subsequent creates
+================================================================================
+
+CREATE SCHEMA hollywood
+    CREATE TABLE films (title text, release date, awards text[])
+    CREATE VIEW winners AS
+        SELECT title, release FROM films WHERE awards IS NOT NULL;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_schema
+      (keyword_create)
+      (keyword_schema)
+      (identifier))
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          custom_type: (object_reference
+            name: (identifier)))
+        (column_definition
+          name: (identifier)
+          type: (keyword_date))
+        (column_definition
+          name: (identifier)
+          custom_type: (object_reference
+            name: (identifier))
+          type: (array_size_definition))))
+    (create_view
+      (keyword_create)
+      (keyword_view)
+      (object_reference
+        name: (identifier))
+      (keyword_as)
+      (create_query
+        (select
+          (keyword_select)
+          (select_expression
+            (term
+              value: (field
+                name: (identifier)))
+            (term
+              value: (field
+                name: (identifier)))))
+        (from
+          (keyword_from)
+          (relation
+            (object_reference
+              name: (identifier)))
+          (where
+            (keyword_where)
+            predicate: (binary_expression
+              left: (field
+                name: (identifier))
+              operator: (is_not
+                (keyword_is)
+                (keyword_not))
+              right: (literal
+                (keyword_null)))))))))
+
+================================================================================
+Create table column REFERENCES constraint
+================================================================================
+
+CREATE TABLE foo (
+	bar int NOT NULL REFERENCES bar(foo) ON DELETE CASCADE
+);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int))
+          (keyword_not)
+          (keyword_null)
+          (keyword_references)
+          (object_reference
+            name: (identifier))
+          (identifier)
+          (keyword_on)
+          (keyword_delete)
+          (keyword_cascade))))))

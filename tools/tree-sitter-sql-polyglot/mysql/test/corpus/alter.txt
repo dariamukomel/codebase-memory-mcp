@@ -1,0 +1,28 @@
+================================================================================
+ALTER TABLE with ALGORITHM and LOCK online-DDL options
+================================================================================
+
+ALTER TABLE t ADD COLUMN c INT, ALGORITHM=INPLACE, LOCK=NONE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (add_column
+        (keyword_add)
+        (keyword_column)
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int))))
+      (alter_algorithm_option
+        (keyword_algorithm)
+        (identifier))
+      (alter_lock_option
+        (keyword_lock)
+        (identifier)))))

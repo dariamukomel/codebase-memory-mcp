@@ -1,0 +1,82 @@
+================================================================================
+CREATE CONNECTION
+================================================================================
+
+CREATE CONNECTION my_connection WITH (
+  'type' = 'confluent',
+  'endpoint' = 'https://kafka.example.com'
+)
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_connection
+      (keyword_create)
+      (keyword_connection)
+      (object_reference
+        (identifier))
+      (with_properties
+        (keyword_with)
+        (literal)
+        (literal)
+        (literal)
+        (literal)))))
+
+================================================================================
+ALTER CONNECTION SET
+================================================================================
+
+ALTER CONNECTION my_connection SET ('endpoint' = 'https://new-kafka.example.com')
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_connection
+      (keyword_alter)
+      (keyword_connection)
+      (object_reference
+        (identifier))
+      (keyword_set)
+      (with_properties
+        (literal)
+        (literal)))))
+
+================================================================================
+ALTER CONNECTION RENAME TO
+================================================================================
+
+ALTER CONNECTION my_connection RENAME TO new_connection
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_connection
+      (keyword_alter)
+      (keyword_connection)
+      (object_reference
+        (identifier))
+      (keyword_rename)
+      (keyword_to)
+      (object_reference
+        (identifier)))))
+
+================================================================================
+DROP CONNECTION
+================================================================================
+
+DROP CONNECTION IF EXISTS my_connection
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_connection
+      (keyword_drop)
+      (keyword_connection)
+      (keyword_if)
+      (keyword_exists)
+      (object_reference
+        (identifier)))))

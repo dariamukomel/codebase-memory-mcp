@@ -19,6 +19,7 @@
 #include "iris_export_xml.h"
 #include "helpers.h"    /* cbm_count_branching (walker stack cap) */
 #include "lang_specs.h" /* cbm_lang_spec, cbm_ts_language */
+#include "sql_dialect.h"
 
 /* Deep-nesting probes: extraction on a worker-sized stack, crash-isolated. */
 #include "pipeline/worker_pool.h"            /* CBM_WORKER_STACK_SIZE */
@@ -1950,6 +1951,100 @@ TEST(sql_create_table) {
                                CBM_LANG_SQL, "t", "schema.sql");
     ASSERT_NOT_NULL(r);
     ASSERT_FALSE(r->has_error);
+    cbm_free_result(r);
+    PASS();
+}
+
+TEST(sql_polyglot_dialect_selection_is_explicit_and_comment_scoped) {
+    const char *saved_value = getenv("CBM_SQL_DIALECT");
+    char *saved = saved_value ? strdup(saved_value) : NULL;
+    if (saved_value) ASSERT_NOT_NULL(saved);
+    int env_rc = cbm_setenv("CBM_SQL_DIALECT", "auto", 1);
+
+    const char *comment = "-- cbm:dialect=Snow_Flake\nSELECT 1;\n";
+    CBMSqlDialectChoice selected =
+        cbm_sql_dialect_choose(comment, strlen(comment), "queries/plain.sql");
+    const char *literal = "SELECT 'cbm:dialect=spark';\n";
+    CBMSqlDialectChoice ignored =
+        cbm_sql_dialect_choose(literal, strlen(literal), "queries/plain.sql");
+
+    int restore_rc = saved ? cbm_setenv("CBM_SQL_DIALECT", saved, 1)
+                           : cbm_unsetenv("CBM_SQL_DIALECT");
+    free(saved);
+
+    ASSERT_EQ(env_rc, 0);
+    ASSERT_EQ(restore_rc, 0);
+    ASSERT_STR_EQ(cbm_sql_dialect_canonical_name("Postgre_SQL"), "postgres");
+    ASSERT_STR_EQ(cbm_sql_dialect_canonical_name("SQL Server"), "tsql");
+    ASSERT_NOT_NULL(cbm_sql_dialect_language("bq"));
+    ASSERT_STR_EQ(selected.name, "snowflake");
+    ASSERT_TRUE(selected.explicit_selection);
+    ASSERT_STR_EQ(ignored.name, "ansi");
+    ASSERT_FALSE(ignored.explicit_selection);
+    PASS();
+}
+
+TEST(sql_bigquery_create_table_from_source_preserves_lineage_roles) {
+    const char *src =
+        "-- cbm:dialect=bigquery\n"
+        "CREATE OR REPLACE TABLE analytics.orders_copy COPY raw.orders;\n";
+    CBMFileResult *r = extract(src, CBM_LANG_SQL, "t", "copy.sql");
+    ASSERT_NOT_NULL(r);
+    ASSERT_FALSE(r->has_error);
+
+    bool target = false, source = false;
+    for (int i = 0; i < r->sql_entities.count; i++) {
+        const CBMSqlEntity *e = &r->sql_entities.items[i];
+        if (e->kind != CBM_SQL_TABLE_REF || !e->name) continue;
+        target |= strcmp(e->name, "analytics.orders_copy") == 0 &&
+                  e->role == CBM_SQL_ROLE_TARGET;
+        source |= strcmp(e->name, "raw.orders") == 0 &&
+                  e->role == CBM_SQL_ROLE_SOURCE;
+    }
+    ASSERT_TRUE(target);
+    ASSERT_TRUE(source);
+    cbm_free_result(r);
+    PASS();
+}
+
+TEST(sql_duckdb_from_first_preserves_source_relation) {
+    const char *src =
+        "-- cbm:dialect=duckdb\n"
+        "FROM raw.events WHERE event_id > 0 SELECT event_id;\n";
+    CBMFileResult *r = extract(src, CBM_LANG_SQL, "t", "from_first.sql");
+    ASSERT_NOT_NULL(r);
+    ASSERT_FALSE(r->has_error);
+
+    bool source = false;
+    for (int i = 0; i < r->sql_entities.count; i++) {
+        const CBMSqlEntity *e = &r->sql_entities.items[i];
+        source |= e->kind == CBM_SQL_TABLE_REF && e->name &&
+                  strcmp(e->name, "raw.events") == 0 &&
+                  e->role == CBM_SQL_ROLE_SOURCE;
+    }
+    ASSERT_TRUE(source);
+    cbm_free_result(r);
+    PASS();
+}
+
+TEST(sql_mysql_multi_table_delete_preserves_targets_and_sources) {
+    const char *src =
+        "-- cbm:dialect=mysql\n"
+        "DELETE FROM expired, audit USING expired JOIN audit "
+        "ON expired.id = audit.id;\n";
+    CBMFileResult *r = extract(src, CBM_LANG_SQL, "t", "delete.sql");
+    ASSERT_NOT_NULL(r);
+    ASSERT_FALSE(r->has_error);
+
+    int targets = 0, sources = 0;
+    for (int i = 0; i < r->sql_entities.count; i++) {
+        const CBMSqlEntity *e = &r->sql_entities.items[i];
+        if (e->kind != CBM_SQL_TABLE_REF) continue;
+        targets += e->role == CBM_SQL_ROLE_TARGET;
+        sources += e->role == CBM_SQL_ROLE_SOURCE;
+    }
+    ASSERT_EQ(targets, 2);
+    ASSERT_EQ(sources, 2);
     cbm_free_result(r);
     PASS();
 }
@@ -13622,6 +13717,10 @@ SUITE(extraction) {
     RUN_TEST(yaml_variables);
     RUN_TEST(hcl_blocks);
     RUN_TEST(sql_create_table);
+    RUN_TEST(sql_polyglot_dialect_selection_is_explicit_and_comment_scoped);
+    RUN_TEST(sql_bigquery_create_table_from_source_preserves_lineage_roles);
+    RUN_TEST(sql_duckdb_from_first_preserves_source_relation);
+    RUN_TEST(sql_mysql_multi_table_delete_preserves_targets_and_sources);
     RUN_TEST(sql_create_table_like_keeps_source_and_next_statement_separate);
     RUN_TEST(sql_structural_statements_are_top_level_segments);
     RUN_TEST(sql_with_insert_is_one_statement_with_ctes);

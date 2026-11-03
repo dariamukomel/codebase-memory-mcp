@@ -1,0 +1,219 @@
+================================================================================
+ALTER VIEW policies and tags
+================================================================================
+
+ALTER VIEW v DROP ROW ACCESS POLICY rap1, ADD ROW ACCESS POLICY rap2 ON (empl_id);
+ALTER VIEW v SET TAG tg = 'v1';
+ALTER VIEW v ALTER COLUMN c SET MASKING POLICY mp FORCE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_view
+      (keyword_alter)
+      (keyword_view)
+      (object_reference
+        (identifier))
+      (keyword_drop)
+      (keyword_row)
+      (keyword_access)
+      (keyword_policy)
+      (object_reference
+        (identifier))
+      (keyword_add)
+      (row_access_policy_clause
+        (keyword_row)
+        (keyword_access)
+        (keyword_policy)
+        (object_reference
+          (identifier))
+        (keyword_on)
+        (identifier))))
+  (statement
+    (alter_view
+      (keyword_alter)
+      (keyword_view)
+      (object_reference
+        (identifier))
+      (keyword_set)
+      (keyword_tag)
+      (tag_assignment
+        (object_reference
+          (identifier))
+        (literal))))
+  (statement
+    (alter_view
+      (keyword_alter)
+      (keyword_view)
+      (object_reference
+        (identifier))
+      (keyword_alter)
+      (keyword_column)
+      (identifier)
+      (keyword_set)
+      (keyword_masking)
+      (keyword_policy)
+      (object_reference
+        (identifier))
+      (keyword_force))))
+
+================================================================================
+ALTER TASK actions
+================================================================================
+
+ALTER TASK IF EXISTS t RESUME;
+ALTER TASK t ADD AFTER p3;
+ALTER TASK t MODIFY AS SELECT CURRENT_VERSION();
+ALTER TASK t SET WAREHOUSE = wh SCHEDULE = '5 MINUTES';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_task
+      (keyword_alter)
+      (keyword_task)
+      (keyword_if)
+      (keyword_exists)
+      (object_reference
+        (identifier))
+      (keyword_resume)))
+  (statement
+    (alter_task
+      (keyword_alter)
+      (keyword_task)
+      (object_reference
+        (identifier))
+      (keyword_add)
+      (keyword_after)
+      (object_reference
+        (identifier))))
+  (statement
+    (alter_task
+      (keyword_alter)
+      (keyword_task)
+      (object_reference
+        (identifier))
+      (keyword_modify)
+      (keyword_as)
+      (select
+        (keyword_select)
+        (select_expression
+          (term
+            (invocation
+              (object_reference
+                (identifier))))))))
+  (statement
+    (alter_task
+      (keyword_alter)
+      (keyword_task)
+      (object_reference
+        (identifier))
+      (keyword_set)
+      (snowflake_property
+        (identifier)
+        (object_reference
+          (identifier)))
+      (snowflake_property
+        (identifier)
+        (literal)))))
+
+================================================================================
+ALTER FUNCTION and PROCEDURE by signature
+================================================================================
+
+ALTER FUNCTION IF EXISTS f(NUMBER) RENAME TO f2;
+ALTER PROCEDURE p(NUMBER, VARCHAR) EXECUTE AS RESTRICTED CALLER;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_routine
+      (keyword_alter)
+      (keyword_function)
+      (keyword_if)
+      (keyword_exists)
+      (object_reference
+        (identifier))
+      (object_reference
+        (identifier))
+      (rename_object
+        (keyword_rename)
+        (keyword_to)
+        (object_reference
+          (identifier)))))
+  (statement
+    (alter_routine
+      (keyword_alter)
+      (keyword_procedure)
+      (object_reference
+        (identifier))
+      (object_reference
+        (identifier))
+      (varchar
+        (keyword_varchar))
+      (keyword_execute)
+      (keyword_as)
+      (keyword_restricted)
+      (keyword_caller))))
+
+================================================================================
+ALTER DYNAMIC TABLE refresh and suspend
+================================================================================
+
+ALTER DYNAMIC TABLE dt REFRESH;
+ALTER DYNAMIC TABLE dt SET TARGET_LAG = '1 hour';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_dynamic_table
+      (keyword_alter)
+      (keyword_dynamic)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (keyword_refresh)))
+  (statement
+    (alter_dynamic_table
+      (keyword_alter)
+      (keyword_dynamic)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (keyword_set)
+      (snowflake_property
+        (identifier)
+        (literal)))))
+
+================================================================================
+Dollar sign inside identifiers
+================================================================================
+
+SELECT SYSTEM$TYPEOF(c), METADATA$FILENAME FROM t;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (invocation
+            (object_reference
+              (identifier))
+            (term
+              (field
+                (identifier)))))
+        (term
+          (field
+            (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier))))))

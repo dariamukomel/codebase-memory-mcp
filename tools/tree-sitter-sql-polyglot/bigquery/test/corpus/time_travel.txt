@@ -1,0 +1,29 @@
+================================================================================
+FOR SYSTEM_TIME AS OF
+================================================================================
+
+SELECT * FROM t FOR SYSTEM_TIME AS OF TIMESTAMP '2020-01-01';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))
+        (for_system_time_as_of
+          (keyword_for)
+          (keyword_system_time)
+          (keyword_as)
+          (keyword_of)
+          time_point: (typed_literal
+            (timestamp
+              (keyword_timestamp))
+            (literal)))))))

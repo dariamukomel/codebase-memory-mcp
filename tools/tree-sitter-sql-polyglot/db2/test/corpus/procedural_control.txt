@@ -1,0 +1,59 @@
+================================================================================
+Db2: LOOP END LOOP standalone
+================================================================================
+
+myloop: LOOP
+  SET x = x + 1;
+  LEAVE myloop;
+END LOOP myloop;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (loop_statement
+      label: (identifier)
+      (keyword_loop)
+      (statement
+        (set_variable_statement
+          (keyword_set)
+          target: (identifier)
+          value: (binary_expression
+            left: (field
+              name: (identifier))
+            right: (literal))))
+      (statement
+        (leave_statement
+          (keyword_leave)
+          label: (identifier)))
+      (keyword_end)
+      (keyword_loop)
+      end_label: (identifier))))
+
+================================================================================
+Db2: ITERATE label standalone
+================================================================================
+
+ITERATE myloop;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (iterate_statement
+      (keyword_iterate)
+      label: (identifier))))
+
+================================================================================
+Db2: LEAVE label standalone
+================================================================================
+
+LEAVE myloop;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (leave_statement
+      (keyword_leave)
+      label: (identifier))))

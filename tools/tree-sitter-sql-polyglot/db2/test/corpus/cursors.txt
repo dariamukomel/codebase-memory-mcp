@@ -1,0 +1,205 @@
+================================================================================
+Cursor lifecycle: DECLARE, OPEN, FETCH, CLOSE
+================================================================================
+
+BEGIN
+  DECLARE cur1 CURSOR FOR SELECT id, name FROM employees;
+  OPEN cur1;
+  FETCH cur1 INTO v_id, v_name;
+  CLOSE cur1;
+END;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (compound_statement
+      (keyword_begin)
+      (statement
+        (declare_cursor_statement
+          (keyword_declare)
+          (identifier)
+          (keyword_cursor)
+          (keyword_for)
+          (select
+            (keyword_select)
+            (select_expression
+              (term
+                (field
+                  (identifier)))
+              (term
+                (field
+                  (identifier)))))
+          (from
+            (keyword_from)
+            (relation
+              (object_reference
+                (identifier))))))
+      (statement
+        (open_cursor_statement
+          (keyword_open)
+          (identifier)))
+      (statement
+        (fetch_cursor_statement
+          (keyword_fetch)
+          (identifier)
+          (keyword_into)
+          (identifier)
+          (identifier)))
+      (statement
+        (close_cursor_statement
+          (keyword_close)
+          (identifier)))
+      (keyword_end))))
+
+================================================================================
+DECLARE CURSOR WITH HOLD
+================================================================================
+
+DECLARE cur1 CURSOR WITH HOLD FOR SELECT * FROM t;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (declare_cursor_statement
+      (keyword_declare)
+      (identifier)
+      (keyword_cursor)
+      (keyword_with)
+      (keyword_hold)
+      (keyword_for)
+      (select
+        (keyword_select)
+        (select_expression
+          (term
+            (all_fields))))
+      (from
+        (keyword_from)
+        (relation
+          (object_reference
+            (identifier)))))))
+
+================================================================================
+FETCH FROM cursor
+================================================================================
+
+BEGIN
+  FETCH FROM cur1 INTO v_id;
+END;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (compound_statement
+      (keyword_begin)
+      (statement
+        (fetch_cursor_statement
+          (keyword_fetch)
+          (keyword_from)
+          (identifier)
+          (keyword_into)
+          (identifier)))
+      (keyword_end))))
+
+================================================================================
+FOR loop over explicit cursor
+================================================================================
+
+BEGIN
+  FOR row AS cur1 CURSOR FOR
+    SELECT id, name FROM employees
+  DO
+    SET total = total + row.salary;
+  END FOR;
+END;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (compound_statement
+      (keyword_begin)
+      (statement
+        (for_statement
+          (keyword_for)
+          (identifier)
+          (keyword_as)
+          (identifier)
+          (keyword_cursor)
+          (keyword_for)
+          (select
+            (keyword_select)
+            (select_expression
+              (term
+                (field
+                  (identifier)))
+              (term
+                (field
+                  (identifier)))))
+          (from
+            (keyword_from)
+            (relation
+              (object_reference
+                (identifier))))
+          (keyword_do)
+          (statement
+            (set_variable_statement
+              (keyword_set)
+              (identifier)
+              (binary_expression
+                (field
+                  (identifier))
+                (field
+                  (object_reference
+                    (identifier))
+                  (identifier)))))
+          (keyword_end)
+          (keyword_for)))
+      (keyword_end))))
+
+================================================================================
+FOR loop over implicit query
+================================================================================
+
+BEGIN
+  FOR r AS SELECT id FROM t DO
+    SET x = r.id;
+  END FOR;
+END;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (compound_statement
+      (keyword_begin)
+      (statement
+        (for_statement
+          (keyword_for)
+          (identifier)
+          (keyword_as)
+          (select
+            (keyword_select)
+            (select_expression
+              (term
+                (field
+                  (identifier)))))
+          (from
+            (keyword_from)
+            (relation
+              (object_reference
+                (identifier))))
+          (keyword_do)
+          (statement
+            (set_variable_statement
+              (keyword_set)
+              (identifier)
+              (field
+                (object_reference
+                  (identifier))
+                (identifier))))
+          (keyword_end)
+          (keyword_for)))
+      (keyword_end))))

@@ -1,0 +1,64 @@
+================================================================================
+LIMIT n BY with ORDER BY
+================================================================================
+
+SELECT * FROM t ORDER BY ts DESC LIMIT 1 BY user_id
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (order_by
+        (keyword_order)
+        (keyword_by)
+        (order_target
+          (field
+            name: (identifier))
+          (direction
+            (keyword_desc))))
+      (limit
+        (keyword_limit)
+        (literal)
+        (limit_by
+          (keyword_by)
+          (field
+            name: (identifier)))))))
+
+================================================================================
+LIMIT n BY
+================================================================================
+
+SELECT * FROM t LIMIT 3 BY region
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (limit
+        (keyword_limit)
+        (literal)
+        (limit_by
+          (keyword_by)
+          (field
+            name: (identifier)))))))
+

@@ -1,0 +1,29 @@
+================================================================================
+UNION ALL BY NAME
+================================================================================
+
+SELECT 1 AS a UNION ALL BY NAME SELECT 2 AS b;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (set_operation
+      (select
+        (keyword_select)
+        (select_expression
+          (term
+            value: (literal)
+            (keyword_as)
+            alias: (identifier))))
+      operation: (keyword_union)
+      operation: (keyword_all)
+      operation: (keyword_by)
+      operation: (keyword_name)
+      (select
+        (keyword_select)
+        (select_expression
+          (term
+            value: (literal)
+            (keyword_as)
+            alias: (identifier)))))))

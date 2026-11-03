@@ -1,0 +1,11 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+libdir=${prefix}/@CMAKE_INSTALL_LIBDIR@
+includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
+
+Name: tree-sitter-sql-oracle
+Description: Tree-sitter Grammar for SQL (oracle_sql dialect)
+URL: @PROJECT_HOMEPAGE_URL@
+Version: @PROJECT_VERSION@
+Requires: @TS_REQUIRES@
+Libs: -L${libdir} -ltree-sitter-sql-oracle
+Cflags: -I${includedir}

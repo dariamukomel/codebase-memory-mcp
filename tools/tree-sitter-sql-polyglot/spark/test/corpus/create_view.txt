@@ -1,0 +1,70 @@
+==================
+CREATE TEMPORARY VIEW USING data source
+==================
+
+CREATE TEMPORARY VIEW v USING parquet
+
+---
+
+(program
+  (statement
+    (create_view
+      (keyword_create)
+      (keyword_temporary)
+      (keyword_view)
+      (object_reference
+        name: (identifier))
+      (table_using
+        (keyword_using)
+        format: (object_reference
+          name: (identifier))))))
+
+==================
+CREATE TEMPORARY VIEW USING with OPTIONS
+==================
+
+CREATE TEMPORARY VIEW v USING parquet OPTIONS (path = '/x')
+
+---
+
+(program
+  (statement
+    (create_view
+      (keyword_create)
+      (keyword_temporary)
+      (keyword_view)
+      (object_reference
+        name: (identifier))
+      (table_using
+        (keyword_using)
+        format: (object_reference
+          name: (identifier)))
+      (table_options
+        (keyword_options)
+        (table_option
+          name: (identifier))))))
+
+==================
+CREATE VIEW AS query still works
+==================
+
+CREATE OR REPLACE VIEW v AS SELECT 1
+
+---
+
+(program
+  (statement
+    (create_view
+      (keyword_create)
+      (keyword_or)
+      (keyword_replace)
+      (keyword_view)
+      (object_reference
+        name: (identifier))
+      (keyword_as)
+      (create_query
+        (select
+          (keyword_select)
+          (select_expression
+            (term
+              value: (literal))))))))

@@ -1,0 +1,115 @@
+================================================================================
+MariaDB: CREATE EVENT with EVERY schedule
+================================================================================
+
+CREATE EVENT refresh_stats
+ON SCHEDULE EVERY 1 HOUR
+DO UPDATE stats SET last_updated = NOW();
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_event
+      (keyword_create)
+      (keyword_event)
+      (object_reference
+        name: (identifier))
+      (keyword_on)
+      (keyword_schedule)
+      (keyword_every)
+      (literal)
+      (identifier)
+      (keyword_do)
+      (update
+        (keyword_update)
+        (relation
+          (object_reference
+            name: (identifier)))
+        (keyword_set)
+        (assignment
+          left: (field
+            name: (identifier))
+          right: (invocation
+            (object_reference
+              name: (identifier))))))))
+
+================================================================================
+MariaDB: CREATE EVENT IF NOT EXISTS with AT schedule
+================================================================================
+
+CREATE EVENT IF NOT EXISTS cleanup_old_logs
+ON SCHEDULE AT '2025-01-01 00:00:00'
+DO DELETE FROM logs WHERE created_at < '2024-01-01';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_event
+      (keyword_create)
+      (keyword_event)
+      (keyword_if)
+      (keyword_not)
+      (keyword_exists)
+      (object_reference
+        name: (identifier))
+      (keyword_on)
+      (keyword_schedule)
+      (keyword_at)
+      (literal)
+      (keyword_do)
+      (delete
+        (keyword_delete))
+      (from
+        (keyword_from)
+        (object_reference
+          name: (identifier))
+        (where
+          (keyword_where)
+          predicate: (binary_expression
+            left: (field
+              name: (identifier))
+            right: (literal)))))))
+
+================================================================================
+MariaDB: CREATE EVENT with EVERY schedule and STARTS
+================================================================================
+
+CREATE EVENT IF NOT EXISTS purge_old_data
+ON SCHEDULE EVERY 7 DAY
+STARTS '2025-01-01 00:00:00'
+DO DELETE FROM logs WHERE created_at < '2025-01-01';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_event
+      (keyword_create)
+      (keyword_event)
+      (keyword_if)
+      (keyword_not)
+      (keyword_exists)
+      (object_reference
+        name: (identifier))
+      (keyword_on)
+      (keyword_schedule)
+      (keyword_every)
+      (literal)
+      (identifier)
+      (keyword_starts)
+      (literal)
+      (keyword_do)
+      (delete
+        (keyword_delete))
+      (from
+        (keyword_from)
+        (object_reference
+          name: (identifier))
+        (where
+          (keyword_where)
+          predicate: (binary_expression
+            left: (field
+              name: (identifier))
+            right: (literal)))))))

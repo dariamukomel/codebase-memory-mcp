@@ -1,0 +1,91 @@
+================================================================================
+EXCHANGE TABLES
+================================================================================
+
+EXCHANGE TABLES db1.t1 AND db2.t2;
+EXCHANGE TABLES t1 AND t2 ON CLUSTER mycluster;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (exchange_tables_statement
+      (keyword_exchange)
+      (keyword_tables)
+      (object_reference
+        (identifier)
+        (identifier))
+      (keyword_and)
+      (object_reference
+        (identifier)
+        (identifier))))
+  (statement
+    (exchange_tables_statement
+      (keyword_exchange)
+      (keyword_tables)
+      (object_reference
+        (identifier))
+      (keyword_and)
+      (object_reference
+        (identifier))
+      (on_cluster
+        (keyword_on)
+        (keyword_cluster)
+        (identifier)))))
+
+================================================================================
+ALTER TABLE FREEZE and UNFREEZE
+================================================================================
+
+ALTER TABLE t FREEZE;
+ALTER TABLE t FREEZE PARTITION '2024-01';
+ALTER TABLE t FREEZE PARTITION tuple() WITH NAME 'backup_20240101';
+ALTER TABLE t UNFREEZE WITH NAME 'backup_20240101';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (alter_partition
+        (keyword_freeze))))
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (alter_partition
+        (keyword_freeze)
+        (keyword_partition)
+        (literal))))
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (alter_partition
+        (keyword_freeze)
+        (keyword_partition)
+        (invocation
+          (object_reference
+            (identifier)))
+        (keyword_with)
+        (keyword_name)
+        (literal))))
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (alter_partition
+        (keyword_unfreeze)
+        (keyword_with)
+        (keyword_name)
+        (literal)))))

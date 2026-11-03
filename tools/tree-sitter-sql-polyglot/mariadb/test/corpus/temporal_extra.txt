@@ -1,0 +1,168 @@
+================================================================================
+MariaDB: FOR SYSTEM_TIME BETWEEN with WHERE clause
+================================================================================
+
+SELECT id, val FROM history FOR SYSTEM_TIME BETWEEN '2023-01-01' AND '2024-01-01'
+WHERE category = 'finance';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))
+        (term
+          value: (field
+            name: (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))
+        (keyword_for)
+        (keyword_system_time)
+        (keyword_between)
+        (literal)
+        (keyword_and)
+        (literal))
+      (where
+        (keyword_where)
+        predicate: (binary_expression
+          left: (field
+            name: (identifier))
+          right: (literal))))))
+
+================================================================================
+MariaDB: FOR SYSTEM_TIME FROM TO with WHERE clause
+================================================================================
+
+SELECT id, val FROM t FOR SYSTEM_TIME FROM '2020-01-01' TO '2021-01-01' WHERE active = 1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))
+        (term
+          value: (field
+            name: (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))
+        (keyword_for)
+        (keyword_system_time)
+        (keyword_from)
+        (literal)
+        (keyword_to)
+        (literal))
+      (where
+        (keyword_where)
+        predicate: (binary_expression
+          left: (field
+            name: (identifier))
+          right: (literal))))))
+
+================================================================================
+MariaDB: SELECT with JOIN using FOR SYSTEM_TIME AS OF
+================================================================================
+
+SELECT * FROM t1 FOR SYSTEM_TIME AS OF '2021-06-01'
+JOIN t2 ON t1.id = t2.ref_id
+WHERE t1.status = 'active';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))
+        (keyword_for)
+        (keyword_system_time)
+        (keyword_as)
+        (keyword_of)
+        (literal))
+      (join
+        (keyword_join)
+        (relation
+          (object_reference
+            name: (identifier)))
+        (keyword_on)
+        predicate: (binary_expression
+          left: (field
+            (object_reference
+              name: (identifier))
+            name: (identifier))
+          right: (field
+            (object_reference
+              name: (identifier))
+            name: (identifier))))
+      (where
+        (keyword_where)
+        predicate: (binary_expression
+          left: (field
+            (object_reference
+              name: (identifier))
+            name: (identifier))
+          right: (literal))))))
+
+================================================================================
+MariaDB: Subquery with FOR SYSTEM_TIME ALL
+================================================================================
+
+SELECT * FROM (SELECT * FROM t FOR SYSTEM_TIME ALL) AS versioned WHERE versioned.id > 100;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (subquery
+          (select
+            (keyword_select)
+            (select_expression
+              (term
+                value: (all_fields))))
+          (from
+            (keyword_from)
+            (relation
+              (object_reference
+                name: (identifier))
+              (keyword_for)
+              (keyword_system_time)
+              (keyword_all))))
+        (keyword_as)
+        alias: (identifier))
+      (where
+        (keyword_where)
+        predicate: (binary_expression
+          left: (field
+            (object_reference
+              name: (identifier))
+            name: (identifier))
+          right: (literal))))))

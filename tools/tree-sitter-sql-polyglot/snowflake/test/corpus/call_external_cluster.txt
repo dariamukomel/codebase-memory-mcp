@@ -1,0 +1,144 @@
+================================================================================
+CALL stored procedure
+================================================================================
+
+CALL mydb.myschema.my_proc(arg1, arg2);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (call_statement
+      (keyword_call)
+      (object_reference
+        (identifier)
+        (identifier)
+        (identifier))
+      (field
+        (identifier))
+      (field
+        (identifier)))))
+
+================================================================================
+CALL with no arguments
+================================================================================
+
+CALL my_proc();
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (call_statement
+      (keyword_call)
+      (object_reference
+        (identifier)))))
+
+================================================================================
+INSERT OVERWRITE INTO
+================================================================================
+
+INSERT OVERWRITE INTO t SELECT * FROM staging;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (insert
+      (keyword_insert)
+      (keyword_overwrite)
+      (keyword_into)
+      (object_reference
+        (identifier))
+      (select
+        (keyword_select)
+        (select_expression
+          (term
+            (all_fields))))
+      (from
+        (keyword_from)
+        (relation
+          (object_reference
+            (identifier)))))))
+
+================================================================================
+CREATE EXTERNAL TABLE with location and file format
+================================================================================
+
+CREATE EXTERNAL TABLE ext_t (
+  col1 VARCHAR AS (VALUE:c1::VARCHAR)
+)
+WITH LOCATION = @my_stage
+FILE_FORMAT = (TYPE = 'PARQUET');
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_external_table
+      (keyword_create)
+      (keyword_external)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (external_table_column
+        (identifier)
+        (varchar
+          (keyword_varchar))
+        (keyword_as)
+        (parenthesized_expression
+          (cast
+            (variant_access
+              (field
+                (identifier))
+              (identifier))
+            (varchar
+              (keyword_varchar)))))
+      (keyword_with)
+      (keyword_location)
+      (stage_ref)
+      (keyword_file_format)
+      (file_format_property
+        (identifier)
+        (literal)))))
+
+================================================================================
+ALTER TABLE CLUSTER BY
+================================================================================
+
+ALTER TABLE t CLUSTER BY (col1, col2);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table_cluster
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (keyword_cluster)
+      (keyword_by)
+      (field
+        (identifier))
+      (field
+        (identifier)))))
+
+================================================================================
+ALTER TABLE DROP CLUSTERING KEY
+================================================================================
+
+ALTER TABLE t DROP CLUSTERING KEY;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table_cluster
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (keyword_drop)
+      (keyword_clustering)
+      (keyword_key))))

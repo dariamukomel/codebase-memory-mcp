@@ -1,0 +1,921 @@
+================================================================================
+Functions
+================================================================================
+
+SELECT MAX(id)
+FROM my_table;
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (invocation
+            (object_reference
+              name: (identifier))
+            parameter: (term
+              value: (field
+                name: (identifier)))))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))))))
+
+================================================================================
+No-arg functions
+================================================================================
+
+SELECT now();
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (invocation
+            (object_reference
+              name: (identifier))))))))
+
+================================================================================
+More complex function arguments
+================================================================================
+
+SELECT
+  user_id,
+  user_defined_func(user_id, 123, other_func(user_id, 321), user_id + 1 > 5) as something,
+  regexp_replace(t.username, '^(.)[^@]+', '\1--', 'g') as username,
+  created_at
+FROM my_table AS t;
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))
+        (term
+          value: (invocation
+            (object_reference
+              name: (identifier))
+            parameter: (term
+              value: (field
+                name: (identifier)))
+            parameter: (term
+              value: (literal))
+            parameter: (term
+              value: (invocation
+                (object_reference
+                  name: (identifier))
+                parameter: (term
+                  value: (field
+                    name: (identifier)))
+                parameter: (term
+                  value: (literal))))
+            parameter: (term
+              value: (binary_expression
+                left: (binary_expression
+                  left: (field
+                    name: (identifier))
+                  right: (literal))
+                right: (literal))))
+          (keyword_as)
+          alias: (identifier))
+        (term
+          value: (invocation
+            (object_reference
+              name: (identifier))
+            parameter: (term
+              value: (field
+                (object_reference
+                  name: (identifier))
+                name: (identifier)))
+            parameter: (term
+              value: (literal))
+            parameter: (term
+              value: (literal))
+            parameter: (term
+              value: (literal)))
+          (keyword_as)
+          alias: (identifier))
+        (term
+          value: (field
+            name: (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))
+        (keyword_as)
+        alias: (identifier)))))
+
+================================================================================
+Count with postgres style aggregate expression
+================================================================================
+
+SELECT COUNT(DISTINCT uid ORDER BY uid)
+FROM table_a;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (invocation
+            (object_reference
+              name: (identifier))
+            (keyword_distinct)
+            parameter: (term
+              value: (field
+                name: (identifier)))
+            (order_by
+              (keyword_order)
+              (keyword_by)
+              (order_target
+                (field
+                  name: (identifier))))))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))))))
+
+================================================================================
+MYSQL period_diff
+================================================================================
+
+SELECT
+    PERIOD_DIFF (
+        EXTRACT (YEAR_MONTH FROM NOW()), EXTRACT(YEAR_MONTH FROM t.a)
+    ) AS diffA
+FROM mytable;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (invocation
+            (object_reference
+              (identifier))
+            (term
+              (invocation
+                (object_reference
+                  (identifier))
+                (object_reference
+                  (identifier))
+                (keyword_from)
+                (term
+                  (invocation
+                    (object_reference
+                      (identifier))))))
+            (term
+              (invocation
+                (object_reference
+                  (identifier))
+                (object_reference
+                  (identifier))
+                (keyword_from)
+                (term
+                  (field
+                    (object_reference
+                      (identifier))
+                    (identifier))))))
+          (keyword_as)
+          (identifier))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier))))))
+
+================================================================================
+Unary ANY, ALL, SOME
+================================================================================
+
+SELECT *
+FROM foo
+WHERE id = ANY (
+  SELECT 1
+)
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (where
+        (keyword_where)
+        predicate: (binary_expression
+          left: (field
+            name: (identifier))
+          right: (unary_expression
+            operator: (keyword_any)
+            operand: (subquery
+              (select
+                (keyword_select)
+                (select_expression
+                  (term
+                    value: (literal)))))))))))
+
+================================================================================
+In with subquery
+================================================================================
+
+SELECT *
+FROM foo
+WHERE id IN (
+  SELECT 1
+  FROM bar
+)
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (where
+        (keyword_where)
+        predicate: (binary_expression
+          left: (field
+            name: (identifier))
+          operator: (keyword_in)
+          right: (subquery
+            (select
+              (keyword_select)
+              (select_expression
+                (term
+                  value: (literal))))
+            (from
+              (keyword_from)
+              (relation
+                (object_reference
+                  name: (identifier))))))))))
+
+================================================================================
+exists & not exists
+================================================================================
+
+SELECT *
+FROM foo
+WHERE (
+  NOT EXISTS (
+    SELECT 1
+    FROM bar
+    WHERE 0
+  ) OR EXISTS (
+    SELECT 1
+    FROM baz
+    WHERE 1
+  )
+)
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (where
+        (keyword_where)
+        predicate: (parenthesized_expression
+          (binary_expression
+            left: (unary_expression
+              operator: (keyword_not)
+              operand: (exists
+                (keyword_exists)
+                (subquery
+                  (select
+                    (keyword_select)
+                    (select_expression
+                      (term
+                        value: (literal))))
+                  (from
+                    (keyword_from)
+                    (relation
+                      (object_reference
+                        name: (identifier)))
+                    (where
+                      (keyword_where)
+                      predicate: (literal))))))
+            operator: (keyword_or)
+            right: (exists
+              (keyword_exists)
+              (subquery
+                (select
+                  (keyword_select)
+                  (select_expression
+                    (term
+                      value: (literal))))
+                (from
+                  (keyword_from)
+                  (relation
+                    (object_reference
+                      name: (identifier)))
+                  (where
+                    (keyword_where)
+                    predicate: (literal)))))))))))
+
+================================================================================
+Basic SQL function creation
+================================================================================
+
+create or replace function public.fn()
+ returns int
+ language sql
+return 1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_function
+      (keyword_create)
+      (keyword_or)
+      (keyword_replace)
+      (keyword_function)
+      (object_reference
+        (identifier)
+        (identifier))
+      (function_arguments)
+      (keyword_returns)
+      (int
+        (keyword_int))
+      (function_language
+        (keyword_language)
+        (identifier))
+      (function_body
+        (keyword_return)
+        (literal)))))
+
+================================================================================
+Function details
+================================================================================
+
+create or replace function public.fn()
+  returns int
+  language sql
+  immutable
+  parallel safe
+  leakproof
+  strict
+  cost 100
+  rows 1
+return 1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_function
+      (keyword_create)
+      (keyword_or)
+      (keyword_replace)
+      (keyword_function)
+      (object_reference
+        (identifier)
+        (identifier))
+      (function_arguments)
+      (keyword_returns)
+      (int
+        (keyword_int))
+      (function_language
+        (keyword_language)
+        (identifier))
+      (function_volatility
+        (keyword_immutable))
+      (function_safety
+        (keyword_parallel)
+        (keyword_safe))
+      (function_leakproof
+        (keyword_leakproof))
+      (function_strictness
+        (keyword_strict))
+      (function_cost
+        (keyword_cost))
+      (function_rows
+        (keyword_rows))
+      (function_body
+        (keyword_return)
+        (literal)))))
+
+================================================================================
+With a string body
+================================================================================
+
+create or replace function public.fn()
+  returns int
+  language sql
+as 'select 1;';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_function
+      (keyword_create)
+      (keyword_or)
+      (keyword_replace)
+      (keyword_function)
+      (object_reference
+        (identifier)
+        (identifier))
+      (function_arguments)
+      (keyword_returns)
+      (int
+        (keyword_int))
+      (function_language
+        (keyword_language)
+        (identifier))
+      (function_body
+        (keyword_as)
+        (literal)))))
+
+================================================================================
+Precedence between string body and `create table` with string options
+================================================================================
+
+create or replace function public.fn()
+  returns int
+  language sql
+as 'create table x (id int) row_format=dynamic';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_function
+      (keyword_create)
+      (keyword_or)
+      (keyword_replace)
+      (keyword_function)
+      (object_reference
+        (identifier)
+        (identifier))
+      (function_arguments)
+      (keyword_returns)
+      (int
+        (keyword_int))
+      (function_language
+        (keyword_language)
+        (identifier))
+      (function_body
+        (keyword_as)
+        (literal)))))
+
+================================================================================
+With `begin atomic`
+================================================================================
+
+create or replace function public.fn()
+  returns int
+  language sql
+begin atomic
+  return 1;
+end;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_function
+      (keyword_create)
+      (keyword_or)
+      (keyword_replace)
+      (keyword_function)
+      (object_reference
+        (identifier)
+        (identifier))
+      (function_arguments)
+      (keyword_returns)
+      (int
+        (keyword_int))
+      (function_language
+        (keyword_language)
+        (identifier))
+      (function_body
+        (keyword_begin)
+        (keyword_atomic)
+        (keyword_return)
+        (literal)
+        (keyword_end)))))
+
+
+================================================================================
+Create function with bare RETURN body followed by another statement
+================================================================================
+
+create or replace function public.fn()
+ returns int
+ language sql
+return 1;
+
+select 1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_function
+      (keyword_create)
+      (keyword_or)
+      (keyword_replace)
+      (keyword_function)
+      (object_reference
+        schema: (identifier)
+        name: (identifier))
+      (function_arguments)
+      (keyword_returns)
+      (int
+        (keyword_int))
+      (function_language
+        (keyword_language)
+        (identifier))
+      (function_body
+        (keyword_return)
+        (literal))))
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (literal))))))
+
+================================================================================
+Function call with a named argument
+================================================================================
+
+SELECT f(1, b => 'x') FROM t;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (invocation
+            (object_reference
+              name: (identifier))
+            parameter: (term
+              value: (literal))
+            parameter: (named_argument
+              name: (identifier)
+              value: (literal))))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))))))
+
+
+================================================================================
+Position expression
+================================================================================
+
+SELECT POSITION('x' IN a) FROM t;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (position_expression
+            (keyword_position)
+            (literal)
+            (keyword_in)
+            (field
+              (identifier))))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier))))))
+
+================================================================================
+Position expression using characters
+================================================================================
+
+SELECT POSITION('x' IN a USING CHARACTERS) FROM t;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (position_expression
+            (keyword_position)
+            (literal)
+            (keyword_in)
+            (field
+              (identifier))
+            (keyword_using)
+            (keyword_characters)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier))))))
+
+================================================================================
+Position expression using octets
+================================================================================
+
+SELECT POSITION(lower(c) IN a USING OCTETS) FROM t;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (position_expression
+            (keyword_position)
+            (invocation
+              (object_reference
+                (identifier))
+              (term
+                (field
+                  (identifier))))
+            (keyword_in)
+            (field
+              (identifier))
+            (keyword_using)
+            (keyword_octets)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier))))))
+
+================================================================================
+Position as a column name is not the keyword
+================================================================================
+
+SELECT position, t.position FROM t WHERE position = 1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (field
+            (identifier)))
+        (term
+          (field
+            (object_reference
+              (identifier))
+            (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier)))
+      (where
+        (keyword_where)
+        (binary_expression
+          (field
+            (identifier))
+          (literal))))))
+
+================================================================================
+Position with two arguments is an ordinary call
+================================================================================
+
+SELECT position(a, b) FROM t;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (invocation
+            (object_reference
+              (identifier))
+            (term
+              (field
+                (identifier)))
+            (term
+              (field
+                (identifier)))))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier))))))
+
+================================================================================
+IN operator inside a function call stays an operator
+================================================================================
+
+SELECT count(a IN (1, 2)) FROM t;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (invocation
+            (object_reference
+              (identifier))
+            (term
+              (binary_expression
+                (field
+                  (identifier))
+                (keyword_in)
+                (list
+                  (literal)
+                  (literal))))))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier))))))
+
+
+================================================================================
+Position regex
+================================================================================
+
+SELECT POSITION_REGEX('a+' IN a) FROM t;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (regex_position_expression
+            (keyword_position_regex)
+            (literal)
+            (keyword_in)
+            (field
+              (identifier))))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier))))))
+
+================================================================================
+Position regex with all options
+================================================================================
+
+SELECT POSITION_REGEX(START 'a+' FLAG 'i' IN a FROM 2 USING CHARACTERS OCCURRENCE 2 GROUP 1) FROM t;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (regex_position_expression
+            (keyword_position_regex)
+            (keyword_start)
+            (literal)
+            (keyword_flag)
+            (literal)
+            (keyword_in)
+            (field
+              (identifier))
+            (keyword_from)
+            (literal)
+            (keyword_using)
+            (keyword_characters)
+            (keyword_occurrence)
+            (literal)
+            (keyword_group)
+            (literal)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier))))))
+
+================================================================================
+Substring regex
+================================================================================
+
+SELECT SUBSTRING_REGEX('a+' FLAG 'i' IN a FROM 3 OCCURRENCE 1 GROUP 2) FROM t;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (regex_substring_expression
+            (keyword_substring_regex)
+            (literal)
+            (keyword_flag)
+            (literal)
+            (keyword_in)
+            (field
+              (identifier))
+            (keyword_from)
+            (literal)
+            (keyword_occurrence)
+            (literal)
+            (keyword_group)
+            (literal)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier))))))
+
+================================================================================
+Regex function names are ordinary identifiers elsewhere
+================================================================================
+
+SELECT position_regex, substring_regex(a, b) FROM t;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          (field
+            (identifier)))
+        (term
+          (invocation
+            (object_reference
+              (identifier))
+            (term
+              (field
+                (identifier)))
+            (term
+              (field
+                (identifier)))))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier))))))
+

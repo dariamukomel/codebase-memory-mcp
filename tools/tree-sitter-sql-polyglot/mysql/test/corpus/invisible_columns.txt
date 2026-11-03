@@ -1,0 +1,30 @@
+================================================================================
+MySQL: INVISIBLE and VISIBLE column modifiers
+================================================================================
+
+CREATE TABLE t (id INT, secret INT INVISIBLE, visible_col INT VISIBLE);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int)))
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int))
+          (keyword_invisible))
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int))
+          (keyword_visible))))))

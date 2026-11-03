@@ -1,0 +1,139 @@
+================================================================================
+CREATE VIEW
+================================================================================
+
+CREATE VIEW my_view AS SELECT id, name FROM users
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_view
+      (keyword_create)
+      (keyword_view)
+      (object_reference
+        (identifier))
+      (keyword_as)
+      (create_query
+        (select
+          (keyword_select)
+          (select_expression
+            (term
+              (field
+                (identifier)))
+            (term
+              (field
+                (identifier)))))
+        (from
+          (keyword_from)
+          (relation
+            (object_reference
+              (identifier))))))))
+
+================================================================================
+CREATE OR REPLACE TEMPORARY VIEW
+================================================================================
+
+CREATE OR REPLACE TEMPORARY VIEW my_view
+COMMENT 'a view'
+AS SELECT * FROM t
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_view
+      (keyword_create)
+      (keyword_or)
+      (keyword_replace)
+      (keyword_temporary)
+      (keyword_view)
+      (object_reference
+        (identifier))
+      (keyword_comment)
+      (literal)
+      (keyword_as)
+      (create_query
+        (select
+          (keyword_select)
+          (select_expression
+            (term
+              (all_fields))))
+        (from
+          (keyword_from)
+          (relation
+            (object_reference
+              (identifier))))))))
+
+================================================================================
+ALTER VIEW RENAME TO
+================================================================================
+
+ALTER VIEW my_view RENAME TO new_view
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_view
+      (keyword_alter)
+      (keyword_view)
+      (object_reference
+        (identifier))
+      (keyword_rename)
+      (keyword_to)
+      (object_reference
+        (identifier)))))
+
+================================================================================
+ALTER VIEW redefine
+================================================================================
+
+ALTER VIEW my_view AS SELECT id FROM users WHERE active = true
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_view
+      (keyword_alter)
+      (keyword_view)
+      (object_reference
+        (identifier))
+      (keyword_as)
+      (select
+        (keyword_select)
+        (select_expression
+          (term
+            (field
+              (identifier)))))
+      (from
+        (keyword_from)
+        (relation
+          (object_reference
+            (identifier)))
+        (where
+          (keyword_where)
+          (binary_expression
+            (field
+              (identifier))
+            (literal
+              (keyword_true))))))))
+
+================================================================================
+DROP VIEW
+================================================================================
+
+DROP VIEW IF EXISTS my_view
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_view
+      (keyword_drop)
+      (keyword_view)
+      (keyword_if)
+      (keyword_exists)
+      (object_reference
+        (identifier)))))

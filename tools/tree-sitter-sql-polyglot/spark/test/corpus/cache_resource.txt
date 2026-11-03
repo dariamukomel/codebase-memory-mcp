@@ -1,0 +1,199 @@
+================================================================================
+Spark: CACHE TABLE
+================================================================================
+
+CACHE TABLE my_table
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (cache_table
+      (keyword_cache)
+      (keyword_table)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+Spark: UNCACHE TABLE IF EXISTS
+================================================================================
+
+UNCACHE TABLE IF EXISTS my_table
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (uncache_table
+      (keyword_uncache)
+      (keyword_table)
+      (keyword_if)
+      (keyword_exists)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+Spark: CLEAR CACHE
+================================================================================
+
+CLEAR CACHE
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (clear_cache
+      (keyword_clear)
+      (keyword_cache))))
+
+================================================================================
+Spark: ADD FILE
+================================================================================
+
+ADD FILE '/tmp/my_file.txt'
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (add_resource_statement
+      (keyword_add)
+      (keyword_file))))
+
+================================================================================
+Spark: LIST JAR
+================================================================================
+
+LIST JAR
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (list_resource_statement
+      (keyword_list)
+      (keyword_jar))))
+
+================================================================================
+Spark: SHOW VIEWS
+================================================================================
+
+SHOW VIEWS
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (show_statement
+      (keyword_show)
+      (keyword_views))))
+
+================================================================================
+Spark: SHOW VIEWS IN database with LIKE
+================================================================================
+
+SHOW VIEWS IN my_db LIKE 'sales*'
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (show_statement
+      (keyword_show)
+      (keyword_views)
+      (keyword_in)
+      (object_reference
+        name: (identifier))
+      (keyword_like)
+      (literal))))
+
+================================================================================
+Spark: SHOW COLLATIONS
+================================================================================
+
+SHOW COLLATIONS LIKE 'UTF8%'
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (show_collations_statement
+      (keyword_show)
+      (keyword_collations)
+      (keyword_like)
+      (literal))))
+
+================================================================================
+Spark: DESCRIBE QUERY
+================================================================================
+
+DESCRIBE QUERY SELECT a FROM t1
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (describe_query
+      (keyword_describe)
+      (keyword_query)
+      (select
+        (keyword_select)
+        (select_expression
+          (term
+            value: (field
+              name: (identifier)))))
+      (from
+        (keyword_from)
+        (relation
+          (object_reference
+            name: (identifier)))))))
+
+================================================================================
+Spark: SET PATH
+================================================================================
+
+SET PATH = DEFAULT_PATH
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (set_path_statement
+      (keyword_set)
+      (keyword_path)
+      (keyword_default_path))))
+
+================================================================================
+Spark: CREATE TABLE LIKE
+================================================================================
+
+CREATE TABLE t2 LIKE t1
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table_like
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_like)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+Spark: DESCRIBE TABLE
+================================================================================
+
+DESCRIBE TABLE t1
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (describe_statement
+      (keyword_describe)
+      (keyword_table)
+      (object_reference
+        name: (identifier)))))

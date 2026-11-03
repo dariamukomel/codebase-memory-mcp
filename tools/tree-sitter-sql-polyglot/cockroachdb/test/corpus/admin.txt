@@ -1,0 +1,223 @@
+================================================================================
+CockroachDB: CANCEL JOB
+================================================================================
+
+CANCEL JOB 27536791415282
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (job_control_statement
+      (keyword_cancel)
+      (keyword_job)
+      id: (literal))))
+
+================================================================================
+CockroachDB: PAUSE ALL BACKUP JOBS
+================================================================================
+
+PAUSE ALL BACKUP JOBS
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (job_control_statement
+      (keyword_pause)
+      (keyword_all)
+      job_type: (identifier)
+      (keyword_jobs))))
+
+================================================================================
+CockroachDB: RESUME JOBS FOR SCHEDULES
+================================================================================
+
+RESUME JOBS FOR SCHEDULES 1
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (job_control_statement
+      (keyword_resume)
+      (keyword_jobs)
+      (keyword_for)
+      (keyword_schedules)
+      id: (literal))))
+
+================================================================================
+CockroachDB: CANCEL QUERY
+================================================================================
+
+CANCEL QUERY '1673f590433eaa000000000000000001'
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (cancel_query_statement
+      (keyword_cancel)
+      (keyword_query)
+      id: (literal))))
+
+================================================================================
+CockroachDB: DROP SCHEDULE
+================================================================================
+
+DROP SCHEDULE 589963390487363585
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (schedule_control_statement
+      (keyword_drop)
+      (keyword_schedule)
+      id: (literal))))
+
+================================================================================
+CockroachDB: SET CLUSTER SETTING
+================================================================================
+
+SET CLUSTER SETTING sql.defaults.distsql = 1
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (set_cluster_setting_statement
+      (keyword_set)
+      (keyword_cluster)
+      (keyword_setting)
+      name: (object_reference
+        database: (identifier)
+        schema: (identifier)
+        name: (identifier))
+      value: (literal))))
+
+================================================================================
+CockroachDB: RESET CLUSTER SETTING
+================================================================================
+
+RESET CLUSTER SETTING sql.metrics.enabled
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (reset_cluster_setting_statement
+      (keyword_reset)
+      (keyword_cluster)
+      (keyword_setting)
+      name: (object_reference
+        database: (identifier)
+        schema: (identifier)
+        name: (identifier)))))
+
+================================================================================
+CockroachDB: CREATE EXTERNAL CONNECTION
+================================================================================
+
+CREATE EXTERNAL CONNECTION backup_bucket AS 's3://bucket'
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_external_connection_statement
+      (keyword_create)
+      (keyword_external)
+      (keyword_connection)
+      name: (identifier)
+      (keyword_as)
+      uri: (literal))))
+
+================================================================================
+CockroachDB: DROP EXTERNAL CONNECTION
+================================================================================
+
+DROP EXTERNAL CONNECTION backup_storage
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_external_connection_statement
+      (keyword_drop)
+      (keyword_external)
+      (keyword_connection)
+      name: (identifier))))
+
+================================================================================
+CockroachDB: CHECK EXTERNAL CONNECTION
+================================================================================
+
+CHECK EXTERNAL CONNECTION 'external://cloud-storage'
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (check_external_connection_statement
+      (keyword_check)
+      (keyword_external)
+      (keyword_connection)
+      uri: (literal))))
+
+================================================================================
+CockroachDB: DROP OWNED BY
+================================================================================
+
+DROP OWNED BY maxroach
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_owned_by_statement
+      (keyword_drop)
+      (keyword_owned)
+      (keyword_by)
+      role: (identifier))))
+
+================================================================================
+CockroachDB: CREATE STATISTICS
+================================================================================
+
+CREATE STATISTICS city_stats ON city FROM rides
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_statistics_statement
+      (keyword_create)
+      (keyword_statistics)
+      name: (identifier)
+      (keyword_on)
+      (identifier)
+      (keyword_from)
+      table: (object_reference
+        name: (identifier)))))
+
+================================================================================
+CockroachDB: EXPORT INTO CSV
+================================================================================
+
+EXPORT INTO CSV 's3://bucket/data' FROM TABLE bank.customers
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (export_statement
+      (keyword_export)
+      (keyword_into)
+      format: (identifier)
+      uri: (literal)
+      (keyword_from)
+      (keyword_table)
+      table: (object_reference
+        schema: (identifier)
+        name: (identifier)))))

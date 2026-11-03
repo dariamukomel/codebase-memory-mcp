@@ -1,0 +1,99 @@
+================================================================================
+CREATE EXTERNAL SCHEMA from Data Catalog
+================================================================================
+
+CREATE EXTERNAL SCHEMA spectrum
+FROM DATA CATALOG
+DATABASE 'my_glue_db'
+IAM_ROLE 'arn:aws:iam::123456789:role/MyRole'
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_external_schema
+      (keyword_create)
+      (keyword_external)
+      (keyword_schema)
+      (identifier)
+      (keyword_from)
+      (keyword_data)
+      (keyword_catalog)
+      (keyword_database)
+      (literal)
+      (keyword_iam_role)
+      (literal))))
+
+================================================================================
+CREATE EXTERNAL SCHEMA with CREATE EXTERNAL DATABASE IF NOT EXISTS
+================================================================================
+
+CREATE EXTERNAL SCHEMA IF NOT EXISTS myschema
+FROM DATA CATALOG
+DATABASE 'mydb'
+IAM_ROLE 'arn:aws:iam::123456789:role/MyRole'
+CREATE EXTERNAL DATABASE IF NOT EXISTS
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_external_schema
+      (keyword_create)
+      (keyword_external)
+      (keyword_schema)
+      (keyword_if)
+      (keyword_not)
+      (keyword_exists)
+      (identifier)
+      (keyword_from)
+      (keyword_data)
+      (keyword_catalog)
+      (keyword_database)
+      (literal)
+      (keyword_iam_role)
+      (literal)
+      (keyword_create)
+      (keyword_external)
+      (keyword_database)
+      (keyword_if)
+      (keyword_not)
+      (keyword_exists))))
+
+================================================================================
+CREATE EXTERNAL TABLE with STORED AS and LOCATION
+================================================================================
+
+CREATE EXTERNAL TABLE spectrum.events (
+  id INT,
+  name VARCHAR(100)
+)
+STORED AS PARQUET
+LOCATION 's3://mybucket/events/'
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_external_table
+      (keyword_create)
+      (keyword_external)
+      (keyword_table)
+      (object_reference
+        (identifier)
+        (identifier))
+      (column_definitions
+        (column_definition
+          (identifier)
+          (int
+            (keyword_int)))
+        (column_definition
+          (identifier)
+          (varchar
+            (keyword_varchar)
+            (literal))))
+      (keyword_stored)
+      (keyword_as)
+      (identifier)
+      (keyword_location)
+      (literal))))

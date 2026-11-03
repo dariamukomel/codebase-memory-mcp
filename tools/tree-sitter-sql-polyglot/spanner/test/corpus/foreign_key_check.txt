@@ -1,0 +1,43 @@
+================================================================================
+Foreign key and CHECK constraints
+================================================================================
+
+CREATE TABLE t (id INT64, CONSTRAINT fk FOREIGN KEY (x) REFERENCES p (id), CHECK (id > 0)) PRIMARY KEY (id);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (keyword_int64))
+        (constraints
+          (constraint
+            (keyword_constraint)
+            name: (identifier)
+            (keyword_foreign)
+            (keyword_key)
+            (ordered_columns
+              (column
+                name: (identifier)))
+            (keyword_references)
+            (object_reference
+              name: (identifier))
+            (identifier))
+          (constraint
+            (keyword_check)
+            (binary_expression
+              left: (field
+                name: (identifier))
+              right: (literal)))))
+      (table_primary_key
+        (keyword_primary)
+        (keyword_key)
+        (ordered_key_part
+          column: (identifier))))))

@@ -1,0 +1,19 @@
+================================================================================
+ALTER TABLE APPEND FROM
+================================================================================
+
+ALTER TABLE dst APPEND FROM src;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_append)
+      (keyword_from)
+      (object_reference
+        name: (identifier)))))

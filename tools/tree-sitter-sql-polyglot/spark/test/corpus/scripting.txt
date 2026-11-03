@@ -1,0 +1,468 @@
+================================================================================
+BEGIN END block
+================================================================================
+
+BEGIN
+  SELECT 1;
+END;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (block
+      (keyword_begin)
+      (statement
+        (select
+          (keyword_select)
+          (select_expression
+            (term
+              value: (literal)))))
+      (keyword_end))))
+
+================================================================================
+BEGIN ATOMIC block
+================================================================================
+
+BEGIN ATOMIC
+  INSERT INTO t VALUES (1);
+  UPDATE t SET x = 2;
+END;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (block
+      (keyword_begin)
+      (keyword_atomic)
+      (statement
+        (insert
+          (keyword_insert)
+          (keyword_into)
+          (object_reference
+            name: (identifier))
+          (keyword_values)
+          (list
+            (literal))))
+      (statement
+        (update
+          (keyword_update)
+          (relation
+            (object_reference
+              name: (identifier)))
+          (keyword_set)
+          (assignment
+            left: (field
+              name: (identifier))
+            right: (literal))))
+      (keyword_end))))
+
+================================================================================
+IF THEN ELSE END IF
+================================================================================
+
+IF x > 0 THEN
+  SET y = 1;
+ELSE
+  SET y = 0;
+END IF;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (if_statement
+      (keyword_if)
+      (binary_expression
+        left: (field
+          name: (identifier))
+        right: (literal))
+      (keyword_then)
+      (statement
+        (set_statement
+          (keyword_set)
+          (object_reference
+            name: (identifier))
+          (literal)))
+      (keyword_else)
+      (statement
+        (set_statement
+          (keyword_set)
+          (object_reference
+            name: (identifier))
+          (literal)))
+      (keyword_end)
+      (keyword_if))))
+
+================================================================================
+IF THEN ELSEIF ELSE END IF
+================================================================================
+
+IF x > 0 THEN
+  SET y = 1;
+ELSEIF x < 0 THEN
+  SET y = -1;
+ELSE
+  SET y = 0;
+END IF;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (if_statement
+      (keyword_if)
+      (binary_expression
+        left: (field
+          name: (identifier))
+        right: (literal))
+      (keyword_then)
+      (statement
+        (set_statement
+          (keyword_set)
+          (object_reference
+            name: (identifier))
+          (literal)))
+      (keyword_elseif)
+      (binary_expression
+        left: (field
+          name: (identifier))
+        right: (literal))
+      (keyword_then)
+      (statement
+        (set_statement
+          (keyword_set)
+          (object_reference
+            name: (identifier))
+          (literal)))
+      (keyword_else)
+      (statement
+        (set_statement
+          (keyword_set)
+          (object_reference
+            name: (identifier))
+          (literal)))
+      (keyword_end)
+      (keyword_if))))
+
+================================================================================
+FOR loop
+================================================================================
+
+FOR r IN SELECT * FROM t DO
+  INSERT INTO log VALUES (r.id);
+END FOR;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (for_statement
+      (keyword_for)
+      variable: (identifier)
+      (keyword_in)
+      (select
+        (keyword_select)
+        (select_expression
+          (term
+            value: (all_fields))))
+      (from
+        (keyword_from)
+        (relation
+          (object_reference
+            name: (identifier))))
+      (keyword_do)
+      (statement
+        (insert
+          (keyword_insert)
+          (keyword_into)
+          (object_reference
+            name: (identifier))
+          (keyword_values)
+          (list
+            (field
+              (object_reference
+                name: (identifier))
+              name: (identifier)))))
+      (keyword_end)
+      (keyword_for))))
+
+================================================================================
+WHILE loop
+================================================================================
+
+WHILE i < 10 DO
+  SET i = i + 1;
+END WHILE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (while_statement
+      (keyword_while)
+      (binary_expression
+        left: (field
+          name: (identifier))
+        right: (literal))
+      (keyword_do)
+      (statement
+        (set_statement
+          (keyword_set)
+          (object_reference
+            name: (identifier))
+          (binary_expression
+            left: (field
+              name: (identifier))
+            right: (literal))))
+      (keyword_end)
+      (keyword_while))))
+
+================================================================================
+LOOP with LEAVE
+================================================================================
+
+LOOP
+  SET i = i + 1;
+  IF i >= 10 THEN
+    LEAVE lbl;
+  END IF;
+END LOOP;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (loop_statement
+      (keyword_loop)
+      (statement
+        (set_statement
+          (keyword_set)
+          (object_reference
+            name: (identifier))
+          (binary_expression
+            left: (field
+              name: (identifier))
+            right: (literal))))
+      (statement
+        (if_statement
+          (keyword_if)
+          (binary_expression
+            left: (field
+              name: (identifier))
+            right: (literal))
+          (keyword_then)
+          (statement
+            (leave_statement
+              (keyword_leave)
+              label: (identifier)))
+          (keyword_end)
+          (keyword_if)))
+      (keyword_end)
+      (keyword_loop))))
+
+================================================================================
+REPEAT UNTIL loop
+================================================================================
+
+REPEAT
+  SET i = i + 1;
+UNTIL i >= 10
+END REPEAT;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (repeat_statement
+      (keyword_repeat)
+      (statement
+        (set_statement
+          (keyword_set)
+          (object_reference
+            name: (identifier))
+          (binary_expression
+            left: (field
+              name: (identifier))
+            right: (literal))))
+      (keyword_until)
+      (binary_expression
+        left: (field
+          name: (identifier))
+        right: (literal))
+      (keyword_end)
+      (keyword_repeat))))
+
+================================================================================
+SIGNAL statement
+================================================================================
+
+SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Custom error';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (signal_statement
+      (keyword_signal)
+      (keyword_sqlstate)
+      (literal)
+      (keyword_set)
+      (keyword_message_text)
+      (literal))))
+
+================================================================================
+RESIGNAL statement
+================================================================================
+
+RESIGNAL SQLSTATE '22012' SET MESSAGE_TEXT = 'Division by zero';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (resignal_statement
+      (keyword_resignal)
+      (keyword_sqlstate)
+      (literal)
+      (keyword_set)
+      (keyword_message_text)
+      (literal))))
+
+================================================================================
+GET DIAGNOSTICS RETURNED_SQLSTATE
+================================================================================
+
+GET DIAGNOSTICS state = RETURNED_SQLSTATE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (get_diagnostics_statement
+      (keyword_get)
+      (keyword_diagnostics)
+      variable: (identifier)
+      (keyword_returned_sqlstate))))
+
+================================================================================
+GET DIAGNOSTICS MESSAGE_TEXT
+================================================================================
+
+GET DIAGNOSTICS msg = MESSAGE_TEXT;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (get_diagnostics_statement
+      (keyword_get)
+      (keyword_diagnostics)
+      variable: (identifier)
+      (keyword_message_text))))
+
+================================================================================
+GET DIAGNOSTICS CONDITION
+================================================================================
+
+GET DIAGNOSTICS err = CONDITION 1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (get_diagnostics_statement
+      (keyword_get)
+      (keyword_diagnostics)
+      variable: (identifier)
+      (keyword_condition)
+      condition_number: (literal))))
+
+================================================================================
+Nested BEGIN END within scripting block
+================================================================================
+
+BEGIN
+  IF x > 0 THEN
+    BEGIN
+      SELECT 1;
+    END;
+  END IF;
+END;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (block
+      (keyword_begin)
+      (statement
+        (if_statement
+          (keyword_if)
+          (binary_expression
+            left: (field
+              name: (identifier))
+            right: (literal))
+          (keyword_then)
+          (statement
+            (block
+              (keyword_begin)
+              (statement
+                (select
+                  (keyword_select)
+                  (select_expression
+                    (term
+                      value: (literal)))))
+              (keyword_end)))
+          (keyword_end)
+          (keyword_if)))
+      (keyword_end))))
+
+================================================================================
+ITERATE statement
+================================================================================
+
+LOOP
+  SET i = i + 1;
+  IF i < 5 THEN
+    ITERATE lbl;
+  END IF;
+  LEAVE lbl;
+END LOOP;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (loop_statement
+      (keyword_loop)
+      (statement
+        (set_statement
+          (keyword_set)
+          (object_reference
+            name: (identifier))
+          (binary_expression
+            left: (field
+              name: (identifier))
+            right: (literal))))
+      (statement
+        (if_statement
+          (keyword_if)
+          (binary_expression
+            left: (field
+              name: (identifier))
+            right: (literal))
+          (keyword_then)
+          (statement
+            (iterate_statement
+              (keyword_iterate)
+              label: (identifier)))
+          (keyword_end)
+          (keyword_if)))
+      (statement
+        (leave_statement
+          (keyword_leave)
+          label: (identifier)))
+      (keyword_end)
+      (keyword_loop))))

@@ -1,0 +1,38 @@
+================================================================================
+DuckDB: MERGE INTO ... WHEN MATCHED THEN DELETE
+================================================================================
+
+MERGE INTO accounts t
+USING monthly_accounts_update s
+    ON t.customer = s.customer
+    WHEN MATCHED
+        THEN DELETE
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (keyword_merge)
+    (keyword_into)
+    (object_reference
+      (identifier))
+    (identifier)
+    (keyword_using)
+    (object_reference
+      (identifier))
+    (identifier)
+    (keyword_on)
+    (binary_expression
+      (field
+        (object_reference
+          (identifier))
+        (identifier))
+      (field
+        (object_reference
+          (identifier))
+        (identifier)))
+    (when_clause
+      (keyword_when)
+      (keyword_matched)
+      (keyword_then)
+      (keyword_delete))))

@@ -1,0 +1,102 @@
+================================================================================
+SQLite: INSERT OR ROLLBACK
+================================================================================
+
+INSERT OR ROLLBACK INTO t (id) VALUES (1);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (insert
+      (keyword_insert)
+      (keyword_or)
+      (conflict_action
+        (keyword_rollback))
+      (keyword_into)
+      (object_reference
+        name: (identifier))
+      (list
+        (column
+          (identifier)))
+      (keyword_values)
+      (list
+        (literal)))))
+
+================================================================================
+SQLite: INSERT OR ABORT
+================================================================================
+
+INSERT OR ABORT INTO t (id) VALUES (1);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (insert
+      (keyword_insert)
+      (keyword_or)
+      (conflict_action
+        (keyword_abort))
+      (keyword_into)
+      (object_reference
+        name: (identifier))
+      (list
+        (column
+          (identifier)))
+      (keyword_values)
+      (list
+        (literal)))))
+
+================================================================================
+SQLite: INSERT OR FAIL
+================================================================================
+
+INSERT OR FAIL INTO t (id) VALUES (1);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (insert
+      (keyword_insert)
+      (keyword_or)
+      (conflict_action
+        (keyword_fail))
+      (keyword_into)
+      (object_reference
+        name: (identifier))
+      (list
+        (column
+          (identifier)))
+      (keyword_values)
+      (list
+        (literal)))))
+
+================================================================================
+SQLite: INSERT OR REPLACE with multiple columns
+================================================================================
+
+INSERT OR REPLACE INTO t (id, name) VALUES (1, 'bob');
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (insert
+      (keyword_insert)
+      (keyword_or)
+      (conflict_action
+        (keyword_replace))
+      (keyword_into)
+      (object_reference
+        name: (identifier))
+      (list
+        (column
+          (identifier))
+        (column
+          (identifier)))
+      (keyword_values)
+      (list
+        (literal)
+        (literal)))))

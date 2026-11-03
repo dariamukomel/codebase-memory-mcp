@@ -1,0 +1,462 @@
+================================================================================
+Teradata: SHOW TABLE
+================================================================================
+
+SHOW TABLE my_db.my_table;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (show_statement
+      (keyword_show)
+      (keyword_table)
+      name: (object_reference
+        schema: (identifier)
+        name: (identifier)))))
+
+================================================================================
+Teradata: SHOW JOIN INDEX
+================================================================================
+
+SHOW JOIN INDEX ji1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (show_statement
+      (keyword_show)
+      (keyword_join)
+      (keyword_index)
+      name: (object_reference
+        name: (identifier)))))
+
+================================================================================
+Teradata: HELP DATABASE
+================================================================================
+
+HELP DATABASE my_db;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (help_statement
+      (keyword_help)
+      (keyword_database)
+      name: (object_reference
+        name: (identifier)))))
+
+================================================================================
+Teradata: HELP SESSION
+================================================================================
+
+HELP SESSION;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (help_statement
+      (keyword_help)
+      (keyword_session))))
+
+================================================================================
+Teradata: BEGIN QUERY LOGGING ON ALL
+================================================================================
+
+BEGIN QUERY LOGGING ON ALL;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (logging_statement
+      (keyword_begin)
+      (keyword_query)
+      (keyword_logging)
+      (keyword_on)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+Teradata: END QUERY CAPTURE
+================================================================================
+
+END QUERY CAPTURE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (logging_statement
+      (keyword_end)
+      (keyword_query)
+      (keyword_capture))))
+
+================================================================================
+Teradata: DATABASE statement
+================================================================================
+
+DATABASE my_db;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (database_statement
+      (keyword_database)
+      name: (object_reference
+        name: (identifier)))))
+
+================================================================================
+Teradata: GIVE
+================================================================================
+
+GIVE my_db TO other_user;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (give_statement
+      (keyword_give)
+      name: (object_reference
+        name: (identifier))
+      (keyword_to)
+      recipient: (object_reference
+        name: (identifier)))))
+
+================================================================================
+Teradata: RENAME VIEW
+================================================================================
+
+RENAME VIEW v1 TO v2;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (rename_object_statement
+      (keyword_rename)
+      (keyword_view)
+      name: (object_reference
+        name: (identifier))
+      (keyword_to)
+      new_name: (object_reference
+        name: (identifier)))))
+
+================================================================================
+Teradata: DELETE DATABASE
+================================================================================
+
+DELETE DATABASE my_db ALL;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (delete_database_statement
+      (keyword_delete)
+      (keyword_database)
+      name: (object_reference
+        name: (identifier))
+      (keyword_all))))
+
+================================================================================
+Teradata: CHECKPOINT
+================================================================================
+
+CHECKPOINT;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (checkpoint_statement
+      (keyword_checkpoint))))
+
+================================================================================
+Teradata: ECHO
+================================================================================
+
+ECHO '.set width 100';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (echo_statement
+      (keyword_echo)
+      command: (literal))))
+
+================================================================================
+Teradata: COLLECT DEMOGRAPHICS
+================================================================================
+
+COLLECT DEMOGRAPHICS FOR t1 INTO qcd1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (collect_demographics_statement
+      (keyword_collect)
+      (keyword_demographics)
+      (keyword_for)
+      (object_reference
+        name: (identifier))
+      (keyword_into)
+      qcd: (object_reference
+        name: (identifier)))))
+
+================================================================================
+Teradata: DROP STATISTICS
+================================================================================
+
+DROP STATISTICS ON t1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_statistics_statement
+      (keyword_drop)
+      (keyword_statistics)
+      (keyword_on)
+      name: (object_reference
+        name: (identifier)))))
+
+================================================================================
+Teradata: EXECUTE macro
+================================================================================
+
+EXECUTE my_macro(1);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (execute_macro_statement
+      (keyword_execute)
+      name: (object_reference
+        name: (identifier))
+      (literal))))
+
+================================================================================
+Teradata: CALL
+================================================================================
+
+CALL my_proc(1, 2);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (call_statement
+      (keyword_call)
+      procedure: (object_reference
+        name: (identifier))
+      (literal)
+      (literal))))
+
+================================================================================
+Teradata: DUMP EXPLAIN
+================================================================================
+
+DUMP EXPLAIN INTO qcd1 AS plan1 SELECT 1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (dump_explain_clause
+      (keyword_dump)
+      (keyword_explain)
+      (keyword_into)
+      qcd: (object_reference
+        name: (identifier))
+      (keyword_as)
+      plan_name: (identifier))
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (literal))))))
+
+================================================================================
+Teradata: INITIATE PARTITION ANALYSIS
+================================================================================
+
+INITIATE PARTITION ANALYSIS FOR wl1 IN qcd1 AS tag1 TIME LIMIT = 30;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (initiate_partition_analysis_statement
+      (keyword_initiate)
+      (keyword_partition)
+      (keyword_analysis)
+      (keyword_for)
+      workload: (identifier)
+      (keyword_in)
+      qcd: (object_reference
+        name: (identifier))
+      (keyword_as)
+      tag: (identifier)
+      (keyword_time)
+      (keyword_limit)
+      time_limit: (literal))))
+
+================================================================================
+Teradata: RESTART INDEX ANALYSIS
+================================================================================
+
+RESTART INDEX ANALYSIS FOR wl1 IN qcd1 AS tag1 CHECKPOINT 100;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (restart_index_analysis_statement
+      (keyword_restart)
+      (keyword_index)
+      (keyword_analysis)
+      (keyword_for)
+      workload: (identifier)
+      (keyword_in)
+      qcd: (object_reference
+        name: (identifier))
+      (keyword_as)
+      tag: (identifier)
+      (keyword_checkpoint)
+      checkpoint: (literal))))
+
+================================================================================
+Teradata: INITIATE INDEX ANALYSIS
+================================================================================
+
+INITIATE INDEX ANALYSIS ON t1 FOR wl1 IN qcd1 AS tag1 KEEP INDEX WITH INDEX TYPE 3;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (initiate_index_analysis_statement
+      (keyword_initiate)
+      (keyword_index)
+      (keyword_analysis)
+      (keyword_on)
+      (object_reference
+        name: (identifier))
+      (keyword_for)
+      workload: (identifier)
+      (keyword_in)
+      qcd: (object_reference
+        name: (identifier))
+      (keyword_as)
+      tag: (identifier)
+      (keyword_keep)
+      (keyword_index)
+      (keyword_with)
+      (keyword_index)
+      (keyword_type)
+      index_type: (literal))))
+
+================================================================================
+Teradata: USING request modifier
+================================================================================
+
+USING (a INTEGER) SELECT 1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (using_request_clause
+      (keyword_using)
+      name: (identifier)
+      type: (int
+        (keyword_int)))
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (literal))))))
+
+================================================================================
+Teradata: INSERT EXPLAIN
+================================================================================
+
+INSERT EXPLAIN WITH STATISTICS AND DEMOGRAPHICS INTO qcd1 AS plan1 SELECT 1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (insert_explain_clause
+      (keyword_insert)
+      (keyword_explain)
+      (keyword_with)
+      (keyword_statistics)
+      (keyword_and)
+      (keyword_demographics)
+      (keyword_into)
+      qcd: (object_reference
+        name: (identifier))
+      (keyword_as)
+      plan_name: (identifier))
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (literal))))))
+
+================================================================================
+Teradata: EXECUTE FUNCTION
+================================================================================
+
+EXECUTE FUNCTION INTO VOLATILE ART my_fn(a);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (execute_function_statement
+      (keyword_execute)
+      (keyword_function)
+      (keyword_into)
+      (keyword_volatile)
+      (keyword_art)
+      name: (object_reference
+        name: (identifier))
+      (field
+        name: (identifier)))))
+
+================================================================================
+Teradata: SELECT AND CONSUME
+================================================================================
+
+SELECT AND CONSUME TOP 1 a FROM q1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (keyword_and)
+      (keyword_consume)
+      (keyword_top)
+      (literal)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))))))

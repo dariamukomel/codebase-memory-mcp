@@ -1,0 +1,35 @@
+
+================================================================================
+DuckDB: ATTACH OR REPLACE
+================================================================================
+
+ATTACH OR REPLACE 'file2.db' AS file_db;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (attach_statement
+      (keyword_attach)
+      (keyword_or)
+      (keyword_replace)
+      path: (literal)
+      (keyword_as)
+      alias: (identifier))))
+
+================================================================================
+DuckDB: ATTACH IF NOT EXISTS
+================================================================================
+
+ATTACH IF NOT EXISTS 'file.db';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (attach_statement
+      (keyword_attach)
+      (keyword_if)
+      (keyword_not)
+      (keyword_exists)
+      path: (literal))))

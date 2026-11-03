@@ -1,0 +1,75 @@
+================================================================================
+Db2: SELECT OPTIMIZE FOR 1 ROWS
+================================================================================
+
+SELECT id FROM t OPTIMIZE FOR 1 ROWS;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (optimize_for_clause
+        (keyword_optimize)
+        (keyword_for)
+        (keyword_rows)))))
+
+================================================================================
+Db2: SELECT WITH RS isolation
+================================================================================
+
+SELECT id FROM t WITH RS;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (with_isolation_clause
+        (keyword_with)
+        (keyword_rs)))))
+
+================================================================================
+Db2: SELECT WITH RR isolation
+================================================================================
+
+SELECT id FROM t WITH RR;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (with_isolation_clause
+        (keyword_with)
+        (keyword_rr)))))

@@ -1,0 +1,27 @@
+================================================================================
+DECLARE GLOBAL TEMPORARY TABLE
+================================================================================
+
+DECLARE GLOBAL TEMPORARY TABLE session.t (a INT) ON COMMIT PRESERVE ROWS;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (declare_global_temporary_table
+      (keyword_declare)
+      (keyword_global)
+      (keyword_temporary)
+      (keyword_table)
+      (object_reference
+        schema: (identifier)
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int))))
+      (keyword_on)
+      (keyword_commit)
+      (keyword_preserve)
+      (keyword_rows))))

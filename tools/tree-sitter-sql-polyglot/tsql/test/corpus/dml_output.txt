@@ -1,0 +1,146 @@
+================================================================================
+INSERT with OUTPUT INSERTED
+================================================================================
+
+INSERT INTO audit_log (user_id, action)
+OUTPUT INSERTED.id
+VALUES (42, 'login');
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (insert
+      (keyword_insert)
+      (keyword_into)
+      (object_reference
+        name: (identifier))
+      (list
+        (column
+          (identifier))
+        (column
+          (identifier)))
+      (output_clause
+        (keyword_output)
+        (output_column
+          (keyword_inserted)
+          name: (identifier)))
+      (keyword_values)
+      (list
+        (literal)
+        (literal)))))
+
+================================================================================
+DELETE with OUTPUT DELETED
+================================================================================
+
+DELETE FROM archive_items
+OUTPUT DELETED.*
+WHERE expired = 1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (delete
+      (keyword_delete))
+    (from
+      (keyword_from)
+      (object_reference
+        name: (identifier)))
+    (output_clause
+      (keyword_output)
+      (output_column
+        (keyword_deleted)))
+    (where
+      (keyword_where)
+      predicate: (binary_expression
+        left: (field
+          name: (identifier))
+        right: (literal)))))
+
+================================================================================
+MERGE with BY SOURCE
+================================================================================
+
+MERGE target AS t
+USING source AS s ON t.id = s.id
+WHEN NOT MATCHED BY SOURCE THEN DELETE
+WHEN NOT MATCHED THEN INSERT VALUES (s.id, s.name);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (keyword_merge)
+    (object_reference
+      name: (identifier))
+    (keyword_as)
+    alias: (identifier)
+    (keyword_using)
+    (object_reference
+      name: (identifier))
+    (keyword_as)
+    alias: (identifier)
+    (keyword_on)
+    predicate: (binary_expression
+      left: (field
+        (object_reference
+          name: (identifier))
+        name: (identifier))
+      right: (field
+        (object_reference
+          name: (identifier))
+        name: (identifier)))
+    (when_clause
+      (keyword_when)
+      (keyword_not)
+      (keyword_matched)
+      (keyword_by)
+      (keyword_source)
+      (keyword_then)
+      (keyword_delete))
+    (when_clause
+      (keyword_when)
+      (keyword_not)
+      (keyword_matched)
+      (keyword_then)
+      (keyword_insert)
+      (keyword_values)
+      (list
+        (field
+          (object_reference
+            name: (identifier))
+          name: (identifier))
+        (field
+          (object_reference
+            name: (identifier))
+          name: (identifier))))))
+
+================================================================================
+BULK INSERT
+================================================================================
+
+BULK INSERT dbo.orders
+FROM 'C:\data\orders.csv'
+WITH (FIELDTERMINATOR = ',', ROWTERMINATOR = '\n');
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (bulk_insert_statement
+      (keyword_bulk)
+      (keyword_insert)
+      (object_reference
+        schema: (identifier)
+        name: (identifier))
+      (keyword_from)
+      (literal)
+      (keyword_with)
+      (bulk_option
+        (identifier)
+        (literal))
+      (bulk_option
+        (identifier)
+        (literal)))))

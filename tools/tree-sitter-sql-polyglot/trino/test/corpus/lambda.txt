@@ -1,0 +1,58 @@
+================================================================================
+Trino: lambda in transform
+================================================================================
+
+SELECT transform(ARRAY[1, 2, 3], x -> x * 2);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (invocation
+            (object_reference
+              name: (identifier))
+            parameter: (term
+              value: (array
+                (keyword_array)
+                (literal)
+                (literal)
+                (literal)))
+            parameter: (term
+              value: (lambda_expression
+                param: (identifier)
+                body: (binary_expression
+                  left: (field
+                    name: (identifier))
+                  right: (literal))))))))))
+
+================================================================================
+Trino: lambda filter
+================================================================================
+
+SELECT filter(arr, x -> x > 0);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (invocation
+            (object_reference
+              name: (identifier))
+            parameter: (term
+              value: (field
+                name: (identifier)))
+            parameter: (term
+              value: (lambda_expression
+                param: (identifier)
+                body: (binary_expression
+                  left: (field
+                    name: (identifier))
+                  right: (literal))))))))))

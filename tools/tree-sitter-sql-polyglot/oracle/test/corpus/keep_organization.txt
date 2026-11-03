@@ -1,0 +1,108 @@
+==================
+FIRST/LAST aggregate KEEP (DENSE_RANK ...)
+==================
+
+SELECT MAX(salary) KEEP (DENSE_RANK FIRST ORDER BY hire_date) FROM emp
+
+---
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (keep_aggregate
+            (invocation
+              (object_reference
+                name: (identifier))
+              parameter: (term
+                value: (field
+                  name: (identifier))))
+            (keyword_keep)
+            (keyword_dense_rank)
+            (keyword_first)
+            (order_by
+              (keyword_order)
+              (keyword_by)
+              (order_target
+                (field
+                  name: (identifier))))))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))))))
+
+==================
+KEEP aggregate with OVER
+==================
+
+SELECT MIN(sal) KEEP (DENSE_RANK LAST ORDER BY d) OVER (PARTITION BY dept) FROM emp
+
+---
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (keep_aggregate
+            (invocation
+              (object_reference
+                name: (identifier))
+              parameter: (term
+                value: (field
+                  name: (identifier))))
+            (keyword_keep)
+            (keyword_dense_rank)
+            (keyword_last)
+            (order_by
+              (keyword_order)
+              (keyword_by)
+              (order_target
+                (field
+                  name: (identifier))))
+            (keyword_over)
+            (window_specification
+              (partition_by
+                (keyword_partition)
+                (keyword_by)
+                (field
+                  name: (identifier))))))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))))))
+
+==================
+CREATE TABLE ORGANIZATION INDEX (IOT)
+==================
+
+CREATE TABLE t (id INT PRIMARY KEY, v INT) ORGANIZATION INDEX
+
+---
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int))
+          (keyword_primary)
+          (keyword_key))
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int))))
+      (organization_clause
+        (keyword_organization)
+        (keyword_index)))))

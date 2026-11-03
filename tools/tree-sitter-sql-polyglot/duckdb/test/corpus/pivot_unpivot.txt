@@ -1,0 +1,48 @@
+================================================================================
+DuckDB: PIVOT statement
+================================================================================
+
+PIVOT t ON category USING SUM(amount);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (pivot_statement
+      (keyword_pivot)
+      (object_reference
+        name: (identifier))
+      (keyword_on)
+      pivot_col: (field
+        name: (identifier))
+      (keyword_using)
+      agg: (invocation
+        (object_reference
+          name: (identifier))
+        parameter: (term
+          value: (field
+            name: (identifier)))))))
+
+================================================================================
+DuckDB: UNPIVOT statement
+================================================================================
+
+UNPIVOT t ON (jan, feb, mar) INTO NAME month VALUE sales;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (unpivot_statement
+      (keyword_unpivot)
+      (object_reference
+        name: (identifier))
+      (keyword_on)
+      col: (identifier)
+      col: (identifier)
+      col: (identifier)
+      (keyword_into)
+      (keyword_name)
+      name_col: (identifier)
+      (keyword_value)
+      value_col: (identifier))))

@@ -1,0 +1,198 @@
+================================================================================
+DECLARE with type and default
+================================================================================
+
+DECLARE x INT64 DEFAULT 0;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (declare_statement
+      (keyword_declare)
+      (identifier)
+      (keyword_int64)
+      (keyword_default)
+      (literal))))
+
+================================================================================
+SET simple assignment
+================================================================================
+
+SET x = x + 1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (set_variable_statement
+      (keyword_set)
+      (identifier)
+      (binary_expression
+        left: (field
+          name: (identifier))
+        right: (literal)))))
+
+================================================================================
+BEGIN block with EXCEPTION
+================================================================================
+
+BEGIN
+  SET x = 1;
+EXCEPTION WHEN ERROR THEN
+  SELECT @@error.message;
+END;
+
+--------------------------------------------------------------------------------
+
+(program
+  (compound_statement
+    (keyword_begin)
+    (statement
+      (set_variable_statement
+        (keyword_set)
+        (identifier)
+        (literal)))
+    (exception_clause
+      (keyword_exception)
+      (keyword_when)
+      (keyword_error)
+      (keyword_then)
+      (statement
+        (select
+          (keyword_select)
+          (select_expression
+            (term
+              value: (unary_expression
+                operator: (op_unary_other)
+                operand: (field
+                  (object_reference
+                    name: (identifier))
+                  name: (identifier))))))))
+    (keyword_end)))
+
+================================================================================
+FOR loop
+================================================================================
+
+FOR r IN (SELECT * FROM t) DO
+  SET x = x + 1;
+END FOR;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (for_statement
+      (keyword_for)
+      variable: (identifier)
+      (keyword_in)
+      (subquery
+        (select
+          (keyword_select)
+          (select_expression
+            (term
+              value: (all_fields))))
+        (from
+          (keyword_from)
+          (relation
+            (object_reference
+              name: (identifier)))))
+      (keyword_do)
+      (statement
+        (set_variable_statement
+          (keyword_set)
+          (identifier)
+          (binary_expression
+            left: (field
+              name: (identifier))
+            right: (literal))))
+      (keyword_end)
+      (keyword_for))))
+
+================================================================================
+WHILE loop
+================================================================================
+
+WHILE x < 10 DO
+  SET x = x + 1;
+END WHILE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (while_statement
+      (keyword_while)
+      condition: (binary_expression
+        left: (field
+          name: (identifier))
+        right: (literal))
+      (keyword_do)
+      (statement
+        (set_variable_statement
+          (keyword_set)
+          (identifier)
+          (binary_expression
+            left: (field
+              name: (identifier))
+            right: (literal))))
+      (keyword_end)
+      (keyword_while))))
+
+================================================================================
+LOOP with IF and LEAVE
+================================================================================
+
+LOOP
+  IF x > 10 THEN LEAVE;
+  END IF;
+END LOOP;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (loop_statement
+      (keyword_loop)
+      (statement
+        (if_statement
+          (keyword_if)
+          condition: (binary_expression
+            left: (field
+              name: (identifier))
+            right: (literal))
+          (keyword_then)
+          (statement
+            (leave_statement
+              (keyword_leave)))
+          (keyword_end)
+          (keyword_if)))
+      (keyword_end)
+      (keyword_loop))))
+
+================================================================================
+LEAVE statement
+================================================================================
+
+LEAVE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (leave_statement
+      (keyword_leave))))
+
+================================================================================
+CONTINUE statement
+================================================================================
+
+CONTINUE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (continue_statement
+      (keyword_continue))))

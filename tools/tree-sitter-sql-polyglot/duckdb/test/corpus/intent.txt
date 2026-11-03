@@ -1,0 +1,48 @@
+; Intent-based tests: expected trees derived from reading the grammar rules,
+; not copied from parser output.
+;
+; duckdb/grammar/statements.js defines:
+;   attach_statement: keyword_attach + optional(keyword_database) + optional(path:literal)
+;                     + optional(seq(keyword_as + alias:identifier))
+;                     + optional(wrapped_in_parenthesis(comma_list(...)))
+;
+; ATTACH 'file.db' AS db uses path (literal) and alias (identifier).
+; keyword_attach is DuckDB-specific (defined in duckdb/grammar.js).
+; The body (options list) is omitted; the seq(keyword_as, alias) appears inline.
+
+================================================================================
+DuckDB: ATTACH with path and alias
+================================================================================
+
+ATTACH 'file.db' AS db;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (attach_statement
+      (keyword_attach)
+      path: (literal)
+      (keyword_as)
+      alias: (identifier))))
+
+; duckdb/grammar/statements.js defines:
+;   detach_statement: keyword_detach + optional(keyword_database) + optional(alias:identifier)
+;
+; keyword_detach is DuckDB-specific.
+; DETACH db uses the optional alias only (no keyword_database).
+
+================================================================================
+DuckDB: DETACH alias
+================================================================================
+
+DETACH db;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (detach_statement
+      (keyword_detach)
+      alias: (identifier))))
+

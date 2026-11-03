@@ -1,0 +1,55 @@
+================================================================================
+SELECT with SETTINGS
+================================================================================
+
+SELECT * FROM t SETTINGS max_threads = 8
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (settings_clause
+        (keyword_settings)
+        (setting_item
+          name: (identifier)
+          value: (literal))))))
+
+================================================================================
+SELECT with SETTINGS and FORMAT
+================================================================================
+
+SELECT * FROM t SETTINGS max_threads = 8 FORMAT JSONEachRow
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (settings_clause
+        (keyword_settings)
+        (setting_item
+          name: (identifier)
+          value: (literal)))
+      (format_clause
+        (keyword_format)
+        format: (identifier)))))
+

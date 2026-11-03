@@ -1,0 +1,34 @@
+================================================================================
+LATERAL TABLE function join
+================================================================================
+
+SELECT * FROM t, LATERAL TABLE(split(s)) AS T(word);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (relation
+        (keyword_lateral)
+        (keyword_table)
+        (invocation
+          (object_reference
+            name: (identifier))
+          parameter: (term
+            value: (field
+              name: (identifier))))
+        (keyword_as)
+        alias: (identifier)
+        (list
+          (column
+            (identifier)))))))

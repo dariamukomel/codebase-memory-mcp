@@ -1,0 +1,109 @@
+================================================================================
+DATETIME2 column
+================================================================================
+
+CREATE TABLE t (created_at DATETIME2(3));
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (datetime2
+            (keyword_datetime2)
+            (literal)))))))
+
+================================================================================
+DATETIME2 without precision
+================================================================================
+
+CREATE TABLE t (ts DATETIME2);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (datetime2
+            (keyword_datetime2)))))))
+
+================================================================================
+MONEY column
+================================================================================
+
+CREATE TABLE t (price MONEY, discount SMALLMONEY);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (money_type
+            (keyword_money)))
+        (column_definition
+          name: (identifier)
+          type: (money_type
+            (keyword_smallmoney)))))))
+
+================================================================================
+UNIQUEIDENTIFIER column
+================================================================================
+
+CREATE TABLE t (id UNIQUEIDENTIFIER);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (uniqueidentifier
+            (keyword_uniqueidentifier)))))))
+
+================================================================================
+SMALLDATETIME column
+================================================================================
+
+CREATE TABLE t (scheduled SMALLDATETIME);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (smalldatetime
+            (keyword_smalldatetime)))))))

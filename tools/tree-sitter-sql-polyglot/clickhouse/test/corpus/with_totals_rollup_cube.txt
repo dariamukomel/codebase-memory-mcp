@@ -1,0 +1,112 @@
+================================================================================
+GROUP BY WITH TOTALS
+================================================================================
+
+SELECT region, SUM(amount) FROM t GROUP BY region WITH TOTALS
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))
+        (term
+          value: (invocation
+            (object_reference
+              name: (identifier))
+            parameter: (term
+              value: (field
+                name: (identifier)))))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (group_by
+        (keyword_group)
+        (keyword_by)
+        (field
+          name: (identifier))
+        (keyword_with)
+        (keyword_totals)))))
+
+================================================================================
+GROUP BY ROLLUP
+================================================================================
+
+SELECT region, SUM(amount) FROM t GROUP BY ROLLUP(region, category)
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))
+        (term
+          value: (invocation
+            (object_reference
+              name: (identifier))
+            parameter: (term
+              value: (field
+                name: (identifier)))))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (group_by
+        (keyword_group)
+        (keyword_by)
+        (rollup_clause
+          (keyword_rollup)
+          (field
+            name: (identifier))
+          (field
+            name: (identifier)))))))
+
+================================================================================
+GROUP BY CUBE
+================================================================================
+
+SELECT region, SUM(amount) FROM t GROUP BY CUBE(region, category)
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))
+        (term
+          value: (invocation
+            (object_reference
+              name: (identifier))
+            parameter: (term
+              value: (field
+                name: (identifier)))))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (group_by
+        (keyword_group)
+        (keyword_by)
+        (cube_clause
+          (keyword_cube)
+          (field
+            name: (identifier))
+          (field
+            name: (identifier)))))))
+

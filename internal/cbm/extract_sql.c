@@ -98,11 +98,27 @@ static const char *sql_cte_name(CBMExtractCtx *ctx, TSNode node) {
     return NULL;
 }
 
-static bool sql_text_is_exact_dynamic(TSNode node) {
+static bool sql_text_is_exact_dynamic(CBMExtractCtx *ctx, TSNode node) {
     uint32_t start = ts_node_start_byte(node);
     uint32_t end = ts_node_end_byte(node);
     while (true) {
-        if (strcmp(ts_node_type(node), "dynamic_identifier") == 0) return true;
+        if (strcmp(ts_node_type(node), "dynamic_identifier") == 0) {
+            if (start >= end || end > (uint32_t)ctx->source_len ||
+                ctx->source[start] != '$') return false;
+            if (start + 1 < end && ctx->source[start + 1] == '{') {
+                for (uint32_t i = start + 2; i < end; i++) {
+                    if (ctx->source[i] == '}') return i == end - 1;
+                }
+                return false;
+            }
+            /* A second '$' means this token also contains static/dynamic
+             * fragments (for example $prefix_${suffix}), so retain the full
+             * identifier in lineage instead of treating it as a lone variable. */
+            for (uint32_t i = start + 1; i < end; i++) {
+                if (ctx->source[i] == '$') return false;
+            }
+            return true;
+        }
         if (ts_node_named_child_count(node) != 1) return false;
         TSNode child = ts_node_named_child(node, 0);
         if (ts_node_start_byte(child) != start || ts_node_end_byte(child) != end) return false;
@@ -247,7 +263,7 @@ static int sql_walk_statement(CBMExtractCtx *ctx, TSNode node, const char *incom
         descendant_role = CBM_SQL_ROLE_NEUTRAL;
     } else if (strcmp(type, "field") == 0) {
         semantic_boundary = true;
-        if (role == CBM_SQL_ROLE_OUTPUT && !sql_text_is_exact_dynamic(node)) {
+        if (role == CBM_SQL_ROLE_OUTPUT && !sql_text_is_exact_dynamic(ctx, node)) {
             CBMSqlEntity e = sql_entity(node, CBM_SQL_COLUMN_REF, owner,
                                         sibling_ordinals[CBM_SQL_COLUMN_REF]++);
             e.name = sql_trimmed_text(ctx, node);

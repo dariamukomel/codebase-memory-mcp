@@ -1,0 +1,32 @@
+================================================================================
+CREATE MATERIALIZED VIEW with AUTO REFRESH
+================================================================================
+
+CREATE MATERIALIZED VIEW mv AUTO REFRESH YES AS SELECT a FROM t;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_materialized_view
+      (keyword_create)
+      (keyword_materialized)
+      (keyword_view)
+      (object_reference
+        name: (identifier))
+      (keyword_auto)
+      (keyword_refresh)
+      (keyword_yes)
+      (keyword_as)
+      (create_query
+        (select
+          (keyword_select)
+          (select_expression
+            (term
+              value: (field
+                name: (identifier)))))
+        (from
+          (keyword_from)
+          (relation
+            (object_reference
+              name: (identifier))))))))

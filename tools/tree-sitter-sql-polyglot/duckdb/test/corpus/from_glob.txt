@@ -1,0 +1,41 @@
+================================================================================
+DuckDB: FROM bare string glob
+================================================================================
+
+SELECT * FROM '*.parquet'
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (literal)))))
+
+================================================================================
+DuckDB: FROM string with alias
+================================================================================
+
+SELECT * FROM '*.csv' AS t
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (literal)
+        (keyword_as)
+        alias: (identifier)))))

@@ -1,0 +1,303 @@
+================================================================================
+Column with DEFAULT
+================================================================================
+
+CREATE TABLE t (id UInt64, x UInt32 DEFAULT 5) ENGINE = MergeTree() ORDER BY id
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (column_definitions
+        (column_definition
+          (identifier)
+          (keyword_uint64))
+        (column_definition
+          (identifier)
+          (keyword_uint32)
+          (keyword_default)
+          (literal)))
+      (engine_clause
+        (keyword_engine)
+        (invocation
+          (object_reference
+            (identifier))))
+      (order_by
+        (keyword_order)
+        (keyword_by)
+        (order_target
+          (field
+            (identifier)))))))
+
+================================================================================
+Column with MATERIALIZED expression
+================================================================================
+
+CREATE TABLE t (id UInt64, full String MATERIALIZED concat(a, b)) ENGINE = MergeTree() ORDER BY id
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (column_definitions
+        (column_definition
+          (identifier)
+          (keyword_uint64))
+        (column_definition
+          (identifier)
+          (keyword_string)
+          (keyword_materialized)
+          (invocation
+            (object_reference
+              (identifier))
+            (term
+              (field
+                (identifier)))
+            (term
+              (field
+                (identifier))))))
+      (engine_clause
+        (keyword_engine)
+        (invocation
+          (object_reference
+            (identifier))))
+      (order_by
+        (keyword_order)
+        (keyword_by)
+        (order_target
+          (field
+            (identifier)))))))
+
+================================================================================
+Column with ALIAS expression
+================================================================================
+
+CREATE TABLE t (id UInt64, x UInt32 ALIAS id) ENGINE = MergeTree() ORDER BY id
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (column_definitions
+        (column_definition
+          (identifier)
+          (keyword_uint64))
+        (column_definition
+          (identifier)
+          (keyword_uint32)
+          (keyword_alias)
+          (field
+            (identifier))))
+      (engine_clause
+        (keyword_engine)
+        (invocation
+          (object_reference
+            (identifier))))
+      (order_by
+        (keyword_order)
+        (keyword_by)
+        (order_target
+          (field
+            (identifier)))))))
+
+================================================================================
+Column with EPHEMERAL
+================================================================================
+
+CREATE TABLE t (id UInt64, x UInt32 EPHEMERAL) ENGINE = MergeTree() ORDER BY id
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (column_definitions
+        (column_definition
+          (identifier)
+          (keyword_uint64))
+        (column_definition
+          (identifier)
+          (keyword_uint32)
+          (keyword_ephemeral)))
+      (engine_clause
+        (keyword_engine)
+        (invocation
+          (object_reference
+            (identifier))))
+      (order_by
+        (keyword_order)
+        (keyword_by)
+        (order_target
+          (field
+            (identifier)))))))
+
+================================================================================
+Column with CODEC
+================================================================================
+
+CREATE TABLE t (id UInt64 CODEC(Delta, ZSTD(3))) ENGINE = MergeTree() ORDER BY id
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (column_definitions
+        (column_definition
+          (identifier)
+          (keyword_uint64)
+          (codec_clause
+            (keyword_codec)
+            (identifier)
+            (invocation
+              (object_reference
+                (identifier))
+              (term
+                (literal))))))
+      (engine_clause
+        (keyword_engine)
+        (invocation
+          (object_reference
+            (identifier))))
+      (order_by
+        (keyword_order)
+        (keyword_by)
+        (order_target
+          (field
+            (identifier)))))))
+
+================================================================================
+Column with TTL
+================================================================================
+
+CREATE TABLE t (id UInt64, ts DateTime, x UInt32 TTL ts + 1) ENGINE = MergeTree() ORDER BY id
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (column_definitions
+        (column_definition
+          (identifier)
+          (keyword_uint64))
+        (column_definition
+          (identifier)
+          (datetime_type
+            (keyword_datetime)))
+        (column_definition
+          (identifier)
+          (keyword_uint32)
+          (keyword_ttl)
+          (binary_expression
+            (field
+              (identifier))
+            (literal))))
+      (engine_clause
+        (keyword_engine)
+        (invocation
+          (object_reference
+            (identifier))))
+      (order_by
+        (keyword_order)
+        (keyword_by)
+        (order_target
+          (field
+            (identifier)))))))
+
+================================================================================
+Table with CONSTRAINT CHECK
+================================================================================
+
+CREATE TABLE t (id UInt64, CONSTRAINT c CHECK (id > 0)) ENGINE = MergeTree() ORDER BY id
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (column_definitions
+        (column_definition
+          (identifier)
+          (keyword_uint64))
+        (constraints
+          (constraint
+            (keyword_constraint)
+            (identifier)
+            (keyword_check)
+            (binary_expression
+              (field
+                (identifier))
+              (literal)))))
+      (engine_clause
+        (keyword_engine)
+        (invocation
+          (object_reference
+            (identifier))))
+      (order_by
+        (keyword_order)
+        (keyword_by)
+        (order_target
+          (field
+            (identifier)))))))
+
+================================================================================
+CREATE TABLE AS clone
+================================================================================
+
+CREATE TABLE t2 AS t1 ENGINE = MergeTree() ORDER BY id
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (keyword_as)
+      (object_reference
+        (identifier))
+      (engine_clause
+        (keyword_engine)
+        (invocation
+          (object_reference
+            (identifier))))
+      (order_by
+        (keyword_order)
+        (keyword_by)
+        (order_target
+          (field
+            (identifier)))))))

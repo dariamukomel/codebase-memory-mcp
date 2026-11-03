@@ -1,0 +1,55 @@
+================================================================================
+GLOB operator
+================================================================================
+
+SELECT * FROM t WHERE name GLOB 'abc*';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (where
+        (keyword_where)
+        predicate: (binary_expression
+          left: (field
+            name: (identifier))
+          operator: (keyword_glob)
+          right: (literal))))))
+
+================================================================================
+MATCH operator (FTS)
+================================================================================
+
+SELECT * FROM fts WHERE fts MATCH 'term';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (where
+        (keyword_where)
+        predicate: (binary_expression
+          left: (field
+            name: (identifier))
+          operator: (keyword_match)
+          right: (literal))))))

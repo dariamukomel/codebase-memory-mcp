@@ -1,0 +1,30 @@
+================================================================================
+DuckDB: SUMMARIZE table
+================================================================================
+
+SUMMARIZE t;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (summarize_statement
+      (keyword_summarize)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+DuckDB: SUMMARIZE qualified table
+================================================================================
+
+SUMMARIZE main.my_table;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (summarize_statement
+      (keyword_summarize)
+      (object_reference
+        schema: (identifier)
+        name: (identifier)))))

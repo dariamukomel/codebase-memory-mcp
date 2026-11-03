@@ -1,0 +1,84 @@
+================================================================================
+DuckDB: Struct literal
+================================================================================
+
+SELECT {'a': 1, 'b': 2};
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (struct_literal
+            key: (literal)
+            value: (literal)
+            key: (literal)
+            value: (literal)))))))
+
+================================================================================
+DuckDB: Map literal
+================================================================================
+
+SELECT map {'key': 42};
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (map_literal
+            (keyword_map)
+            (struct_literal
+              key: (literal)
+              value: (literal))))))))
+
+================================================================================
+DuckDB: MAP type in CREATE TABLE
+================================================================================
+
+CREATE TABLE t (id INT, meta MAP(VARCHAR, INTEGER));
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int)))
+        (column_definition
+          name: (identifier)
+          type: (map_type
+            (keyword_map)
+            key_type: (varchar
+              (keyword_varchar))
+            value_type: (int
+              (keyword_int))))))))
+
+================================================================================
+DuckDB: Empty struct literal
+================================================================================
+
+SELECT {};
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (struct_literal))))))

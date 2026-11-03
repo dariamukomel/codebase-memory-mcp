@@ -1,0 +1,86 @@
+================================================================================
+CREATE TABLE with DISTRIBUTION HASH
+================================================================================
+
+CREATE TABLE dbo.orders (
+  order_id INT NOT NULL,
+  customer_id INT
+)
+WITH (DISTRIBUTION = HASH(order_id));
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        schema: (identifier)
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int))
+          (keyword_not)
+          (keyword_null))
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int))))
+      (table_with_options
+        (keyword_with)
+        (table_with_option
+          (keyword_distribution)
+          (distribution
+            (keyword_hash)
+            (identifier)))))))
+
+================================================================================
+COPY INTO
+================================================================================
+
+COPY INTO dbo.orders
+FROM 'https://storage.blob.core.windows.net/data/orders.csv'
+WITH (FILE_TYPE = 'CSV');
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (copy_into_statement
+      (keyword_copy)
+      (keyword_into)
+      (object_reference
+        schema: (identifier)
+        name: (identifier))
+      (keyword_from)
+      (literal)
+      (keyword_with)
+      (with_option
+        (identifier)
+        (literal)))))
+
+================================================================================
+CREATE EXTERNAL DATA SOURCE
+================================================================================
+
+CREATE EXTERNAL DATA SOURCE MySource
+WITH (LOCATION = 'abfss://container@account.dfs.core.windows.net/');
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_external_data_source
+      (keyword_create)
+      (keyword_external)
+      (keyword_data)
+      (keyword_source)
+      (object_reference
+        name: (identifier))
+      (keyword_with)
+      (with_option
+        (identifier)
+        (literal)))))

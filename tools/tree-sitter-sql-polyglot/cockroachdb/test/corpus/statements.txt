@@ -1,0 +1,56 @@
+
+================================================================================
+CockroachDB: ALTER DATABASE ADD REGION
+================================================================================
+
+ALTER DATABASE db1 ADD REGION "us-east1";
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_database
+      (keyword_alter)
+      (keyword_database)
+      (identifier)
+      (keyword_add)
+      (keyword_region)
+      region: (identifier))))
+
+================================================================================
+CockroachDB: ALTER DATABASE SURVIVE REGION FAILURE
+================================================================================
+
+ALTER DATABASE db1 SURVIVE REGION FAILURE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_database
+      (keyword_alter)
+      (keyword_database)
+      (identifier)
+      (keyword_survive)
+      (keyword_region)
+      (keyword_failure))))
+
+================================================================================
+CockroachDB: ALTER INDEX CONFIGURE ZONE
+================================================================================
+
+ALTER INDEX ix1 CONFIGURE ZONE USING num_replicas = 5;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_index
+      (keyword_alter)
+      (keyword_index)
+      (identifier)
+      (keyword_configure)
+      (keyword_zone)
+      (keyword_using)
+      name: (identifier)
+      value: (literal))))

@@ -1,0 +1,314 @@
+================================================================================
+Oracle: CREATE TABLE PARTITION BY RANGE with DATE literals and MAXVALUE
+================================================================================
+
+CREATE TABLE sales (sale_id NUMBER, sale_date DATE, amount NUMBER) PARTITION BY RANGE (sale_date) (PARTITION p_2023 VALUES LESS THAN (DATE '2024-01-01'), PARTITION p_future VALUES LESS THAN (MAXVALUE))
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (number_type
+            (keyword_number)))
+        (column_definition
+          name: (identifier)
+          type: (keyword_date))
+        (column_definition
+          name: (identifier)
+          type: (number_type
+            (keyword_number))))
+      (table_partition_by
+        (keyword_partition)
+        (keyword_by)
+        (keyword_range)
+        (field
+          name: (identifier))
+        (partition_definition
+          (keyword_partition)
+          (identifier)
+          (keyword_values)
+          (keyword_less)
+          (keyword_than)
+          (date_literal
+            (keyword_date)
+            (literal)))
+        (partition_definition
+          (keyword_partition)
+          (identifier)
+          (keyword_values)
+          (keyword_less)
+          (keyword_than)
+          (keyword_maxvalue))))))
+
+================================================================================
+Oracle: CREATE TABLE PARTITION BY LIST
+================================================================================
+
+CREATE TABLE regions (id NUMBER, region_name VARCHAR2(50)) PARTITION BY LIST (region_name) (PARTITION p_north VALUES ('NORTH', 'NORTHEAST'), PARTITION p_south VALUES ('SOUTH'))
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (number_type
+            (keyword_number)))
+        (column_definition
+          name: (identifier)
+          type: (varchar2
+            (keyword_varchar2)
+            size: (literal))))
+      (table_partition_by
+        (keyword_partition)
+        (keyword_by)
+        (keyword_list)
+        (field
+          name: (identifier))
+        (partition_definition
+          (keyword_partition)
+          (identifier)
+          (keyword_values)
+          (literal)
+          (literal))
+        (partition_definition
+          (keyword_partition)
+          (identifier)
+          (keyword_values)
+          (literal))))))
+
+================================================================================
+Oracle: CREATE TABLE PARTITION BY HASH with PARTITIONS count
+================================================================================
+
+CREATE TABLE orders (order_id NUMBER, customer_id NUMBER) PARTITION BY HASH (customer_id) PARTITIONS 8
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (number_type
+            (keyword_number)))
+        (column_definition
+          name: (identifier)
+          type: (number_type
+            (keyword_number))))
+      (table_partition_by
+        (keyword_partition)
+        (keyword_by)
+        (keyword_hash)
+        (field
+          name: (identifier))
+        (keyword_partitions)
+        (literal)))))
+
+================================================================================
+Oracle: CREATE TABLE composite RANGE-HASH partitioning
+================================================================================
+
+CREATE TABLE fact (id NUMBER, dt DATE) PARTITION BY RANGE (dt) SUBPARTITION BY HASH (id) SUBPARTITIONS 4 (PARTITION p1 VALUES LESS THAN (DATE '2024-01-01'))
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (number_type
+            (keyword_number)))
+        (column_definition
+          name: (identifier)
+          type: (keyword_date)))
+      (table_partition_by
+        (keyword_partition)
+        (keyword_by)
+        (keyword_range)
+        (field
+          name: (identifier))
+        (keyword_subpartition)
+        (keyword_by)
+        (keyword_hash)
+        (field
+          name: (identifier))
+        (keyword_subpartitions)
+        (literal)
+        (partition_definition
+          (keyword_partition)
+          (identifier)
+          (keyword_values)
+          (keyword_less)
+          (keyword_than)
+          (date_literal
+            (keyword_date)
+            (literal)))))))
+
+================================================================================
+Oracle: ALTER TABLE ADD PARTITION
+================================================================================
+
+ALTER TABLE sales ADD PARTITION p_2025 VALUES LESS THAN (DATE '2026-01-01')
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (alter_partition
+        (keyword_add)
+        (keyword_partition)
+        (identifier)
+        (keyword_values)
+        (keyword_less)
+        (keyword_than)
+        (date_literal
+          (keyword_date)
+          (literal))))))
+
+================================================================================
+Oracle: ALTER TABLE DROP PARTITION
+================================================================================
+
+ALTER TABLE sales DROP PARTITION p_2023
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (alter_partition
+        (keyword_drop)
+        (keyword_partition)
+        (identifier)))))
+
+================================================================================
+Oracle: ALTER TABLE SPLIT PARTITION
+================================================================================
+
+ALTER TABLE sales SPLIT PARTITION p_future AT (DATE '2026-01-01') INTO (PARTITION p_2025, PARTITION p_future)
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (alter_partition
+        (keyword_split)
+        (keyword_partition)
+        (identifier)
+        (keyword_at)
+        (date_literal
+          (keyword_date)
+          (literal))
+        (keyword_into)
+        (keyword_partition)
+        (identifier)
+        (keyword_partition)
+        (identifier)))))
+
+================================================================================
+Oracle: ALTER TABLE MERGE PARTITIONS
+================================================================================
+
+ALTER TABLE sales MERGE PARTITIONS p_2023, p_2024 INTO PARTITION p_old
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (alter_partition
+        (keyword_merge)
+        (keyword_partitions)
+        (identifier)
+        (identifier)
+        (keyword_into)
+        (keyword_partition)
+        (identifier)))))
+
+================================================================================
+Oracle: ALTER TABLE TRUNCATE PARTITION
+================================================================================
+
+ALTER TABLE sales TRUNCATE PARTITION p_2023
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (alter_partition
+        (keyword_truncate)
+        (keyword_partition)
+        (identifier)))))
+
+================================================================================
+Oracle: ALTER TABLE EXCHANGE PARTITION
+================================================================================
+
+ALTER TABLE sales EXCHANGE PARTITION p_2023 WITH TABLE sales_2023
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (alter_partition
+        (keyword_exchange)
+        (keyword_partition)
+        (identifier)
+        (keyword_with)
+        (keyword_table)
+        (object_reference
+          name: (identifier))))))

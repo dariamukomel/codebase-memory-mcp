@@ -1,0 +1,58 @@
+================================================================================
+ASSERT without message
+================================================================================
+
+ASSERT x > 0;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (assert_statement
+      (keyword_assert)
+      condition: (binary_expression
+        left: (field
+          name: (identifier))
+        right: (literal)))))
+
+================================================================================
+EXPORT DATA with CONNECTION
+================================================================================
+
+EXPORT DATA WITH CONNECTION myproject.us.myconn OPTIONS (uri = 'gs://bucket/*.json', format = 'JSON') AS SELECT id, name FROM t;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (export_data
+      (keyword_export)
+      (keyword_data)
+      (keyword_with)
+      (keyword_connection)
+      (object_reference
+        database: (identifier)
+        schema: (identifier)
+        name: (identifier))
+      (options_clause
+        (keyword_options)
+        key: (identifier)
+        value: (literal)
+        key: (identifier)
+        value: (literal))
+      (keyword_as)
+      (create_query
+        (select
+          (keyword_select)
+          (select_expression
+            (term
+              value: (field
+                name: (identifier)))
+            (term
+              value: (field
+                name: (identifier)))))
+        (from
+          (keyword_from)
+          (relation
+            (object_reference
+              name: (identifier))))))))

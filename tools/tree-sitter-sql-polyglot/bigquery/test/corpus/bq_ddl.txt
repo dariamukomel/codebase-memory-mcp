@@ -1,0 +1,139 @@
+================================================================================
+CREATE TABLE with OPTIONS
+================================================================================
+
+CREATE TABLE t (id INT64) OPTIONS (description = 'my table');
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (keyword_int64)))
+      (options_clause
+        (keyword_options)
+        key: (identifier)
+        value: (literal)))))
+
+================================================================================
+CREATE VIEW with OPTIONS
+================================================================================
+
+CREATE VIEW v OPTIONS (expiration_timestamp = TIMESTAMP '2025-01-01') AS SELECT 1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_view
+      (keyword_create)
+      (keyword_view)
+      (object_reference
+        name: (identifier))
+      (options_clause
+        (keyword_options)
+        key: (identifier)
+        value: (typed_literal
+          (timestamp
+            (keyword_timestamp))
+          (literal)))
+      (keyword_as)
+      (create_query
+        (select
+          (keyword_select)
+          (select_expression
+            (term
+              value: (literal))))))))
+
+================================================================================
+EXPORT DATA with OPTIONS
+================================================================================
+
+EXPORT DATA OPTIONS (uri = 'gs://bucket/*.csv', format = 'CSV') AS SELECT * FROM t;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (export_data
+      (keyword_export)
+      (keyword_data)
+      (options_clause
+        (keyword_options)
+        key: (identifier)
+        value: (literal)
+        key: (identifier)
+        value: (literal))
+      (keyword_as)
+      (create_query
+        (select
+          (keyword_select)
+          (select_expression
+            (term
+              value: (all_fields))))
+        (from
+          (keyword_from)
+          (relation
+            (object_reference
+              name: (identifier))))))))
+
+================================================================================
+ASSERT with message
+================================================================================
+
+ASSERT (SELECT COUNT(*) FROM t) > 0 AS 'Table must not be empty';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (assert_statement
+      (keyword_assert)
+      condition: (binary_expression
+        left: (subquery
+          (select
+            (keyword_select)
+            (select_expression
+              (term
+                value: (invocation
+                  (object_reference
+                    name: (identifier))
+                  parameter: (term
+                    value: (all_fields))))))
+          (from
+            (keyword_from)
+            (relation
+              (object_reference
+                name: (identifier)))))
+        right: (literal))
+      (keyword_as)
+      (literal))))
+
+================================================================================
+CREATE SNAPSHOT TABLE CLONE
+================================================================================
+
+CREATE SNAPSHOT TABLE ds.snap CLONE ds.tbl;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_snapshot_table
+      (keyword_create)
+      (keyword_snapshot)
+      (keyword_table)
+      (object_reference
+        schema: (identifier)
+        name: (identifier))
+      (keyword_clone)
+      (object_reference
+        schema: (identifier)
+        name: (identifier)))))

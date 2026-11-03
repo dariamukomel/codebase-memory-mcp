@@ -1,0 +1,125 @@
+================================================================================
+Oracle: DECLARE cursor then FOR loop
+================================================================================
+
+DECLARE CURSOR emp_cursor IS SELECT name FROM employees; BEGIN FOR r IN emp_cursor LOOP INSERT INTO log VALUES (1); END LOOP; END;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (compound_statement
+      (keyword_declare)
+      (cursor_declaration
+        (keyword_cursor)
+        name: (identifier)
+        (keyword_is)
+        (select
+          (keyword_select)
+          (select_expression
+            (term
+              value: (field
+                name: (identifier)))))
+        (from
+          (keyword_from)
+          (relation
+            (object_reference
+              name: (identifier)))))
+      (keyword_begin)
+      (statement
+        (cursor_for_loop
+          (keyword_for)
+          record: (identifier)
+          (keyword_in)
+          cursor: (identifier)
+          (keyword_loop)
+          (statement
+            (insert
+              (keyword_insert)
+              (keyword_into)
+              (object_reference
+                name: (identifier))
+              (keyword_values)
+              (list
+                (literal))))
+          (keyword_end)
+          (keyword_loop)))
+      (keyword_end))))
+
+================================================================================
+Oracle: cursor FOR loop with inline SELECT
+================================================================================
+
+BEGIN FOR r IN (SELECT id FROM orders WHERE status = 'NEW') LOOP INSERT INTO log VALUES (1); END LOOP; END;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (compound_statement
+      (keyword_begin)
+      (statement
+        (cursor_for_loop
+          (keyword_for)
+          record: (identifier)
+          (keyword_in)
+          (select
+            (keyword_select)
+            (select_expression
+              (term
+                value: (field
+                  name: (identifier)))))
+          (from
+            (keyword_from)
+            (relation
+              (object_reference
+                name: (identifier)))
+            (where
+              (keyword_where)
+              predicate: (binary_expression
+                left: (field
+                  name: (identifier))
+                right: (literal))))
+          (keyword_loop)
+          (statement
+            (insert
+              (keyword_insert)
+              (keyword_into)
+              (object_reference
+                name: (identifier))
+              (keyword_values)
+              (list
+                (literal))))
+          (keyword_end)
+          (keyword_loop)))
+      (keyword_end))))
+
+================================================================================
+Oracle: OPEN FETCH CLOSE cursor
+================================================================================
+
+BEGIN OPEN emp_cursor(10); FETCH emp_cursor INTO v_name, v_salary; CLOSE emp_cursor; END;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (compound_statement
+      (keyword_begin)
+      (statement
+        (cursor_open_statement
+          (keyword_open)
+          name: (identifier)
+          (literal)))
+      (statement
+        (cursor_fetch_statement
+          (keyword_fetch)
+          name: (identifier)
+          (keyword_into)
+          (identifier)
+          (identifier)))
+      (statement
+        (cursor_close_statement
+          (keyword_close)
+          name: (identifier)))
+      (keyword_end))))

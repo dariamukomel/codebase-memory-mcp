@@ -1,0 +1,93 @@
+================================================================================
+CREATE FUNCTION Java
+================================================================================
+
+CREATE FUNCTION my_udf AS 'com.example.MyUDF'
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_function
+      (keyword_create)
+      (keyword_function)
+      (object_reference (identifier))
+      (keyword_as)
+      (literal))))
+
+================================================================================
+CREATE FUNCTION with LANGUAGE
+================================================================================
+
+CREATE TEMPORARY FUNCTION my_func
+AS 'com.example.MyFunc'
+LANGUAGE JAVA
+USING JAR 's3://bucket/my-udf.jar'
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_function
+      (keyword_create)
+      (keyword_temporary)
+      (keyword_function)
+      (object_reference (identifier))
+      (keyword_as)
+      (literal)
+      (keyword_language) (keyword_java)
+      (keyword_using) (keyword_jar) (literal))))
+
+================================================================================
+CREATE FUNCTION Python
+================================================================================
+
+CREATE FUNCTION py_func
+AS 'my_module.my_func'
+LANGUAGE PYTHON
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_function
+      (keyword_create)
+      (keyword_function)
+      (object_reference (identifier))
+      (keyword_as)
+      (literal)
+      (keyword_language) (keyword_python))))
+
+================================================================================
+DROP FUNCTION
+================================================================================
+
+DROP TEMPORARY FUNCTION IF EXISTS my_func
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_function
+      (keyword_drop)
+      (keyword_temporary)
+      (keyword_function)
+      (keyword_if) (keyword_exists)
+      (object_reference (identifier)))))
+
+================================================================================
+ALTER FUNCTION
+================================================================================
+
+ALTER FUNCTION my_func AS 'com.example.NewImpl' LANGUAGE SCALA
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_function
+      (keyword_alter)
+      (keyword_function)
+      (object_reference (identifier))
+      (keyword_as) (literal)
+      (keyword_language) (keyword_scala))))

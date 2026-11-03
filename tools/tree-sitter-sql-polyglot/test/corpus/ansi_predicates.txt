@@ -1,0 +1,85 @@
+================================================================================
+LIKE with ESCAPE
+================================================================================
+
+SELECT name FROM t1 WHERE name LIKE '%x%' ESCAPE '!'
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (where
+        (keyword_where)
+        predicate: (like_expression
+          left: (field
+            name: (identifier))
+          operator: (keyword_like)
+          right: (literal)
+          (keyword_escape)
+          escape: (literal))))))
+
+================================================================================
+Typed temporal literal DATE
+================================================================================
+
+SELECT d FROM t1 WHERE d > DATE '2021-01-01'
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (where
+        (keyword_where)
+        predicate: (binary_expression
+          left: (field
+            name: (identifier))
+          right: (typed_temporal_literal
+            type: (keyword_date)
+            value: (literal)))))))
+
+================================================================================
+Datetime value functions
+================================================================================
+
+SELECT CURRENT_DATE, CURRENT_TIMESTAMP FROM t1
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (datetime_value_function
+            (keyword_current_date)))
+        (term
+          value: (datetime_value_function
+            (keyword_current_timestamp)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))))))

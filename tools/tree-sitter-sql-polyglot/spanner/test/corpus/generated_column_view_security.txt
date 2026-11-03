@@ -1,0 +1,70 @@
+================================================================================
+Generated column AS (expr) STORED
+================================================================================
+
+CREATE TABLE t (a INT64, b INT64, c INT64 AS (a+b) STORED) PRIMARY KEY (a);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (keyword_int64))
+        (column_definition
+          name: (identifier)
+          type: (keyword_int64))
+        (column_definition
+          name: (identifier)
+          type: (keyword_int64)
+          (keyword_as)
+          (parenthesized_expression
+            (binary_expression
+              left: (field
+                name: (identifier))
+              right: (field
+                name: (identifier))))
+          (keyword_stored)))
+      (table_primary_key
+        (keyword_primary)
+        (keyword_key)
+        (ordered_key_part
+          column: (identifier))))))
+
+================================================================================
+CREATE VIEW with SQL SECURITY INVOKER
+================================================================================
+
+CREATE VIEW v SQL SECURITY INVOKER AS SELECT a FROM t;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_view
+      (keyword_create)
+      (keyword_view)
+      (object_reference
+        name: (identifier))
+      (keyword_sql)
+      (keyword_security)
+      (keyword_invoker)
+      (keyword_as)
+      (create_query
+        (select
+          (keyword_select)
+          (select_expression
+            (term
+              value: (field
+                name: (identifier)))))
+        (from
+          (keyword_from)
+          (relation
+            (object_reference
+              name: (identifier))))))))

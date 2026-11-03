@@ -1,0 +1,606 @@
+================================================================================
+MySQL procedure: simple compound statement
+================================================================================
+
+CREATE PROCEDURE greet()
+BEGIN
+    SELECT 'hello';
+END
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_procedure
+      (keyword_create)
+      (keyword_procedure)
+      (object_reference
+        (identifier))
+      (function_arguments)
+      (procedure_body
+        (compound_statement
+          (keyword_begin)
+          (statement
+            (select
+              (keyword_select)
+              (select_expression
+                (term
+                  (literal)))))
+          (keyword_end))))))
+
+================================================================================
+MySQL procedure: DECLARE and IF
+================================================================================
+
+CREATE PROCEDURE update_salary(IN emp_id INT, IN increase DECIMAL(5,2))
+BEGIN
+    DECLARE current_sal DECIMAL(10,2);
+    IF current_sal IS NULL THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Employee not found';
+    END IF;
+    UPDATE employees SET salary = salary * (1 + increase / 100) WHERE id = emp_id;
+END
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_procedure
+      (keyword_create)
+      (keyword_procedure)
+      (object_reference
+        (identifier))
+      (function_arguments
+        (function_argument
+          (keyword_in)
+          (identifier)
+          (int
+            (keyword_int)))
+        (function_argument
+          (keyword_in)
+          (identifier)
+          (decimal
+            (keyword_decimal)
+            (literal)
+            (literal))))
+      (procedure_body
+        (compound_statement
+          (keyword_begin)
+          (statement
+            (declare_statement
+              (keyword_declare)
+              (identifier)
+              (decimal
+                (keyword_decimal)
+                (literal)
+                (literal))))
+          (statement
+            (if_statement
+              (keyword_if)
+              (binary_expression
+                (field
+                  (identifier))
+                (keyword_is)
+                (literal
+                  (keyword_null)))
+              (keyword_then)
+              (statement
+                (signal_statement
+                  (keyword_signal)
+                  (keyword_sqlstate)
+                  (literal)
+                  (keyword_set)
+                  (keyword_message_text)
+                  (literal)))
+              (keyword_end)
+              (keyword_if)))
+          (statement
+            (update
+              (keyword_update)
+              (relation
+                (object_reference
+                  (identifier)))
+              (keyword_set)
+              (assignment
+                (field
+                  (identifier))
+                (binary_expression
+                  (field
+                    (identifier))
+                  (parenthesized_expression
+                    (binary_expression
+                      (literal)
+                      (binary_expression
+                        (field
+                          (identifier))
+                        (literal))))))
+              (where
+                (keyword_where)
+                (binary_expression
+                  (field
+                    (identifier))
+                  (field
+                    (identifier))))))
+          (keyword_end))))))
+
+================================================================================
+MySQL procedure: WHILE loop
+================================================================================
+
+CREATE PROCEDURE count_up()
+BEGIN
+    DECLARE i INT DEFAULT 0;
+    WHILE i < 10 DO
+        SET i = i + 1;
+    END WHILE;
+END
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_procedure
+      (keyword_create)
+      (keyword_procedure)
+      (object_reference
+        (identifier))
+      (function_arguments)
+      (procedure_body
+        (compound_statement
+          (keyword_begin)
+          (statement
+            (declare_statement
+              (keyword_declare)
+              (identifier)
+              (int
+                (keyword_int))
+              (keyword_default)
+              (literal)))
+          (statement
+            (while_statement
+              (keyword_while)
+              (binary_expression
+                (field
+                  (identifier))
+                (literal))
+              (keyword_do)
+              (statement
+                (set_variable_statement
+                  (keyword_set)
+                  (set_assignment
+                    (identifier)
+                    (binary_expression
+                      (field
+                        (identifier))
+                      (literal)))))
+              (keyword_end)
+              (keyword_while)))
+          (keyword_end))))))
+
+================================================================================
+MySQL procedure: REPEAT UNTIL loop
+================================================================================
+
+CREATE PROCEDURE repeat_example()
+BEGIN
+    DECLARE n INT DEFAULT 1;
+    REPEAT
+        SET n = n * 2;
+    UNTIL n > 100 END REPEAT;
+END
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_procedure
+      (keyword_create)
+      (keyword_procedure)
+      (object_reference
+        (identifier))
+      (function_arguments)
+      (procedure_body
+        (compound_statement
+          (keyword_begin)
+          (statement
+            (declare_statement
+              (keyword_declare)
+              (identifier)
+              (int
+                (keyword_int))
+              (keyword_default)
+              (literal)))
+          (statement
+            (repeat_statement
+              (keyword_repeat)
+              (statement
+                (set_variable_statement
+                  (keyword_set)
+                  (set_assignment
+                    (identifier)
+                    (binary_expression
+                      (field
+                        (identifier))
+                      (literal)))))
+              (keyword_until)
+              (binary_expression
+                (field
+                  (identifier))
+                (literal))
+              (keyword_end)
+              (keyword_repeat)))
+          (keyword_end))))))
+
+================================================================================
+MySQL procedure: labeled LOOP with LEAVE
+================================================================================
+
+CREATE PROCEDURE loop_example()
+BEGIN
+    DECLARE i INT DEFAULT 0;
+    myloop: LOOP
+        SET i = i + 1;
+        IF i >= 5 THEN
+            LEAVE myloop;
+        END IF;
+    END LOOP myloop;
+END
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_procedure
+      (keyword_create)
+      (keyword_procedure)
+      (object_reference
+        (identifier))
+      (function_arguments)
+      (procedure_body
+        (compound_statement
+          (keyword_begin)
+          (statement
+            (declare_statement
+              (keyword_declare)
+              (identifier)
+              (int
+                (keyword_int))
+              (keyword_default)
+              (literal)))
+          (statement
+            (loop_statement
+              (identifier)
+              (keyword_loop)
+              (statement
+                (set_variable_statement
+                  (keyword_set)
+                  (set_assignment
+                    (identifier)
+                    (binary_expression
+                      (field
+                        (identifier))
+                      (literal)))))
+              (statement
+                (if_statement
+                  (keyword_if)
+                  (binary_expression
+                    (field
+                      (identifier))
+                    (literal))
+                  (keyword_then)
+                  (statement
+                    (leave_statement
+                      (keyword_leave)
+                      (identifier)))
+                  (keyword_end)
+                  (keyword_if)))
+              (keyword_end)
+              (keyword_loop)
+              (identifier)))
+          (keyword_end))))))
+
+================================================================================
+MySQL trigger: IF in trigger body
+================================================================================
+
+CREATE TRIGGER before_insert_employee
+BEFORE INSERT ON employees FOR EACH ROW
+BEGIN
+    IF NEW.salary < 0 THEN
+        SET NEW.salary = 0;
+    END IF;
+END
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_trigger
+      (keyword_create)
+      (keyword_trigger)
+      (object_reference
+        (identifier))
+      (keyword_before)
+      (keyword_insert)
+      (keyword_on)
+      (object_reference
+        (identifier))
+      (keyword_for)
+      (keyword_each)
+      (keyword_row)
+      (procedure_body
+        (compound_statement
+          (keyword_begin)
+          (statement
+            (if_statement
+              (keyword_if)
+              (binary_expression
+                (field
+                  (object_reference
+                    (identifier))
+                  (identifier))
+                (literal))
+              (keyword_then)
+              (statement
+                (set_variable_statement
+                  (keyword_set)
+                  (set_assignment
+                    (field
+                      (object_reference
+                        (identifier))
+                      (identifier))
+                    (literal))))
+              (keyword_end)
+              (keyword_if)))
+          (keyword_end))))))
+
+================================================================================
+MySQL procedure: CALL statement
+================================================================================
+
+CREATE PROCEDURE wrapper()
+BEGIN
+    CALL inner_proc(1, 2);
+END
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_procedure
+      (keyword_create)
+      (keyword_procedure)
+      (object_reference
+        (identifier))
+      (function_arguments)
+      (procedure_body
+        (compound_statement
+          (keyword_begin)
+          (statement
+            (call_statement
+              (keyword_call)
+              (invocation
+                (object_reference
+                  (identifier))
+                (term
+                  (literal))
+                (term
+                  (literal)))))
+          (keyword_end))))))
+
+================================================================================
+MySQL procedure: RESIGNAL
+================================================================================
+
+CREATE PROCEDURE safe_op()
+BEGIN
+    RESIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'error';
+END
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_procedure
+      (keyword_create)
+      (keyword_procedure)
+      (object_reference
+        (identifier))
+      (function_arguments)
+      (procedure_body
+        (compound_statement
+          (keyword_begin)
+          (statement
+            (resignal_statement
+              (keyword_resignal)
+              (keyword_sqlstate)
+              (literal)
+              (keyword_set)
+              (keyword_message_text)
+              (literal)))
+          (keyword_end))))))
+
+================================================================================
+MySQL: DECLARE CURSOR
+================================================================================
+
+DECLARE cur CURSOR FOR SELECT id FROM orders;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (declare_cursor_statement
+      (keyword_declare)
+      name: (identifier)
+      (keyword_cursor)
+      (keyword_for)
+      (select
+        (keyword_select)
+        (select_expression
+          (term
+            value: (field
+              name: (identifier)))))
+      (from
+        (keyword_from)
+        (relation
+          (object_reference
+            name: (identifier)))))))
+
+================================================================================
+MySQL: OPEN cursor
+================================================================================
+
+OPEN cur;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (open_cursor_statement
+      (keyword_open)
+      name: (identifier))))
+
+================================================================================
+MySQL: FETCH cursor INTO variable
+================================================================================
+
+FETCH cur INTO @v_id;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (fetch_cursor_statement
+      (keyword_fetch)
+      name: (identifier)
+      (keyword_into)
+      (user_variable))))
+
+================================================================================
+MySQL: CLOSE cursor
+================================================================================
+
+CLOSE cur;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (close_cursor_statement
+      (keyword_close)
+      name: (identifier))))
+
+================================================================================
+MySQL: DECLARE CONDITION FOR SQLSTATE
+================================================================================
+
+DECLARE duplicate_entry CONDITION FOR SQLSTATE '23000';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (declare_condition_statement
+      (keyword_declare)
+      name: (identifier)
+      (keyword_condition)
+      (keyword_for)
+      (keyword_sqlstate)
+      (literal))))
+
+================================================================================
+MySQL: DECLARE CONTINUE HANDLER FOR NOT FOUND
+================================================================================
+
+DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (declare_handler_statement
+      (keyword_declare)
+      action: (keyword_continue)
+      (keyword_handler)
+      (keyword_for)
+      (handler_condition
+        (keyword_not)
+        (keyword_found))
+      (statement
+        (set_variable_statement
+          (keyword_set)
+          (set_assignment
+            target: (identifier)
+            value: (literal)))))))
+
+================================================================================
+MySQL: DECLARE EXIT HANDLER FOR SQLSTATE
+================================================================================
+
+DECLARE EXIT HANDLER FOR SQLSTATE '42000' SET err = 1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (declare_handler_statement
+      (keyword_declare)
+      action: (keyword_exit)
+      (keyword_handler)
+      (keyword_for)
+      (handler_condition
+        (keyword_sqlstate)
+        (literal))
+      (statement
+        (set_variable_statement
+          (keyword_set)
+          (set_assignment
+            target: (identifier)
+            value: (literal)))))))
+
+================================================================================
+MySQL: procedural CASE simple form
+================================================================================
+
+CASE v_status
+  WHEN 'A' THEN SET result = 'Active';
+  WHEN 'I' THEN SET result = 'Inactive';
+  ELSE SET result = 'Unknown';
+END CASE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (case_statement
+      (keyword_case)
+      operand: (field
+        name: (identifier))
+      (keyword_when)
+      condition: (literal)
+      (keyword_then)
+      (statement
+        (set_variable_statement
+          (keyword_set)
+          (set_assignment
+            target: (identifier)
+            value: (literal))))
+      (keyword_when)
+      condition: (literal)
+      (keyword_then)
+      (statement
+        (set_variable_statement
+          (keyword_set)
+          (set_assignment
+            target: (identifier)
+            value: (literal))))
+      (keyword_else)
+      (statement
+        (set_variable_statement
+          (keyword_set)
+          (set_assignment
+            target: (identifier)
+            value: (literal))))
+      (keyword_end)
+      (keyword_case))))

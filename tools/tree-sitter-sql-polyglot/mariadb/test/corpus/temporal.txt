@@ -1,0 +1,128 @@
+================================================================================
+MariaDB: FOR SYSTEM_TIME AS OF
+================================================================================
+
+SELECT * FROM t FOR SYSTEM_TIME AS OF '2020-01-01';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))
+        (keyword_for)
+        (keyword_system_time)
+        (keyword_as)
+        (keyword_of)
+        (literal)))))
+
+================================================================================
+MariaDB: FOR SYSTEM_TIME BETWEEN
+================================================================================
+
+SELECT * FROM t FOR SYSTEM_TIME BETWEEN '2020-01-01' AND '2020-12-31';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))
+        (keyword_for)
+        (keyword_system_time)
+        (keyword_between)
+        (literal)
+        (keyword_and)
+        (literal)))))
+
+================================================================================
+MariaDB: FOR SYSTEM_TIME FROM TO
+================================================================================
+
+SELECT * FROM t FOR SYSTEM_TIME FROM '2020-01-01' TO '2021-01-01';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))
+        (keyword_for)
+        (keyword_system_time)
+        (keyword_from)
+        (literal)
+        (keyword_to)
+        (literal)))))
+
+================================================================================
+MariaDB: FOR SYSTEM_TIME ALL
+================================================================================
+
+SELECT * FROM t FOR SYSTEM_TIME ALL;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))
+        (keyword_for)
+        (keyword_system_time)
+        (keyword_all)))))
+
+================================================================================
+MariaDB: FOR UPDATE locking still parses next to FOR SYSTEM_TIME
+================================================================================
+
+SELECT a FROM t1 FOR UPDATE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))))
+    (locking_clause
+      (keyword_for)
+      (keyword_update))))

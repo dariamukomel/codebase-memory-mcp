@@ -1,0 +1,125 @@
+================================================================================
+INSERT RETURNING
+================================================================================
+
+INSERT INTO t (col) VALUES (1), (2)
+RETURNING id, inserted_at;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (insert
+      (keyword_insert)
+      (keyword_into)
+      (object_reference
+        (identifier))
+      (list
+        (column
+          (identifier)))
+      (keyword_values)
+      (list
+        (literal))
+      (list
+        (literal)))
+    (returning
+      (keyword_returning)
+      (select_expression
+        (term
+          (field
+            (identifier)))
+        (term
+          (field
+            (identifier)))))))
+
+================================================================================
+UPDATE RETURNING
+================================================================================
+
+UPDATE t SET status = 'done' WHERE id = 42
+RETURNING id, status, updated_at;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (update
+      (keyword_update)
+      (relation
+        (object_reference
+          (identifier)))
+      (keyword_set)
+      (assignment
+        (field
+          (identifier))
+        (literal))
+      (where
+        (keyword_where)
+        (binary_expression
+          (field
+            (identifier))
+          (literal))))
+    (returning
+      (keyword_returning)
+      (select_expression
+        (term
+          (field
+            (identifier)))
+        (term
+          (field
+            (identifier)))
+        (term
+          (field
+            (identifier)))))))
+
+================================================================================
+DELETE RETURNING
+================================================================================
+
+DELETE FROM t WHERE id = 7
+RETURNING id, name;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (delete
+      (keyword_delete))
+    (from
+      (keyword_from)
+      (object_reference
+        (identifier))
+      (where
+        (keyword_where)
+        (binary_expression
+          (field
+            (identifier))
+          (literal))))
+    (returning
+      (keyword_returning)
+      (select_expression
+        (term
+          (field
+            (identifier)))
+        (term
+          (field
+            (identifier)))))))
+
+================================================================================
+COMMENT ON TABLE
+================================================================================
+
+COMMENT ON TABLE t IS 'documented';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (comment_statement
+      (keyword_comment)
+      (keyword_on)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (keyword_is)
+      (literal))))

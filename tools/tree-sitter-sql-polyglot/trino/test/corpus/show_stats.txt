@@ -1,0 +1,35 @@
+================================================================================
+Trino: SHOW STATS FOR table
+================================================================================
+
+SHOW STATS FOR orders;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (show_stats_statement
+      (keyword_show)
+      (keyword_stats)
+      (keyword_for)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+Trino: SHOW STATS FOR schema-qualified table
+================================================================================
+
+SHOW STATS FOR catalog.schema.orders;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (show_stats_statement
+      (keyword_show)
+      (keyword_stats)
+      (keyword_for)
+      (object_reference
+        database: (identifier)
+        schema: (identifier)
+        name: (identifier)))))

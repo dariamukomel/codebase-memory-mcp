@@ -1,0 +1,51 @@
+================================================================================
+Trino: SET SESSION with qualified catalog.property
+================================================================================
+
+SET SESSION hive.compression_codec = 'GZIP';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (set_session_statement
+      (keyword_set)
+      (keyword_session)
+      property: (object_reference
+        schema: (identifier)
+        name: (identifier))
+      value: (literal))))
+
+================================================================================
+Trino: SET SESSION with integer value
+================================================================================
+
+SET SESSION task_concurrency = 8;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (set_session_statement
+      (keyword_set)
+      (keyword_session)
+      property: (object_reference
+        name: (identifier))
+      value: (literal))))
+
+================================================================================
+Trino: RESET SESSION with qualified catalog.property
+================================================================================
+
+RESET SESSION hive.compression_codec;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (reset_session_statement
+      (keyword_reset)
+      (keyword_session)
+      property: (object_reference
+        schema: (identifier)
+        name: (identifier)))))

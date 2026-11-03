@@ -1,0 +1,50 @@
+================================================================================
+Trino: SET SESSION with boolean value
+================================================================================
+
+SET SESSION optimize_hash_generation = true;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (set_session_statement
+      (keyword_set)
+      (keyword_session)
+      property: (object_reference
+        name: (identifier))
+      value: (literal
+        (keyword_true)))))
+
+================================================================================
+Trino: SET SESSION with string value
+================================================================================
+
+SET SESSION query_max_memory = '10GB';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (set_session_statement
+      (keyword_set)
+      (keyword_session)
+      property: (object_reference
+        name: (identifier))
+      value: (literal))))
+
+================================================================================
+Trino: RESET SESSION
+================================================================================
+
+RESET SESSION optimize_hash_generation;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (reset_session_statement
+      (keyword_reset)
+      (keyword_session)
+      property: (object_reference
+        name: (identifier)))))

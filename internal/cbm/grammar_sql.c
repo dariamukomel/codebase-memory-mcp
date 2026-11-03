@@ -1,4 +1,4 @@
-// Vendored tree-sitter grammar: sql
-// Each grammar compiled as separate unit (conflicting static symbols).
-#include "vendored/grammars/sql/parser.c"
-#include "vendored/grammars/sql/scanner.c"
+// Tree-sitter SQL Polyglot ANSI/base grammar. Generated parser.c files are
+// inflated or regenerated in tools/tree-sitter-sql-polyglot before compiling.
+#include "../../tools/tree-sitter-sql-polyglot/src/parser.c"
+#include "../../tools/tree-sitter-sql-polyglot/src/scanner.c"

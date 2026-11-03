@@ -1,0 +1,72 @@
+================================================================================
+FORMAT CSVWithNames
+================================================================================
+
+SELECT * FROM t FORMAT CSVWithNames
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (format_clause
+        (keyword_format)
+        format: (identifier)))))
+
+================================================================================
+FORMAT JSONEachRow
+================================================================================
+
+SELECT * FROM t FORMAT JSONEachRow
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (format_clause
+        (keyword_format)
+        format: (identifier)))))
+
+================================================================================
+FORMAT Parquet
+================================================================================
+
+SELECT * FROM t FORMAT Parquet
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (format_clause
+        (keyword_format)
+        format: (identifier)))))
+

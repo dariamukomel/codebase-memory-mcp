@@ -1,0 +1,116 @@
+================================================================================
+DuckDB: Lambda single parameter
+================================================================================
+
+SELECT list_transform(l, x -> x * 2);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (invocation
+            (object_reference
+              name: (identifier))
+            parameter: (term
+              value: (field
+                name: (identifier)))
+            parameter: (term
+              value: (lambda_expression
+                param: (identifier)
+                body: (binary_expression
+                  left: (field
+                    name: (identifier))
+                  right: (literal))))))))))
+
+================================================================================
+DuckDB: Lambda with filter condition
+================================================================================
+
+SELECT list_filter(l, x -> x > 0);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (invocation
+            (object_reference
+              name: (identifier))
+            parameter: (term
+              value: (field
+                name: (identifier)))
+            parameter: (term
+              value: (lambda_expression
+                param: (identifier)
+                body: (binary_expression
+                  left: (field
+                    name: (identifier))
+                  right: (literal))))))))))
+
+================================================================================
+DuckDB: List comprehension with filter
+================================================================================
+
+SELECT [x * 2 FOR x IN range(10) IF x > 0];
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (list_comprehension
+            body: (binary_expression
+              left: (field
+                name: (identifier))
+              right: (literal))
+            (keyword_for)
+            var: (identifier)
+            (keyword_in)
+            source: (invocation
+              (object_reference
+                name: (identifier))
+              parameter: (term
+                value: (literal)))
+            (keyword_if)
+            condition: (binary_expression
+              left: (field
+                name: (identifier))
+              right: (literal))))))))
+
+================================================================================
+DuckDB: List comprehension without filter
+================================================================================
+
+SELECT [x * 2 FOR x IN range(10)];
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (list_comprehension
+            body: (binary_expression
+              left: (field
+                name: (identifier))
+              right: (literal))
+            (keyword_for)
+            var: (identifier)
+            (keyword_in)
+            source: (invocation
+              (object_reference
+                name: (identifier))
+              parameter: (term
+                value: (literal)))))))))

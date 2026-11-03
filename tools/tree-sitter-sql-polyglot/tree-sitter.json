@@ -1,0 +1,302 @@
+{
+  "grammars": [
+    {
+      "name": "sql",
+      "camelcase": "SQL",
+      "scope": "source.sql",
+      "path": ".",
+      "file-types": [
+        "sql"
+      ],
+      "highlights": [
+        "queries/highlights.scm"
+      ]
+    },
+    {
+      "name": "spark_sql",
+      "camelcase": "SparkSQL",
+      "scope": "source.spark.sql",
+      "path": "spark",
+      "file-types": [
+        "sql"
+      ],
+      "highlights": [
+        "queries/highlights.scm"
+      ]
+    },
+    {
+      "name": "postgres_sql",
+      "camelcase": "PostgresSQL",
+      "scope": "source.postgres.sql",
+      "path": "postgres",
+      "file-types": [
+        "sql"
+      ],
+      "highlights": [
+        "queries/highlights.scm"
+      ]
+    },
+    {
+      "name": "mysql_sql",
+      "camelcase": "MySQLSQL",
+      "scope": "source.mysql.sql",
+      "path": "mysql",
+      "file-types": [
+        "sql"
+      ],
+      "highlights": [
+        "queries/highlights.scm"
+      ]
+    },
+    {
+      "name": "databricks_sql",
+      "camelcase": "DatabricksSQL",
+      "scope": "source.databricks.sql",
+      "path": "databricks",
+      "file-types": [
+        "sql"
+      ],
+      "highlights": [
+        "queries/highlights.scm"
+      ]
+    },
+    {
+      "name": "snowflake_sql",
+      "camelcase": "SnowflakeSQL",
+      "scope": "source.snowflake.sql",
+      "path": "snowflake",
+      "file-types": [
+        "sql"
+      ],
+      "highlights": [
+        "queries/highlights.scm"
+      ]
+    },
+    {
+      "name": "bigquery_sql",
+      "camelcase": "BigQuerySQL",
+      "scope": "source.bigquery.sql",
+      "path": "bigquery",
+      "file-types": [
+        "sql"
+      ],
+      "highlights": [
+        "queries/highlights.scm"
+      ]
+    },
+    {
+      "name": "mariadb_sql",
+      "camelcase": "MariaDBSQL",
+      "scope": "source.mariadb.sql",
+      "path": "mariadb",
+      "file-types": [
+        "sql"
+      ],
+      "highlights": [
+        "queries/highlights.scm"
+      ]
+    },
+    {
+      "name": "sqlite_sql",
+      "camelcase": "SQLiteSQL",
+      "scope": "source.sqlite.sql",
+      "path": "sqlite",
+      "file-types": [
+        "sql"
+      ],
+      "highlights": [
+        "queries/highlights.scm"
+      ]
+    },
+    {
+      "name": "hive_sql",
+      "camelcase": "HiveSQL",
+      "scope": "source.hive.sql",
+      "path": "hive",
+      "file-types": [
+        "sql",
+        "hql"
+      ],
+      "highlights": [
+        "queries/highlights.scm"
+      ]
+    },
+    {
+      "name": "oracle_sql",
+      "camelcase": "OracleSQL",
+      "scope": "source.oracle.sql",
+      "path": "oracle",
+      "file-types": [
+        "sql"
+      ],
+      "highlights": [
+        "queries/highlights.scm"
+      ]
+    },
+    {
+      "name": "db2_sql",
+      "camelcase": "DB2SQL",
+      "scope": "source.db2.sql",
+      "path": "db2",
+      "file-types": [
+        "sql"
+      ],
+      "highlights": [
+        "queries/highlights.scm"
+      ]
+    },
+    {
+      "name": "tsql",
+      "camelcase": "TSQL",
+      "scope": "source.tsql.sql",
+      "path": "tsql",
+      "file-types": [
+        "sql"
+      ],
+      "highlights": [
+        "queries/highlights.scm"
+      ]
+    },
+    {
+      "name": "duckdb_sql",
+      "camelcase": "DuckDBSQL",
+      "scope": "source.duckdb.sql",
+      "path": "duckdb",
+      "file-types": [
+        "sql"
+      ],
+      "highlights": [
+        "queries/highlights.scm"
+      ]
+    },
+    {
+      "name": "trino_sql",
+      "camelcase": "TrinoSQL",
+      "scope": "source.trino.sql",
+      "path": "trino",
+      "file-types": [
+        "sql"
+      ],
+      "highlights": [
+        "queries/highlights.scm"
+      ]
+    },
+    {
+      "name": "athena_sql",
+      "camelcase": "AthenaSQL",
+      "scope": "source.athena.sql",
+      "path": "athena",
+      "file-types": [
+        "sql"
+      ],
+      "highlights": [
+        "queries/highlights.scm"
+      ]
+    },
+    {
+      "name": "redshift_sql",
+      "camelcase": "RedshiftSQL",
+      "scope": "source.redshift.sql",
+      "path": "redshift",
+      "file-types": [
+        "sql"
+      ],
+      "highlights": [
+        "queries/highlights.scm"
+      ]
+    },
+    {
+      "name": "clickhouse_sql",
+      "camelcase": "ClickHouseSQL",
+      "scope": "source.clickhouse.sql",
+      "path": "clickhouse",
+      "file-types": [
+        "sql"
+      ],
+      "highlights": [
+        "queries/highlights.scm"
+      ]
+    },
+    {
+      "name": "flink_sql",
+      "camelcase": "FlinkSQL",
+      "scope": "source.flink.sql",
+      "path": "flink",
+      "file-types": [
+        "sql"
+      ],
+      "highlights": [
+        "queries/highlights.scm"
+      ]
+    },
+    {
+      "name": "cockroachdb_sql",
+      "camelcase": "CockroachdbSQL",
+      "scope": "source.cockroachdb.sql",
+      "path": "cockroachdb",
+      "file-types": [
+        "sql"
+      ],
+      "highlights": [
+        "queries/highlights.scm"
+      ]
+    },
+    {
+      "name": "spanner_sql",
+      "camelcase": "SpannerSQL",
+      "scope": "source.spanner.sql",
+      "path": "spanner",
+      "file-types": [
+        "sql"
+      ],
+      "highlights": [
+        "queries/highlights.scm"
+      ]
+    },
+    {
+      "name": "teradata_sql",
+      "camelcase": "TeradataSQL",
+      "scope": "source.teradata.sql",
+      "path": "teradata",
+      "file-types": [
+        "sql"
+      ],
+      "highlights": [
+        "queries/highlights.scm"
+      ]
+    },
+    {
+      "name": "hana_sql",
+      "camelcase": "HanaSQL",
+      "scope": "source.hana.sql",
+      "path": "hana",
+      "file-types": [
+        "sql"
+      ],
+      "highlights": [
+        "queries/highlights.scm"
+      ]
+    }
+  ],
+  "metadata": {
+    "version": "0.1.2",
+    "license": "MIT",
+    "description": "Tree-sitter SQL grammar with dialect extensions (Databricks, Spark, PostgreSQL, MySQL)",
+    "authors": [
+      {
+        "name": "relativelyunknown"
+      }
+    ],
+    "links": {
+      "repository": "git+https://github.com/relativelyunknown/tree-sitter-sql-polyglot.git"
+    }
+  },
+  "bindings": {
+    "c": true,
+    "go": true,
+    "node": true,
+    "python": true,
+    "rust": true,
+    "swift": true
+  }
+}

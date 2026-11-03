@@ -1,0 +1,139 @@
+================================================================================
+SQLScript IF / ELSEIF / ELSE
+================================================================================
+
+CREATE PROCEDURE p LANGUAGE SQLSCRIPT AS BEGIN IF :x > 0 THEN i := 1; ELSEIF :x < 0 THEN i := 2; ELSE i := 3; END IF; END;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_procedure
+      (keyword_create)
+      (keyword_procedure)
+      (object_reference
+        name: (identifier))
+      (keyword_language)
+      (keyword_sqlscript)
+      (keyword_as)
+      (compound_statement
+        (keyword_begin)
+        (if_statement
+          (keyword_if)
+          condition: (binary_expression
+            left: (parameter)
+            right: (literal))
+          (keyword_then)
+          (assignment_statement
+            name: (identifier)
+            (literal))
+          (keyword_elseif)
+          condition: (binary_expression
+            left: (parameter)
+            right: (literal))
+          (keyword_then)
+          (assignment_statement
+            name: (identifier)
+            (literal))
+          (keyword_else)
+          (assignment_statement
+            name: (identifier)
+            (literal))
+          (keyword_end)
+          (keyword_if))
+        (keyword_end)))))
+
+================================================================================
+SQLScript WHILE loop
+================================================================================
+
+CREATE PROCEDURE p LANGUAGE SQLSCRIPT AS BEGIN WHILE :i < 10 DO i := :i + 1; END WHILE; END;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_procedure
+      (keyword_create)
+      (keyword_procedure)
+      (object_reference
+        name: (identifier))
+      (keyword_language)
+      (keyword_sqlscript)
+      (keyword_as)
+      (compound_statement
+        (keyword_begin)
+        (while_statement
+          (keyword_while)
+          condition: (binary_expression
+            left: (parameter)
+            right: (literal))
+          (keyword_do)
+          (assignment_statement
+            name: (identifier)
+            (binary_expression
+              left: (parameter)
+              right: (literal)))
+          (keyword_end)
+          (keyword_while))
+        (keyword_end)))))
+
+================================================================================
+SQLScript FOR range loop
+================================================================================
+
+CREATE PROCEDURE p LANGUAGE SQLSCRIPT AS BEGIN FOR i IN 1..10 DO j := :i; END FOR; END;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_procedure
+      (keyword_create)
+      (keyword_procedure)
+      (object_reference
+        name: (identifier))
+      (keyword_language)
+      (keyword_sqlscript)
+      (keyword_as)
+      (compound_statement
+        (keyword_begin)
+        (for_statement
+          (keyword_for)
+          index: (identifier)
+          (keyword_in)
+          lower: (literal)
+          upper: (literal)
+          (keyword_do)
+          (assignment_statement
+            name: (identifier)
+            (parameter))
+          (keyword_end)
+          (keyword_for))
+        (keyword_end)))))
+
+==================
+Table variable assignment
+==================
+
+BEGIN lt = SELECT * FROM t; END
+
+---
+
+(program
+  (statement
+    (compound_statement
+      (keyword_begin)
+      (assignment_statement
+        name: (identifier)
+        (select
+          (keyword_select)
+          (select_expression
+            (term
+              value: (all_fields))))
+        (from
+          (keyword_from)
+          (relation
+            (object_reference
+              name: (identifier)))))
+      (keyword_end))))

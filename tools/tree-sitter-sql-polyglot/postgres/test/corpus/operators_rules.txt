@@ -1,0 +1,165 @@
+================================================================================
+CREATE OPERATOR
+================================================================================
+
+CREATE OPERATOR === (FUNCTION = my_eq, LEFTARG = integer, RIGHTARG = integer);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_operator_statement
+      (keyword_create)
+      (keyword_operator)
+      (operator_symbol)
+      (keyword_function)
+      (object_reference
+        (identifier))
+      (identifier)
+      (int
+        (keyword_int))
+      (identifier)
+      (int
+        (keyword_int)))))
+
+================================================================================
+CREATE OPERATOR with bare flags
+================================================================================
+
+CREATE OPERATOR && (FUNCTION = my_fn, HASHES, MERGES);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_operator_statement
+      (keyword_create)
+      (keyword_operator)
+      (operator_symbol)
+      (keyword_function)
+      (object_reference
+        (identifier))
+      (identifier)
+      (identifier))))
+
+================================================================================
+ALTER OPERATOR set schema
+================================================================================
+
+ALTER OPERATOR === (integer, integer) SET SCHEMA my_schema;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_operator_statement
+      (keyword_alter)
+      (keyword_operator)
+      (operator_symbol)
+      (int
+        (keyword_int))
+      (int
+        (keyword_int))
+      (keyword_set)
+      (keyword_schema)
+      (identifier))))
+
+================================================================================
+CREATE RULE DO INSTEAD NOTHING
+================================================================================
+
+CREATE RULE my_rule AS ON DELETE TO my_table DO INSTEAD NOTHING;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_rule_statement
+      (keyword_create)
+      (keyword_rule)
+      (identifier)
+      (keyword_as)
+      (keyword_on)
+      (keyword_delete)
+      (keyword_to)
+      (object_reference
+        (identifier))
+      (keyword_do)
+      (keyword_instead)
+      (keyword_nothing))))
+
+================================================================================
+ALTER RULE rename
+================================================================================
+
+ALTER RULE my_rule ON my_table RENAME TO new_rule;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_rule_statement
+      (keyword_alter)
+      (keyword_rule)
+      (identifier)
+      (keyword_on)
+      (object_reference
+        (identifier))
+      (keyword_rename)
+      (keyword_to)
+      (identifier))))
+
+================================================================================
+ALTER COLLATION REFRESH VERSION
+================================================================================
+
+ALTER COLLATION french REFRESH VERSION;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_collation_statement
+      (keyword_alter)
+      (keyword_collation)
+      (object_reference
+        (identifier))
+      (keyword_refresh)
+      (keyword_version))))
+
+================================================================================
+ALTER CONVERSION rename
+================================================================================
+
+ALTER CONVERSION my_conv RENAME TO new_conv;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_conversion_statement
+      (keyword_alter)
+      (keyword_conversion)
+      (object_reference
+        (identifier))
+      (keyword_rename)
+      (keyword_to)
+      (identifier))))
+
+================================================================================
+ALTER EVENT TRIGGER enable replica
+================================================================================
+
+ALTER EVENT TRIGGER my_trigger ENABLE REPLICA;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_event_trigger_statement
+      (keyword_alter)
+      (keyword_event)
+      (keyword_trigger)
+      (identifier)
+      (keyword_enable)
+      (keyword_replica))))

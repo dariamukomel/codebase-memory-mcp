@@ -1,0 +1,315 @@
+================================================================================
+IF with ELSEIF and ELSE
+================================================================================
+
+IF x > 10 THEN
+  SELECT 'big';
+ELSEIF x > 5 THEN
+  SELECT 'medium';
+ELSE
+  SELECT 'small';
+END IF;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (if_statement
+      (keyword_if)
+      condition: (binary_expression
+        left: (field
+          name: (identifier))
+        right: (literal))
+      (keyword_then)
+      (statement
+        (select
+          (keyword_select)
+          (select_expression
+            (term
+              value: (literal)))))
+      (elseif_clause
+        (keyword_elseif)
+        condition: (binary_expression
+          left: (field
+            name: (identifier))
+          right: (literal))
+        (keyword_then)
+        (statement
+          (select
+            (keyword_select)
+            (select_expression
+              (term
+                value: (literal))))))
+      (else_clause
+        (keyword_else)
+        (statement
+          (select
+            (keyword_select)
+            (select_expression
+              (term
+                value: (literal))))))
+      (keyword_end)
+      (keyword_if))))
+
+================================================================================
+BEGIN block with multiple statements and EXCEPTION
+================================================================================
+
+BEGIN
+  SELECT 1;
+  SET x = 2;
+EXCEPTION WHEN ERROR THEN
+  SELECT @@error.message;
+  SELECT @@error.stack_trace;
+END;
+
+--------------------------------------------------------------------------------
+
+(program
+  (compound_statement
+    (keyword_begin)
+    (statement
+      (select
+        (keyword_select)
+        (select_expression
+          (term
+            value: (literal)))))
+    (statement
+      (set_variable_statement
+        (keyword_set)
+        (identifier)
+        (literal)))
+    (exception_clause
+      (keyword_exception)
+      (keyword_when)
+      (keyword_error)
+      (keyword_then)
+      (statement
+        (select
+          (keyword_select)
+          (select_expression
+            (term
+              value: (unary_expression
+                operator: (op_unary_other)
+                operand: (field
+                  (object_reference
+                    name: (identifier))
+                  name: (identifier)))))))
+      (statement
+        (select
+          (keyword_select)
+          (select_expression
+            (term
+              value: (unary_expression
+                operator: (op_unary_other)
+                operand: (field
+                  (object_reference
+                    name: (identifier))
+                  name: (identifier))))))))
+    (keyword_end)))
+
+================================================================================
+FOR loop accessing row fields
+================================================================================
+
+FOR row IN (SELECT id, name FROM users) DO
+  SET result = row.name;
+END FOR;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (for_statement
+      (keyword_for)
+      variable: (identifier)
+      (keyword_in)
+      (subquery
+        (select
+          (keyword_select)
+          (select_expression
+            (term
+              value: (field
+                name: (identifier)))
+            (term
+              value: (field
+                name: (identifier)))))
+        (from
+          (keyword_from)
+          (relation
+            (object_reference
+              name: (identifier)))))
+      (keyword_do)
+      (statement
+        (set_variable_statement
+          (keyword_set)
+          (identifier)
+          (field
+            (object_reference
+              name: (identifier))
+            name: (identifier))))
+      (keyword_end)
+      (keyword_for))))
+
+================================================================================
+WHILE loop with subquery condition
+================================================================================
+
+WHILE (SELECT COUNT(*) FROM t) > 0 DO
+  DELETE FROM t WHERE id = (SELECT MIN(id) FROM t);
+END WHILE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (while_statement
+      (keyword_while)
+      condition: (binary_expression
+        left: (subquery
+          (select
+            (keyword_select)
+            (select_expression
+              (term
+                value: (invocation
+                  (object_reference
+                    name: (identifier))
+                  parameter: (term
+                    value: (all_fields))))))
+          (from
+            (keyword_from)
+            (relation
+              (object_reference
+                name: (identifier)))))
+        right: (literal))
+      (keyword_do)
+      (statement
+        (delete
+          (keyword_delete))
+        (from
+          (keyword_from)
+          (object_reference
+            name: (identifier))
+          (where
+            (keyword_where)
+            predicate: (binary_expression
+              left: (field
+                name: (identifier))
+              right: (subquery
+                (select
+                  (keyword_select)
+                  (select_expression
+                    (term
+                      value: (invocation
+                        (object_reference
+                          name: (identifier))
+                        parameter: (term
+                          value: (field
+                            name: (identifier)))))))
+                (from
+                  (keyword_from)
+                  (relation
+                    (object_reference
+                      name: (identifier)))))))))
+      (keyword_end)
+      (keyword_while))))
+
+================================================================================
+LOOP with CONTINUE
+================================================================================
+
+LOOP
+  SET x = x + 1;
+  IF x = 5 THEN CONTINUE;
+  END IF;
+  SET y = y + x;
+END LOOP;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (loop_statement
+      (keyword_loop)
+      (statement
+        (set_variable_statement
+          (keyword_set)
+          (identifier)
+          (binary_expression
+            left: (field
+              name: (identifier))
+            right: (literal))))
+      (statement
+        (if_statement
+          (keyword_if)
+          condition: (binary_expression
+            left: (field
+              name: (identifier))
+            right: (literal))
+          (keyword_then)
+          (statement
+            (continue_statement
+              (keyword_continue)))
+          (keyword_end)
+          (keyword_if)))
+      (statement
+        (set_variable_statement
+          (keyword_set)
+          (identifier)
+          (binary_expression
+            left: (field
+              name: (identifier))
+            right: (field
+              name: (identifier)))))
+      (keyword_end)
+      (keyword_loop))))
+
+================================================================================
+LOOP with ITERATE
+================================================================================
+
+LOOP
+  SET x = x + 1;
+  IF x = 5 THEN ITERATE;
+  END IF;
+  SET y = y + x;
+END LOOP;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (loop_statement
+      (keyword_loop)
+      (statement
+        (set_variable_statement
+          (keyword_set)
+          (identifier)
+          (binary_expression
+            left: (field
+              name: (identifier))
+            right: (literal))))
+      (statement
+        (if_statement
+          (keyword_if)
+          condition: (binary_expression
+            left: (field
+              name: (identifier))
+            right: (literal))
+          (keyword_then)
+          (statement
+            (continue_statement
+              (keyword_iterate)))
+          (keyword_end)
+          (keyword_if)))
+      (statement
+        (set_variable_statement
+          (keyword_set)
+          (identifier)
+          (binary_expression
+            left: (field
+              name: (identifier))
+            right: (field
+              name: (identifier)))))
+      (keyword_end)
+      (keyword_loop))))

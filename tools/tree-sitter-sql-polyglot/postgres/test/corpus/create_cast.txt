@@ -1,0 +1,21 @@
+================================================================================
+CREATE CAST
+================================================================================
+
+CREATE CAST (integer AS boolean) WITH INOUT AS IMPLICIT;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_cast
+      (keyword_create)
+      (keyword_cast)
+      (int
+        (keyword_int))
+      (keyword_as)
+      (keyword_boolean)
+      (keyword_with)
+      (keyword_inout)
+      (keyword_as)
+      (keyword_implicit))))

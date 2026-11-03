@@ -1,0 +1,54 @@
+================================================================================
+Delta: VACUUM TABLE with RETAIN and DRY RUN
+================================================================================
+
+VACUUM TABLE my_catalog.my_schema.my_table RETAIN 168 HOURS DRY RUN;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (keyword_vacuum)
+    (keyword_table)
+    (object_reference
+      database: (identifier)
+      schema: (identifier)
+      name: (identifier))
+    (keyword_retain)
+    (literal)
+    (keyword_hours)
+    (keyword_dry)
+    (keyword_run)))
+
+================================================================================
+Delta: VACUUM with RETAIN only
+================================================================================
+
+VACUUM my_table RETAIN 0 HOURS;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (keyword_vacuum)
+    (object_reference
+      name: (identifier))
+    (keyword_retain)
+    (literal)
+    (keyword_hours)))
+
+================================================================================
+Delta: VACUUM with DRY RUN only
+================================================================================
+
+VACUUM my_table DRY RUN;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (keyword_vacuum)
+    (object_reference
+      name: (identifier))
+    (keyword_dry)
+    (keyword_run)))

@@ -1,0 +1,51 @@
+================================================================================
+UNLOAD with FORMAT AS PARQUET
+================================================================================
+
+UNLOAD ('SELECT * FROM orders')
+TO 's3://mybucket/output/'
+IAM_ROLE 'arn:aws:iam::123456789:role/MyRole'
+FORMAT AS PARQUET
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (unload_statement
+      (keyword_unload)
+      (literal)
+      (keyword_to)
+      (literal)
+      (keyword_iam_role)
+      (literal)
+      (keyword_format)
+      (keyword_as)
+      (keyword_parquet))))
+
+================================================================================
+UNLOAD with MAXFILESIZE
+================================================================================
+
+UNLOAD ('SELECT id, amount FROM sales WHERE dt > ''2024-01-01''')
+TO 's3://mybucket/sales-export/'
+IAM_ROLE 'arn:aws:iam::123456789:role/MyRole'
+FORMAT AS PARQUET
+MAXFILESIZE 256 MB
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (unload_statement
+      (keyword_unload)
+      (literal)
+      (keyword_to)
+      (literal)
+      (keyword_iam_role)
+      (literal)
+      (keyword_format)
+      (keyword_as)
+      (keyword_parquet)
+      (keyword_maxfilesize)
+      (literal)
+      (identifier))))

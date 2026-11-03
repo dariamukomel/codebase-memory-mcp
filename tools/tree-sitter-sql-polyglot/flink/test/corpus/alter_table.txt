@@ -1,0 +1,162 @@
+================================================================================
+ALTER TABLE ADD COLUMN
+================================================================================
+
+ALTER TABLE my_table ADD new_col STRING
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (keyword_add)
+      (column_definition
+        (identifier)
+        (keyword_string)))))
+
+================================================================================
+ALTER TABLE DROP COLUMN
+================================================================================
+
+ALTER TABLE my_table DROP old_col
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (keyword_drop)
+      (identifier))))
+
+================================================================================
+ALTER TABLE RENAME TO
+================================================================================
+
+ALTER TABLE old_name RENAME TO new_name
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (keyword_rename)
+      (keyword_to)
+      (object_reference
+        (identifier)))))
+
+================================================================================
+ALTER TABLE RENAME column
+================================================================================
+
+ALTER TABLE my_table RENAME old_col TO new_col
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (keyword_rename)
+      (identifier)
+      (keyword_to)
+      (identifier))))
+
+================================================================================
+ALTER TABLE SET options
+================================================================================
+
+ALTER TABLE my_table SET ('sink.parallelism' = '4')
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (keyword_set)
+      (with_properties
+        (literal)
+        (literal)))))
+
+================================================================================
+ALTER TABLE ADD WATERMARK
+================================================================================
+
+ALTER TABLE my_table ADD WATERMARK FOR ts AS ts - INTERVAL '5' SECOND
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (keyword_add)
+      (watermark_definition
+        (keyword_watermark)
+        (keyword_for)
+        (identifier)
+        (keyword_as)
+        (binary_expression
+          (field
+            (identifier))
+          (interval
+            (keyword_interval)
+            (identifier)))))))
+
+================================================================================
+ALTER TABLE DROP WATERMARK
+================================================================================
+
+ALTER TABLE my_table DROP WATERMARK
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (keyword_drop)
+      (keyword_watermark))))
+
+================================================================================
+ALTER TABLE DROP PRIMARY KEY
+================================================================================
+
+ALTER TABLE my_table DROP PRIMARY KEY
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (keyword_drop)
+      (keyword_primary)
+      (keyword_key))))

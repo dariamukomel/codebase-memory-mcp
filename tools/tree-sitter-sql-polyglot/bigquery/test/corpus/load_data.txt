@@ -1,0 +1,21 @@
+================================================================================
+LOAD DATA INTO FROM FILES
+================================================================================
+
+LOAD DATA INTO d.t FROM FILES (format='CSV');
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (load_data_statement
+      (keyword_load)
+      (keyword_data)
+      (keyword_into)
+      (object_reference
+        schema: (identifier)
+        name: (identifier))
+      (keyword_from)
+      (keyword_files)
+      (identifier)
+      (literal))))

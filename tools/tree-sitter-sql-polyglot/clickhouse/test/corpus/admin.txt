@@ -1,0 +1,176 @@
+================================================================================
+ClickHouse: CHECK TABLE
+================================================================================
+
+CHECK TABLE test_table;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (check_statement
+      (keyword_check)
+      (keyword_table)
+      table: (object_reference
+        name: (identifier)))))
+
+================================================================================
+ClickHouse: CHECK GRANT
+================================================================================
+
+CHECK GRANT SELECT(col1) ON table_1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (check_statement
+      (keyword_check)
+      (keyword_grant)
+      (ch_check_privilege
+        privilege: (identifier)
+        (identifier))
+      (keyword_on)
+      target: (object_reference
+        name: (identifier)))))
+
+================================================================================
+ClickHouse: DESCRIBE TABLE
+================================================================================
+
+DESCRIBE TABLE my_table;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (describe_statement
+      (keyword_describe)
+      (keyword_table)
+      table: (object_reference
+        name: (identifier)))))
+
+================================================================================
+ClickHouse: EXISTS TABLE
+================================================================================
+
+EXISTS TEMPORARY TABLE t1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (exists_statement
+      (keyword_exists)
+      (keyword_temporary)
+      (keyword_table)
+      name: (object_reference
+        name: (identifier)))))
+
+================================================================================
+ClickHouse: MOVE USER
+================================================================================
+
+MOVE USER test TO local_directory;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (move_access_statement
+      (keyword_move)
+      (keyword_user)
+      (object_reference
+        name: (identifier))
+      (keyword_to)
+      storage: (identifier))))
+
+================================================================================
+ClickHouse: SET ROLE
+================================================================================
+
+SET ROLE DEFAULT;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (set_role_statement
+      (keyword_set)
+      (keyword_role)
+      (keyword_default))))
+
+================================================================================
+ClickHouse: UNDROP TABLE
+================================================================================
+
+UNDROP TABLE tab;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (undrop_statement
+      (keyword_undrop)
+      (keyword_table)
+      name: (object_reference
+        name: (identifier)))))
+
+================================================================================
+ClickHouse: CREATE NAMED COLLECTION
+================================================================================
+
+CREATE NAMED COLLECTION foobar AS a = '1', b = '2' OVERRIDABLE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (named_collection_statement
+      (keyword_create)
+      (keyword_named)
+      (keyword_collection)
+      name: (object_reference
+        name: (identifier))
+      (keyword_as)
+      (named_collection_option
+        key: (identifier)
+        value: (literal))
+      (named_collection_option
+        key: (identifier)
+        value: (literal)
+        (keyword_overridable)))))
+
+================================================================================
+ClickHouse: DROP NAMED COLLECTION
+================================================================================
+
+DROP NAMED COLLECTION foobar;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (named_collection_statement
+      (keyword_drop)
+      (keyword_named)
+      (keyword_collection)
+      name: (object_reference
+        name: (identifier)))))
+
+================================================================================
+ClickHouse: DROP MASKING POLICY
+================================================================================
+
+DROP MASKING POLICY mask_high_salaries;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (masking_policy_statement
+      (keyword_drop)
+      (keyword_masking)
+      (keyword_policy)
+      name: (object_reference
+        name: (identifier)))))

@@ -1,0 +1,325 @@
+================================================================================
+BigQuery: CREATE OR REPLACE TABLE COPY
+================================================================================
+
+CREATE OR REPLACE TABLE ds.t COPY ds.src
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table_from_source
+      (keyword_create)
+      (keyword_or)
+      (keyword_replace)
+      (keyword_table)
+      target: (object_reference
+        schema: (identifier)
+        name: (identifier))
+      (keyword_copy)
+      source: (object_reference
+        schema: (identifier)
+        name: (identifier)))))
+
+================================================================================
+BigQuery: CREATE TABLE CLONE with time travel
+================================================================================
+
+CREATE TABLE t2 CLONE src FOR SYSTEM_TIME AS OF ts
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table_from_source
+      (keyword_create)
+      (keyword_table)
+      target: (object_reference
+        name: (identifier))
+      (keyword_clone)
+      source: (object_reference
+        name: (identifier))
+      (for_system_time_as_of
+        (keyword_for)
+        (keyword_system_time)
+        (keyword_as)
+        (keyword_of)
+        time_point: (field
+          name: (identifier))))))
+
+================================================================================
+BigQuery: CREATE TABLE LIKE
+================================================================================
+
+CREATE TABLE t2 LIKE t1
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table_from_source
+      (keyword_create)
+      (keyword_table)
+      target: (object_reference
+        name: (identifier))
+      (keyword_like)
+      source: (object_reference
+        name: (identifier)))))
+
+================================================================================
+BigQuery: CREATE ROW ACCESS POLICY
+================================================================================
+
+CREATE ROW ACCESS POLICY p ON ds.t GRANT TO ('user:a@b.com') FILTER USING (region = 'us')
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_row_access_policy
+      (keyword_create)
+      (keyword_row)
+      (keyword_access)
+      (keyword_policy)
+      name: (identifier)
+      (keyword_on)
+      table: (object_reference
+        schema: (identifier)
+        name: (identifier))
+      (keyword_grant)
+      (keyword_to)
+      (literal)
+      (keyword_filter)
+      (keyword_using)
+      condition: (binary_expression
+        left: (field
+          name: (identifier))
+        right: (literal)))))
+
+================================================================================
+BigQuery: DROP ROW ACCESS POLICY
+================================================================================
+
+DROP ROW ACCESS POLICY IF EXISTS p ON ds.t
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_row_access_policy
+      (keyword_drop)
+      (keyword_row)
+      (keyword_access)
+      (keyword_policy)
+      (keyword_if)
+      (keyword_exists)
+      name: (identifier)
+      (keyword_on)
+      table: (object_reference
+        schema: (identifier)
+        name: (identifier)))))
+
+================================================================================
+BigQuery: CREATE CONNECTION
+================================================================================
+
+CREATE CONNECTION IF NOT EXISTS my_conn OPTIONS (type = 'CLOUD_SQL')
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_admin_object
+      (keyword_create)
+      (keyword_connection)
+      (keyword_if)
+      (keyword_not)
+      (keyword_exists)
+      name: (object_reference
+        name: (identifier))
+      (options_clause
+        (keyword_options)
+        key: (identifier)
+        value: (literal)))))
+
+================================================================================
+BigQuery: ALTER ORGANIZATION SET OPTIONS
+================================================================================
+
+ALTER ORGANIZATION SET OPTIONS (default_time_zone = 'UTC')
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_admin_object
+      (keyword_alter)
+      (keyword_organization)
+      (keyword_set)
+      (options_clause
+        (keyword_options)
+        key: (identifier)
+        value: (literal)))))
+
+================================================================================
+BigQuery: DROP RESERVATION
+================================================================================
+
+DROP RESERVATION IF EXISTS my_res
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_admin_object
+      (keyword_drop)
+      (keyword_reservation)
+      (keyword_if)
+      (keyword_exists)
+      name: (object_reference
+        name: (identifier)))))
+
+================================================================================
+BigQuery: UNDROP SCHEMA
+================================================================================
+
+UNDROP SCHEMA my_dataset
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (undrop_schema
+      (keyword_undrop)
+      (keyword_schema)
+      name: (object_reference
+        name: (identifier)))))
+
+================================================================================
+BigQuery: ALTER SCHEMA ADD REPLICA
+================================================================================
+
+ALTER SCHEMA ds ADD REPLICA eu_replica
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_schema_replica
+      (keyword_alter)
+      (keyword_schema)
+      name: (object_reference
+        name: (identifier))
+      (keyword_add)
+      (keyword_replica)
+      replica: (identifier))))
+
+================================================================================
+BigQuery: ALTER VECTOR INDEX REBUILD
+================================================================================
+
+ALTER VECTOR INDEX my_idx ON ds.t REBUILD
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_search_index
+      (keyword_alter)
+      (keyword_vector)
+      (keyword_index)
+      name: (identifier)
+      (keyword_on)
+      table: (object_reference
+        schema: (identifier)
+        name: (identifier))
+      (keyword_rebuild))))
+
+================================================================================
+BigQuery: DROP SEARCH INDEX
+================================================================================
+
+DROP SEARCH INDEX my_idx ON ds.t
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_search_index
+      (keyword_drop)
+      (keyword_search)
+      (keyword_index)
+      name: (identifier)
+      (keyword_on)
+      table: (object_reference
+        schema: (identifier)
+        name: (identifier)))))
+
+================================================================================
+BigQuery: DROP SNAPSHOT TABLE
+================================================================================
+
+DROP SNAPSHOT TABLE IF EXISTS snap1
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_qualified_table
+      (keyword_drop)
+      (keyword_snapshot)
+      (keyword_table)
+      (keyword_if)
+      (keyword_exists)
+      name: (object_reference
+        name: (identifier)))))
+
+================================================================================
+BigQuery: CREATE EXTERNAL SCHEMA
+================================================================================
+
+CREATE EXTERNAL SCHEMA ext_ds WITH CONNECTION my_conn OPTIONS (external_source = 'x')
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_external_schema
+      (keyword_create)
+      (keyword_external)
+      (keyword_schema)
+      name: (object_reference
+        name: (identifier))
+      (keyword_with)
+      (keyword_connection)
+      connection: (object_reference
+        name: (identifier))
+      (options_clause
+        (keyword_options)
+        key: (identifier)
+        value: (literal)))))
+
+================================================================================
+BigQuery: CREATE AGGREGATE FUNCTION
+================================================================================
+
+CREATE AGGREGATE FUNCTION my_agg(x INT64) AS (x)
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_function
+      (keyword_create)
+      (keyword_aggregate)
+      (keyword_function)
+      (object_reference
+        name: (identifier))
+      (function_arguments
+        (function_argument
+          (identifier)
+          (keyword_int64)))
+      (function_body
+        (keyword_as)
+        (field
+          name: (identifier))))))

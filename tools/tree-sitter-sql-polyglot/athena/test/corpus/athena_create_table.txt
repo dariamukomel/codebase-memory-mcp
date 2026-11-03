@@ -1,0 +1,62 @@
+================================================================================
+Athena: CREATE TABLE with Glue properties
+================================================================================
+
+CREATE TABLE orders (id BIGINT, name VARCHAR) WITH (format = 'PARQUET', external_location = 's3://bucket/prefix/');
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (bigint
+            (keyword_bigint)))
+        (column_definition
+          name: (identifier)
+          type: (varchar
+            (keyword_varchar))))
+      (with_properties
+        (keyword_with)
+        key: (identifier)
+        value: (literal)
+        key: (identifier)
+        value: (literal)))))
+
+================================================================================
+Athena: CREATE TABLE Iceberg with table_type
+================================================================================
+
+CREATE TABLE iceberg_orders WITH (table_type = 'ICEBERG') AS SELECT * FROM orders;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (with_properties
+        (keyword_with)
+        key: (identifier)
+        value: (literal))
+      (keyword_as)
+      (create_query
+        (select
+          (keyword_select)
+          (select_expression
+            (term
+              value: (all_fields))))
+        (from
+          (keyword_from)
+          (relation
+            (object_reference
+              name: (identifier))))))))

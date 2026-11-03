@@ -1,0 +1,70 @@
+==================
+CREATE MODEL from subquery
+==================
+
+CREATE MODEL churn FROM (SELECT * FROM training) TARGET label FUNCTION predict IAM_ROLE 'arn' SETTINGS (S3_BUCKET 'my-bucket')
+
+---
+
+(program
+  (statement
+    (create_model
+      (keyword_create)
+      (keyword_model)
+      (object_reference
+        name: (identifier))
+      (keyword_from)
+      (subquery
+        (select
+          (keyword_select)
+          (select_expression
+            (term
+              value: (all_fields))))
+        (from
+          (keyword_from)
+          (relation
+            (object_reference
+              name: (identifier)))))
+      (keyword_target)
+      (identifier)
+      (keyword_function)
+      (identifier)
+      (keyword_iam_role)
+      (literal)
+      (keyword_settings)
+      key: (identifier)
+      (literal))))
+
+==================
+CREATE MODEL with AUTO OFF and parameters
+==================
+
+CREATE MODEL m FROM t TARGET y FUNCTION f IAM_ROLE DEFAULT AUTO OFF MODEL_TYPE xgboost SETTINGS (S3_BUCKET 'b')
+
+---
+
+(program
+  (statement
+    (create_model
+      (keyword_create)
+      (keyword_model)
+      (object_reference
+        name: (identifier))
+      (keyword_from)
+      (object_reference
+        name: (identifier))
+      (keyword_target)
+      (identifier)
+      (keyword_function)
+      (identifier)
+      (keyword_iam_role)
+      (keyword_default)
+      (model_parameter
+        (keyword_auto)
+        (keyword_off))
+      (model_parameter
+        key: (identifier)
+        value: (identifier))
+      (keyword_settings)
+      key: (identifier)
+      (literal))))

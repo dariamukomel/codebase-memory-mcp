@@ -1,0 +1,102 @@
+================================================================================
+LET statement
+================================================================================
+
+LET x INT := 42;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (let_statement
+      (keyword_let)
+      (identifier)
+      (int
+        (keyword_int))
+      (literal))))
+
+================================================================================
+RETURN statement
+================================================================================
+
+RETURN x + 1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (return_statement
+      (keyword_return)
+      (binary_expression
+        left: (field
+          name: (identifier))
+        right: (literal)))))
+
+================================================================================
+RAISE statement
+================================================================================
+
+RAISE my_exception;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (raise_statement
+      (keyword_raise)
+      (identifier))))
+
+================================================================================
+FOR range loop
+================================================================================
+
+FOR i IN 1 TO 10 DO
+  LET x INT := i;
+END FOR;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (for_statement
+      (keyword_for)
+      variable: (identifier)
+      (keyword_in)
+      (literal)
+      (keyword_to)
+      (literal)
+      (keyword_do)
+      (statement
+        (let_statement
+          (keyword_let)
+          (identifier)
+          (int
+            (keyword_int))
+          (field
+            name: (identifier))))
+      (keyword_end)
+      (keyword_for))))
+
+================================================================================
+BEGIN END block
+================================================================================
+
+BEGIN
+  LET y INT := 1;
+END;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (compound_statement
+      (keyword_begin)
+      (statement
+        (let_statement
+          (keyword_let)
+          (identifier)
+          (int
+            (keyword_int))
+          (literal)))
+      (keyword_end))))
+

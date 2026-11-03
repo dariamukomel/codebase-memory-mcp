@@ -1,0 +1,213 @@
+================================================================================
+SHOW TABLES
+================================================================================
+
+SHOW TABLES
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (show_statement
+      (keyword_show)
+      (keyword_tables))))
+
+================================================================================
+SHOW TERSE TABLES IN DATABASE
+================================================================================
+
+SHOW TERSE TABLES IN DATABASE mydb
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (show_statement
+      (keyword_show)
+      (keyword_terse)
+      (keyword_tables)
+      (keyword_in)
+      (keyword_database)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+SHOW TABLES LIKE with IN SCHEMA
+================================================================================
+
+SHOW TABLES LIKE 'emp%' IN SCHEMA myschema
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (show_statement
+      (keyword_show)
+      (keyword_tables)
+      (keyword_like)
+      (literal)
+      (keyword_in)
+      (keyword_schema)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+SHOW TABLES LIMIT with FROM cursor
+================================================================================
+
+SHOW TABLES LIMIT 100 FROM 'cursor_value'
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (show_statement
+      (keyword_show)
+      (keyword_tables)
+      (keyword_limit)
+      limit: (literal)
+      (keyword_from)
+      (literal))))
+
+================================================================================
+SHOW WAREHOUSES
+================================================================================
+
+SHOW WAREHOUSES
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (show_statement
+      (keyword_show)
+      (keyword_warehouses))))
+
+================================================================================
+SHOW DYNAMIC TABLES
+================================================================================
+
+SHOW DYNAMIC TABLES
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (show_statement
+      (keyword_show)
+      (keyword_dynamic)
+      (keyword_tables))))
+
+================================================================================
+SHOW GRANTS TO ROLE
+================================================================================
+
+SHOW GRANTS TO ROLE analyst
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (show_statement
+      (keyword_show)
+      (keyword_grants)
+      (keyword_to)
+      (keyword_role)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+SHOW GRANTS ON TABLE
+================================================================================
+
+SHOW GRANTS ON TABLE employees
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (show_statement
+      (keyword_show)
+      (keyword_grants)
+      (keyword_on)
+      (keyword_table)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+SHOW FILE FORMATS
+================================================================================
+
+SHOW FILE FORMATS
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (show_statement
+      (keyword_show)
+      (keyword_file)
+      (keyword_formats))))
+
+================================================================================
+SHOW MASKING POLICIES
+================================================================================
+
+SHOW MASKING POLICIES
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (show_statement
+      (keyword_show)
+      (keyword_masking)
+      (keyword_policies))))
+
+================================================================================
+DESCRIBE TABLE
+================================================================================
+
+DESCRIBE TABLE employees
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (describe_statement
+      (keyword_describe)
+      (keyword_table)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+DESC VIEW
+================================================================================
+
+DESC VIEW v_emp
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (describe_statement
+      (keyword_desc)
+      (keyword_view)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+DESCRIBE FUNCTION
+================================================================================
+
+DESCRIBE FUNCTION my_udf
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (describe_statement
+      (keyword_describe)
+      (keyword_function)
+      (object_reference
+        name: (identifier)))))

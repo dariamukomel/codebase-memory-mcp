@@ -1,0 +1,156 @@
+================================================================================
+Iceberg: CALL procedure
+================================================================================
+
+CALL catalog.system.rollback_to_snapshot('db.t', 1234567890)
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (call_statement
+      (keyword_call)
+      (object_reference
+        (identifier)
+        (identifier)
+        (identifier))
+      (literal)
+      (literal))))
+
+================================================================================
+Iceberg: CALL procedure with named arguments
+================================================================================
+
+CALL catalog.system.rewrite_data_files(table => 'db.t')
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (call_statement
+      (keyword_call)
+      (object_reference
+        (identifier)
+        (identifier)
+        (identifier))
+      (identifier)
+      (literal))))
+
+================================================================================
+Iceberg: ALTER TABLE ADD PARTITION FIELD
+================================================================================
+
+ALTER TABLE catalog.db.t ADD PARTITION FIELD year(dt)
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        (identifier)
+        (identifier)
+        (identifier))
+      (keyword_add)
+      (keyword_partition)
+      (keyword_field)
+      (partition_transform
+        (identifier)
+        (identifier)))))
+
+================================================================================
+Iceberg: ALTER TABLE DROP PARTITION FIELD
+================================================================================
+
+ALTER TABLE t DROP PARTITION FIELD region
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (keyword_drop)
+      (keyword_partition)
+      (keyword_field)
+      (partition_transform
+        (identifier)))))
+
+================================================================================
+Iceberg: ALTER TABLE REPLACE PARTITION FIELD
+================================================================================
+
+ALTER TABLE t REPLACE PARTITION FIELD year(ts) WITH day(ts)
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (keyword_replace)
+      (keyword_partition)
+      (keyword_field)
+      (partition_transform
+        (identifier)
+        (identifier))
+      (keyword_with)
+      (partition_transform
+        (identifier)
+        (identifier)))))
+
+================================================================================
+Iceberg: ALTER TABLE WRITE ORDERED BY
+================================================================================
+
+ALTER TABLE t WRITE ORDERED BY dt DESC, id
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (write_order
+        (keyword_write)
+        (keyword_ordered)
+        (keyword_by)
+        (order_target
+          (field
+            (identifier))
+          (direction
+            (keyword_desc)))
+        (order_target
+          (field
+            (identifier)))))))
+
+================================================================================
+Iceberg: ALTER TABLE WRITE DISTRIBUTED BY PARTITION
+================================================================================
+
+ALTER TABLE t WRITE DISTRIBUTED BY PARTITION
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (keyword_write)
+      (keyword_distributed)
+      (keyword_by)
+      (keyword_partition))))

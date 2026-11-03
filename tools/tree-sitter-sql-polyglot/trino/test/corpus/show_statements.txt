@@ -1,0 +1,146 @@
+================================================================================
+Trino: SHOW CATALOGS
+================================================================================
+
+SHOW CATALOGS;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (show_statement
+      (keyword_show)
+      (keyword_catalogs))))
+
+================================================================================
+Trino: SHOW SCHEMAS FROM catalog
+================================================================================
+
+SHOW SCHEMAS FROM hive;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (show_statement
+      (keyword_show)
+      (keyword_schemas)
+      (keyword_from)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+Trino: SHOW TABLES FROM schema LIKE pattern
+================================================================================
+
+SHOW TABLES FROM hive.mydb LIKE 'ord%';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (show_statement
+      (keyword_show)
+      (keyword_tables)
+      (keyword_from)
+      (object_reference
+        schema: (identifier)
+        name: (identifier))
+      (keyword_like)
+      (literal))))
+
+================================================================================
+Trino: SHOW COLUMNS FROM table
+================================================================================
+
+SHOW COLUMNS FROM orders;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (show_statement
+      (keyword_show)
+      (keyword_columns)
+      (keyword_from)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+Trino: SHOW FUNCTIONS
+================================================================================
+
+SHOW FUNCTIONS;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (show_statement
+      (keyword_show)
+      (keyword_functions))))
+
+================================================================================
+Trino: DESCRIBE table
+================================================================================
+
+DESCRIBE orders;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (describe_statement
+      (keyword_describe)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+Trino: DESCRIBE EXTENDED table
+================================================================================
+
+DESCRIBE EXTENDED orders;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (describe_statement
+      (keyword_describe)
+      (keyword_extended)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+Trino: ANALYZE table
+================================================================================
+
+ANALYZE orders;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (analyze_statement
+      (keyword_analyze)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+Trino: COMMENT ON TABLE
+================================================================================
+
+COMMENT ON TABLE orders IS 'Main orders table';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (comment_on_statement
+      (keyword_comment)
+      (keyword_on)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_is)
+      (literal))))

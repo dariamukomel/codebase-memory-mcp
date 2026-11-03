@@ -1,0 +1,372 @@
+================================================================================
+Db2: LOCK TABLE IN EXCLUSIVE MODE
+================================================================================
+
+LOCK TABLE employees IN EXCLUSIVE MODE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (lock_table_statement
+      (keyword_lock)
+      (keyword_table)
+      table: (object_reference
+        name: (identifier))
+      (keyword_in)
+      mode: (keyword_exclusive)
+      (keyword_mode))))
+
+================================================================================
+Db2: CALL procedure
+================================================================================
+
+CALL my_proc(1, 2);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (call_statement
+      (keyword_call)
+      procedure: (object_reference
+        name: (identifier))
+      (literal)
+      (literal))))
+
+================================================================================
+Db2: REFRESH TABLE with INCREMENTAL
+================================================================================
+
+REFRESH TABLE mqt1 INCREMENTAL;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (refresh_table_statement
+      (keyword_refresh)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_incremental))))
+
+================================================================================
+Db2: TRUNCATE with storage and trigger options
+================================================================================
+
+TRUNCATE TABLE t1 DROP STORAGE IGNORE DELETE TRIGGERS IMMEDIATE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (keyword_truncate)
+    (keyword_table)
+    table: (object_reference
+      name: (identifier))
+    (keyword_drop)
+    (keyword_storage)
+    (keyword_ignore)
+    (keyword_delete)
+    (keyword_triggers)
+    (keyword_immediate)))
+
+================================================================================
+Db2: SET INTEGRITY
+================================================================================
+
+SET INTEGRITY FOR t1 OFF;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (set_integrity_statement
+      (keyword_set)
+      (keyword_integrity)
+      (keyword_for)
+      (object_reference
+        name: (identifier))
+      (keyword_off))))
+
+================================================================================
+Db2: FLUSH PACKAGE CACHE DYNAMIC
+================================================================================
+
+FLUSH PACKAGE CACHE DYNAMIC;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (flush_statement
+      (keyword_flush)
+      (keyword_package)
+      (keyword_cache)
+      (keyword_dynamic))))
+
+================================================================================
+Db2: FLUSH EVENT MONITOR
+================================================================================
+
+FLUSH EVENT MONITOR mon1 BUFFER;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (flush_statement
+      (keyword_flush)
+      (keyword_event)
+      (keyword_monitor)
+      name: (identifier)
+      (keyword_buffer))))
+
+================================================================================
+Db2: FREE LOCATOR
+================================================================================
+
+FREE LOCATOR loc1, loc2;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (free_locator_statement
+      (keyword_free)
+      (keyword_locator)
+      (identifier)
+      (identifier))))
+
+================================================================================
+Db2: DESCRIBE INPUT
+================================================================================
+
+DESCRIBE INPUT stmt1 INTO sqlda1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (describe_statement
+      (keyword_describe)
+      (keyword_input)
+      statement_name: (identifier)
+      (keyword_into)
+      descriptor: (identifier))))
+
+================================================================================
+Db2: EXECUTE IMMEDIATE
+================================================================================
+
+EXECUTE IMMEDIATE 'DELETE FROM t1';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (execute_immediate_statement
+      (keyword_execute)
+      (keyword_immediate)
+      statement: (literal))))
+
+================================================================================
+Db2: CONNECT TO server
+================================================================================
+
+CONNECT TO mydb USER dbuser USING 'pw';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (connect_statement
+      (keyword_connect)
+      (keyword_to)
+      server: (identifier)
+      (keyword_user)
+      user: (identifier)
+      (keyword_using)
+      password: (literal))))
+
+================================================================================
+Db2: DISCONNECT ALL SQL
+================================================================================
+
+DISCONNECT ALL SQL;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (disconnect_statement
+      (keyword_disconnect)
+      (keyword_all)
+      (keyword_sql))))
+
+================================================================================
+Db2: CREATE ALIAS
+================================================================================
+
+CREATE ALIAS emp_alias FOR TABLE employees;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_alias_statement
+      (keyword_create)
+      (keyword_alias)
+      name: (object_reference
+        name: (identifier))
+      (keyword_for)
+      (keyword_table)
+      target: (object_reference
+        name: (identifier)))))
+
+================================================================================
+Db2: CREATE VARIABLE
+================================================================================
+
+CREATE VARIABLE myvar INT DEFAULT 0;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_variable_statement
+      (keyword_create)
+      (keyword_variable)
+      name: (object_reference
+        name: (identifier))
+      type: (int
+        (keyword_int))
+      (keyword_default)
+      value: (literal))))
+
+================================================================================
+Db2: WHENEVER NOT FOUND CONTINUE
+================================================================================
+
+WHENEVER NOT FOUND CONTINUE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (whenever_statement
+      (keyword_whenever)
+      (keyword_not)
+      (keyword_found)
+      (keyword_continue))))
+
+================================================================================
+Db2: WHENEVER SQLERROR GOTO
+================================================================================
+
+WHENEVER SQLERROR GOTO handler;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (whenever_statement
+      (keyword_whenever)
+      (keyword_sqlerror)
+      (keyword_goto)
+      label: (identifier))))
+
+================================================================================
+Db2: GOTO
+================================================================================
+
+GOTO done;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (goto_statement
+      (keyword_goto)
+      label: (identifier))))
+
+================================================================================
+Db2: ALLOCATE CURSOR
+================================================================================
+
+ALLOCATE c1 CURSOR FOR RESULT SET rs1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (allocate_cursor_statement
+      (keyword_allocate)
+      name: (identifier)
+      (keyword_cursor)
+      (keyword_for)
+      (keyword_result)
+      (keyword_set)
+      result_set: (identifier))))
+
+================================================================================
+Db2: ASSOCIATE LOCATORS
+================================================================================
+
+ASSOCIATE RESULT SET LOCATORS (loc1, loc2) WITH PROCEDURE my_proc;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (associate_locators_statement
+      (keyword_associate)
+      (keyword_result)
+      (keyword_set)
+      (keyword_locators)
+      (identifier)
+      (identifier)
+      (keyword_with)
+      (keyword_procedure)
+      procedure: (object_reference
+        name: (identifier)))))
+
+================================================================================
+Db2: AUDIT table USING POLICY
+================================================================================
+
+AUDIT TABLE t1 USING POLICY p1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (audit_statement
+      (keyword_audit)
+      (keyword_table)
+      table: (object_reference
+        name: (identifier))
+      (keyword_using)
+      (keyword_policy)
+      policy: (identifier))))
+
+================================================================================
+Call with a named argument
+================================================================================
+
+CALL p(1, b => 'x');
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (call_statement
+      (keyword_call)
+      procedure: (object_reference
+        name: (identifier))
+      (literal)
+      (named_argument
+        name: (identifier)
+        value: (literal)))))
+

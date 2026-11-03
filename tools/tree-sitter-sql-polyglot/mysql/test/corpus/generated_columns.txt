@@ -1,0 +1,82 @@
+================================================================================
+MySQL: Generated STORED column
+================================================================================
+
+CREATE TABLE t (
+  a INT,
+  b NUMERIC GENERATED ALWAYS AS (a / 2.54) STORED
+);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int)))
+        (column_definition
+          name: (identifier)
+          type: (numeric
+            (keyword_numeric))
+          (keyword_generated)
+          (keyword_always)
+          (keyword_as)
+          (binary_expression
+            left: (field
+              name: (identifier))
+            right: (literal))
+          (keyword_stored))))))
+
+================================================================================
+MySQL: Generated VIRTUAL column (shorthand AS)
+================================================================================
+
+CREATE TABLE t (
+  first_name VARCHAR(50),
+  last_name VARCHAR(50),
+  full_name VARCHAR(101) AS (CONCAT(first_name, last_name)) VIRTUAL
+);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (varchar
+            (keyword_varchar)
+            size: (literal)))
+        (column_definition
+          name: (identifier)
+          type: (varchar
+            (keyword_varchar)
+            size: (literal)))
+        (column_definition
+          name: (identifier)
+          type: (varchar
+            (keyword_varchar)
+            size: (literal))
+          (keyword_as)
+          (invocation
+            (object_reference
+              name: (identifier))
+            parameter: (term
+              value: (field
+                name: (identifier)))
+            parameter: (term
+              value: (field
+                name: (identifier))))
+          (keyword_virtual))))))

@@ -1,0 +1,102 @@
+================================================================================
+Simple insert
+================================================================================
+
+INSERT INTO my_table
+VALUES('foo','bar', 3);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (insert
+      (keyword_insert)
+      (keyword_into)
+      (object_reference
+        name: (identifier))
+      (keyword_values)
+      (list
+        (literal)
+        (literal)
+        (literal)))))
+
+================================================================================
+Insert-select
+================================================================================
+
+INSERT INTO my_table (a, b, c)
+SELECT a, b, c
+FROM my_other_table;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (insert
+      (keyword_insert)
+      (keyword_into)
+      (object_reference
+        name: (identifier))
+      (list
+        (column
+          (identifier))
+        (column
+          (identifier))
+        (column
+          (identifier)))
+      (select
+        (keyword_select)
+        (select_expression
+          (term
+            value: (field
+              name: (identifier)))
+          (term
+            value: (field
+              name: (identifier)))
+          (term
+            value: (field
+              name: (identifier)))))
+      (from
+        (keyword_from)
+        (relation
+          (object_reference
+            name: (identifier)))))))
+
+================================================================================
+Insert from unioned select
+================================================================================
+
+INSERT INTO some_table
+  (field)
+  (SELECT "String value"
+   UNION
+   SELECT "String value");
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (insert
+      (keyword_insert)
+      (keyword_into)
+      (object_reference
+        name: (identifier))
+      (list
+        (column
+          (identifier)))
+      (set_operation
+        (select
+          (keyword_select)
+          (select_expression
+            (term
+              value: (field
+                name: (identifier)))))
+        operation: (keyword_union)
+        (select
+          (keyword_select)
+          (select_expression
+            (term
+              value: (field
+                name: (identifier)))))))))
+
+

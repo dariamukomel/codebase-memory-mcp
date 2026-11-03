@@ -1,0 +1,83 @@
+================================================================================
+Hive: TINYINT column type
+================================================================================
+
+CREATE TABLE t1 (a TINYINT)
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (tinyint
+            (keyword_tinyint)))))))
+
+================================================================================
+Hive: SHOW VIEWS
+================================================================================
+
+SHOW VIEWS
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (show_statement
+      (keyword_show)
+      (keyword_views))))
+
+================================================================================
+Hive: SHOW TRANSACTIONS
+================================================================================
+
+SHOW TRANSACTIONS
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (show_statement
+      (keyword_show)
+      (keyword_transactions))))
+
+================================================================================
+Hive: CREATE CONNECTOR
+================================================================================
+
+CREATE CONNECTOR mysql_local TYPE 'mysql' URL 'jdbc:mysql://localhost:3306'
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_connector
+      (keyword_create)
+      (keyword_connector)
+      (identifier)
+      (keyword_type)
+      (literal)
+      (keyword_url)
+      (literal))))
+
+================================================================================
+Hive: ABORT TRANSACTIONS
+================================================================================
+
+ABORT TRANSACTIONS 101 102
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (abort_transactions_statement
+      (keyword_abort)
+      (keyword_transactions)
+      (literal)
+      (literal))))

@@ -1,0 +1,84 @@
+================================================================================
+Hive: LATERAL VIEW explode
+================================================================================
+
+SELECT t.id, lv.val FROM t LATERAL VIEW explode(arr) lv AS val;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (field
+            (object_reference
+              name: (identifier))
+            name: (identifier)))
+        (term
+          value: (field
+            (object_reference
+              name: (identifier))
+            name: (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (lateral_view
+        (keyword_lateral)
+        (keyword_view)
+        function: (invocation
+          (object_reference
+            name: (identifier))
+          parameter: (term
+            value: (field
+              name: (identifier))))
+        alias: (identifier)
+        (keyword_as)
+        column: (identifier)))))
+
+================================================================================
+Hive: LATERAL VIEW OUTER posexplode
+================================================================================
+
+SELECT t.id, pos, val FROM t LATERAL VIEW OUTER posexplode(arr) lv AS pos, val;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (field
+            (object_reference
+              name: (identifier))
+            name: (identifier)))
+        (term
+          value: (field
+            name: (identifier)))
+        (term
+          value: (field
+            name: (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (lateral_view
+        (keyword_lateral)
+        (keyword_view)
+        (keyword_outer)
+        function: (invocation
+          (object_reference
+            name: (identifier))
+          parameter: (term
+            value: (field
+              name: (identifier))))
+        alias: (identifier)
+        (keyword_as)
+        column: (identifier)
+        column: (identifier)))))

@@ -1,0 +1,29 @@
+{
+  "grammars": [
+    {
+      "name": "tsql",
+      "camelcase": "TSQL",
+      "scope": "source.tsql.sql",
+      "path": ".",
+      "file-types": [
+        "sql"
+      ],
+      "highlights": [
+        "queries/highlights.scm"
+      ]
+    }
+  ],
+  "metadata": {
+    "version": "0.1.2",
+    "license": "MIT",
+    "description": "Tree-sitter T-SQL grammar (SQL Server / Azure Synapse / Microsoft Fabric)",
+    "authors": [
+      {
+        "name": "relativelyunknown"
+      }
+    ],
+    "links": {
+      "repository": "git+https://github.com/relativelyunknown/tree-sitter-sql-polyglot.git"
+    }
+  }
+}

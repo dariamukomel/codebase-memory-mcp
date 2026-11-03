@@ -1,0 +1,98 @@
+================================================================================
+CREATE DICTIONARY
+================================================================================
+
+CREATE DICTIONARY my_dict (id UInt64, name String) PRIMARY KEY id SOURCE(CLICKHOUSE(TABLE 'other_table')) LAYOUT(FLAT()) LIFETIME(MIN 300 MAX 600)
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_dictionary
+      (keyword_create)
+      (keyword_dictionary)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (keyword_uint64))
+        (column_definition
+          name: (identifier)
+          type: (keyword_string)))
+      (keyword_primary)
+      (keyword_key)
+      (identifier)
+      (keyword_source)
+      name: (identifier)
+      (keyword_table)
+      (literal)
+      (keyword_layout)
+      name: (identifier)
+      (keyword_lifetime)
+      (keyword_min)
+      (literal)
+      (keyword_max)
+      (literal))))
+
+================================================================================
+CREATE LIVE VIEW
+================================================================================
+
+CREATE LIVE VIEW v AS SELECT * FROM t
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_live_view
+      (keyword_create)
+      (keyword_live)
+      (keyword_view)
+      (object_reference
+        name: (identifier))
+      (keyword_as)
+      (create_query
+        (select
+          (keyword_select)
+          (select_expression
+            (term
+              value: (all_fields))))
+        (from
+          (keyword_from)
+          (relation
+            (object_reference
+              name: (identifier))))))))
+
+================================================================================
+CREATE MATERIALIZED VIEW TO target
+================================================================================
+
+CREATE MATERIALIZED VIEW mv TO target_table AS SELECT * FROM source
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_materialized_view
+      (keyword_create)
+      (keyword_materialized)
+      (keyword_view)
+      (object_reference
+        name: (identifier))
+      (keyword_to)
+      target: (object_reference
+        name: (identifier))
+      (keyword_as)
+      (create_query
+        (select
+          (keyword_select)
+          (select_expression
+            (term
+              value: (all_fields))))
+        (from
+          (keyword_from)
+          (relation
+            (object_reference
+              name: (identifier))))))))
+

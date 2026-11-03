@@ -1,0 +1,20 @@
+================================================================================
+ALTER TABLE PARTITION CONCATENATE
+================================================================================
+
+ALTER TABLE t PARTITION (dt='2024') CONCATENATE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (concatenate_partition
+        (keyword_partition)
+        (identifier)
+        (literal)
+        (keyword_concatenate)))))

@@ -1,0 +1,496 @@
+================================================================================
+Hive: LOAD DATA INPATH OVERWRITE into schema-qualified table
+================================================================================
+
+LOAD DATA INPATH '/warehouse/data' OVERWRITE INTO TABLE db.events;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (load_data
+      (keyword_load)
+      (keyword_data)
+      (keyword_inpath)
+      (literal)
+      (keyword_overwrite)
+      (keyword_into)
+      (keyword_table)
+      (object_reference
+        schema: (identifier)
+        name: (identifier)))))
+
+================================================================================
+Hive: LOAD DATA LOCAL INPATH into partitioned table with multiple partition keys
+================================================================================
+
+LOAD DATA LOCAL INPATH '/tmp/data.csv' INTO TABLE logs PARTITION (dt='2024-01', region='us');
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (load_data
+      (keyword_load)
+      (keyword_data)
+      (keyword_local)
+      (keyword_inpath)
+      (literal)
+      (keyword_into)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (table_partition
+        (keyword_partition)
+        key: (identifier)
+        value: (literal)
+        key: (identifier)
+        value: (literal)))))
+
+================================================================================
+Hive: INSERT OVERWRITE LOCAL DIRECTORY
+================================================================================
+
+INSERT OVERWRITE LOCAL DIRECTORY '/tmp/output' SELECT id, name FROM t;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (insert_overwrite_directory
+      (keyword_insert)
+      (keyword_overwrite)
+      (keyword_local)
+      (keyword_directory)
+      (literal)
+      (select
+        (keyword_select)
+        (select_expression
+          (term
+            value: (field
+              name: (identifier)))
+          (term
+            value: (field
+              name: (identifier)))))
+      (from
+        (keyword_from)
+        (relation
+          (object_reference
+            name: (identifier)))))))
+
+================================================================================
+Hive: INSERT OVERWRITE DIRECTORY with ROW FORMAT DELIMITED
+================================================================================
+
+INSERT OVERWRITE DIRECTORY '/data/out' ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' SELECT id, amount FROM orders;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (insert_overwrite_directory
+      (keyword_insert)
+      (keyword_overwrite)
+      (keyword_directory)
+      (literal)
+      (row_format
+        (keyword_row)
+        (keyword_format)
+        (keyword_delimited)
+        (keyword_fields)
+        (keyword_terminated)
+        (keyword_by)
+        fields_terminated_char: (literal))
+      (select
+        (keyword_select)
+        (select_expression
+          (term
+            value: (field
+              name: (identifier)))
+          (term
+            value: (field
+              name: (identifier)))))
+      (from
+        (keyword_from)
+        (relation
+          (object_reference
+            name: (identifier)))))))
+
+================================================================================
+Hive: multi-table INSERT INTO two tables from one scan
+================================================================================
+
+FROM src INSERT INTO TABLE t1 SELECT id, name INSERT INTO TABLE t2 SELECT id, amount;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (multi_table_insert
+      (keyword_from)
+      (object_reference
+        name: (identifier))
+      (keyword_insert)
+      (keyword_into)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (select
+        (keyword_select)
+        (select_expression
+          (term
+            value: (field
+              name: (identifier)))
+          (term
+            value: (field
+              name: (identifier)))))
+      (keyword_insert)
+      (keyword_into)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_select)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))
+        (term
+          value: (field
+            name: (identifier)))))))
+
+================================================================================
+Hive: multi-table INSERT with OVERWRITE and WHERE filters
+================================================================================
+
+FROM src INSERT OVERWRITE TABLE archive SELECT id, val WHERE dt < '2023-01-01' INSERT INTO TABLE recent SELECT id, val WHERE dt >= '2023-01-01';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (multi_table_insert
+      (keyword_from)
+      (object_reference
+        name: (identifier))
+      (keyword_insert)
+      (keyword_overwrite)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_select)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))
+        (term
+          value: (field
+            name: (identifier))))
+      (where
+        (keyword_where)
+        predicate: (binary_expression
+          left: (field
+            name: (identifier))
+          right: (literal)))
+      (keyword_insert)
+      (keyword_into)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_select)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))
+        (term
+          value: (field
+            name: (identifier))))
+      (where
+        (keyword_where)
+        predicate: (binary_expression
+          left: (field
+            name: (identifier))
+          right: (literal))))))
+
+================================================================================
+Hive: multi-table INSERT with PARTITION clause
+================================================================================
+
+FROM src INSERT INTO TABLE t1 PARTITION (dt='2024') SELECT id, val INSERT OVERWRITE TABLE t2 SELECT id, val;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (multi_table_insert
+      (keyword_from)
+      (object_reference
+        name: (identifier))
+      (keyword_insert)
+      (keyword_into)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (table_partition
+        (keyword_partition)
+        key: (identifier)
+        value: (literal))
+      (select
+        (keyword_select)
+        (select_expression
+          (term
+            value: (field
+              name: (identifier)))
+          (term
+            value: (field
+              name: (identifier)))))
+      (keyword_insert)
+      (keyword_overwrite)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_select)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))
+        (term
+          value: (field
+            name: (identifier)))))))
+
+================================================================================
+Hive: CLUSTER BY multiple columns
+================================================================================
+
+SELECT id, dept, sal FROM employees CLUSTER BY dept, sal;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))
+        (term
+          value: (field
+            name: (identifier)))
+        (term
+          value: (field
+            name: (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (cluster_by
+        (keyword_cluster)
+        (keyword_by)
+        (field
+          name: (identifier))
+        (field
+          name: (identifier))))))
+
+================================================================================
+Hive: DISTRIBUTE BY multiple columns
+================================================================================
+
+SELECT id, region, amount FROM sales DISTRIBUTE BY region, id;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))
+        (term
+          value: (field
+            name: (identifier)))
+        (term
+          value: (field
+            name: (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (distribute_by
+        (keyword_distribute)
+        (keyword_by)
+        (field
+          name: (identifier))
+        (field
+          name: (identifier))))))
+
+================================================================================
+Hive: SORT BY multiple columns with directions
+================================================================================
+
+SELECT id, ts FROM events SORT BY ts ASC, id DESC;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))
+        (term
+          value: (field
+            name: (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (sort_by
+        (keyword_sort)
+        (keyword_by)
+        (order_target
+          (field
+            name: (identifier))
+          (direction
+            (keyword_asc)))
+        (order_target
+          (field
+            name: (identifier))
+          (direction
+            (keyword_desc)))))))
+
+================================================================================
+Hive: TABLESAMPLE bucket sampling
+================================================================================
+
+SELECT * FROM t TABLESAMPLE(BUCKET 1 OUT OF 4);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))
+        (tablesample
+          (keyword_tablesample)
+          (keyword_bucket)
+          (keyword_out)
+          (keyword_of))))))
+
+================================================================================
+Hive: TABLESAMPLE percent sampling
+================================================================================
+
+SELECT * FROM t TABLESAMPLE(10 PERCENT);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))
+        (tablesample
+          (keyword_tablesample)
+          (keyword_percent))))))
+
+================================================================================
+Hive: TABLESAMPLE row-count sampling
+================================================================================
+
+SELECT * FROM t TABLESAMPLE(1000 ROWS);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))
+        (tablesample
+          (keyword_tablesample)
+          (keyword_rows))))))
+
+================================================================================
+Hive: TABLESAMPLE bucket sampling with alias
+================================================================================
+
+SELECT * FROM t TABLESAMPLE(BUCKET 2 OUT OF 8) s;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))
+        (tablesample
+          (keyword_tablesample)
+          (keyword_bucket)
+          (keyword_out)
+          (keyword_of))
+        alias: (identifier)))))
+
+================================================================================
+TABLESAMPLE BUCKET with ON column
+================================================================================
+
+SELECT a FROM t1 TABLESAMPLE (BUCKET 1 OUT OF 4 ON a);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))
+        (tablesample
+          (keyword_tablesample)
+          (keyword_bucket)
+          (keyword_out)
+          (keyword_of)
+          (keyword_on)
+          (identifier))))))

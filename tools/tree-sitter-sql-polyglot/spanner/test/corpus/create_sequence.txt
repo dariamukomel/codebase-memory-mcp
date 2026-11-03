@@ -1,0 +1,19 @@
+================================================================================
+CREATE SEQUENCE with OPTIONS
+================================================================================
+
+CREATE SEQUENCE s OPTIONS (sequence_kind='bit_reversed_positive');
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_sequence
+      (keyword_create)
+      (keyword_sequence)
+      (object_reference
+        name: (identifier))
+      (options_clause
+        (keyword_options)
+        key: (identifier)
+        value: (literal)))))

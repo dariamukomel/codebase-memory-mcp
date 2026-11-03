@@ -1,0 +1,137 @@
+================================================================================
+DuckDB: INSTALL extension by name
+================================================================================
+
+INSTALL httpfs;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (install_statement
+      (keyword_install)
+      name: (identifier))))
+
+================================================================================
+DuckDB: INSTALL extension from URL
+================================================================================
+
+INSTALL spatial FROM 'https://example.com/ext';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (install_statement
+      (keyword_install)
+      name: (identifier)
+      (keyword_from)
+      source: (literal))))
+
+================================================================================
+DuckDB: LOAD extension
+================================================================================
+
+LOAD spatial;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (load_statement
+      (keyword_load)
+      name: (identifier))))
+
+================================================================================
+DuckDB: INSTALL from community
+================================================================================
+
+INSTALL my_ext FROM community;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (install_statement
+      (keyword_install)
+      name: (identifier)
+      (keyword_from)
+      source: (identifier))))
+
+================================================================================
+PREPARE / EXECUTE / DEALLOCATE
+================================================================================
+
+PREPARE p1 AS SELECT a FROM t1;
+EXECUTE p1(1, 'x');
+DEALLOCATE p1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (prepare_statement
+      (keyword_prepare)
+      name: (identifier)
+      (keyword_as)
+      (select
+        (keyword_select)
+        (select_expression
+          (term
+            value: (field
+              name: (identifier)))))
+      (from
+        (keyword_from)
+        (relation
+          (object_reference
+            name: (identifier))))))
+  (statement
+    (execute_statement
+      (keyword_execute)
+      name: (identifier)
+      (literal)
+      (literal)))
+  (statement
+    (deallocate_statement
+      (keyword_deallocate)
+      name: (identifier))))
+
+================================================================================
+SHOW TABLES
+================================================================================
+
+SHOW TABLES;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (show_statement
+      (keyword_show)
+      (keyword_tables))))
+
+================================================================================
+INSERT ON CONFLICT DO NOTHING
+================================================================================
+
+INSERT INTO t1 (a) VALUES (1) ON CONFLICT DO NOTHING;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (insert
+      (keyword_insert)
+      (keyword_into)
+      (object_reference
+        name: (identifier))
+      (list
+        (column
+          (identifier)))
+      (keyword_values)
+      (list
+        (literal))
+      (keyword_on)
+      (keyword_conflict)
+      (keyword_do)
+      (keyword_nothing))))

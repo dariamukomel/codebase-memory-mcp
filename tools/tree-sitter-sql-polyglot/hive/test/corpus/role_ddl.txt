@@ -1,0 +1,79 @@
+==================
+GRANT ROLE
+==================
+
+GRANT ROLE admin TO USER bob
+
+---
+
+(program
+  (statement
+    (grant_role
+      (keyword_grant)
+      (keyword_role)
+      (identifier)
+      (keyword_to)
+      (keyword_user)
+      (identifier))))
+
+==================
+REVOKE ROLE
+==================
+
+REVOKE ROLE admin FROM USER bob
+
+---
+
+(program
+  (statement
+    (revoke_role
+      (keyword_revoke)
+      (keyword_role)
+      (identifier)
+      (keyword_from)
+      (keyword_user)
+      (identifier))))
+
+==================
+SET ROLE
+==================
+
+SET ROLE admin
+
+---
+
+(program
+  (statement
+    (set_role_statement
+      (keyword_set)
+      (keyword_role)
+      (identifier))))
+
+==================
+SHOW ROLES
+==================
+
+SHOW ROLES
+
+---
+
+(program
+  (statement
+    (show_statement
+      (keyword_show)
+      (keyword_roles))))
+
+==================
+SHOW CURRENT ROLES
+==================
+
+SHOW CURRENT ROLES
+
+---
+
+(program
+  (statement
+    (show_statement
+      (keyword_show)
+      (keyword_current)
+      (keyword_roles))))

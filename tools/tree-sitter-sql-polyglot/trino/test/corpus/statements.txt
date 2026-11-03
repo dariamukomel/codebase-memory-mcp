@@ -1,0 +1,58 @@
+
+================================================================================
+Trino: ALTER SCHEMA SET AUTHORIZATION ROLE
+================================================================================
+
+ALTER SCHEMA web SET AUTHORIZATION ROLE PUBLIC;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_schema
+      (keyword_alter)
+      (keyword_schema)
+      (identifier)
+      (keyword_set)
+      (keyword_authorization)
+      (keyword_role)
+      role: (keyword_public))))
+
+================================================================================
+Trino: ALTER VIEW REFRESH
+================================================================================
+
+ALTER VIEW people REFRESH;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_view
+      (keyword_alter)
+      (keyword_view)
+      (object_reference
+        name: (identifier))
+      (keyword_refresh))))
+
+================================================================================
+Trino: ALTER MATERIALIZED VIEW SET PROPERTIES
+================================================================================
+
+ALTER MATERIALIZED VIEW people SET PROPERTIES x = 'y';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_materialized_view
+      (keyword_alter)
+      (keyword_materialized)
+      (keyword_view)
+      (object_reference
+        name: (identifier))
+      (keyword_set)
+      (keyword_properties)
+      (trino_property
+        name: (identifier)
+        value: (literal)))))

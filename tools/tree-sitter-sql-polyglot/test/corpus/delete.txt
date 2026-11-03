@@ -1,0 +1,78 @@
+================================================================================
+Delete whole table
+================================================================================
+
+DELETE FROM my_table;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (delete
+      (keyword_delete))
+    (from
+      (keyword_from)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+Delete whole table with FQN
+================================================================================
+
+DELETE FROM my_database.my_schema.my_table;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (delete
+      (keyword_delete))
+    (from
+      (keyword_from)
+      (object_reference
+        database: (identifier)
+        schema: (identifier)
+        name: (identifier)))))
+
+================================================================================
+Delete whole table and only the whole table
+================================================================================
+
+DELETE FROM ONLY my_table;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (delete
+      (keyword_delete))
+    (from
+      (keyword_from)
+      (object_reference
+        (identifier))
+      (identifier))))
+
+================================================================================
+Delete table with where
+================================================================================
+
+DELETE FROM my_table
+WHERE id = 9;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (delete
+      (keyword_delete))
+    (from
+      (keyword_from)
+      (object_reference
+        name: (identifier))
+      (where
+        (keyword_where)
+        predicate: (binary_expression
+          left: (field
+            name: (identifier))
+          right: (literal))))))
+

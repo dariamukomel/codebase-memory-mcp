@@ -1,0 +1,90 @@
+================================================================================
+ALTER TABLE DROP with a column list
+================================================================================
+
+ALTER TABLE t DROP a, b;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (drop_column
+        (keyword_drop)
+        name: (identifier)
+        name: (identifier)))))
+
+================================================================================
+ALTER TABLE DROP COLUMN list followed by another action
+================================================================================
+
+ALTER TABLE t DROP COLUMN a, b, ADD COLUMN c INT;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (drop_column
+        (keyword_drop)
+        (keyword_column)
+        name: (identifier)
+        name: (identifier))
+      (add_column
+        (keyword_add)
+        (keyword_column)
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int)))))))
+
+================================================================================
+Empty structured OBJECT type
+================================================================================
+
+SELECT {}::OBJECT();
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (cast
+            (object_constant)
+            custom_type: (object_reference
+              name: (identifier))))))))
+
+================================================================================
+Separate DROP COLUMN actions
+================================================================================
+
+ALTER TABLE t DROP COLUMN a, DROP COLUMN b;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (drop_column
+        (keyword_drop)
+        (keyword_column)
+        name: (identifier))
+      (drop_column
+        (keyword_drop)
+        (keyword_column)
+        name: (identifier)))))

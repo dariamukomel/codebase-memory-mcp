@@ -1,0 +1,389 @@
+================================================================================
+DECLARE single variable
+================================================================================
+
+DECLARE @count INT;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (declare_statement
+      (keyword_declare)
+      (variable_declaration
+        (variable)
+        (int
+          (keyword_int))))))
+
+================================================================================
+DECLARE with default value
+================================================================================
+
+DECLARE @name NVARCHAR(100) = 'Alice';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (declare_statement
+      (keyword_declare)
+      (variable_declaration
+        (variable)
+        (nvarchar
+          (keyword_nvarchar)
+          (literal))
+        (literal)))))
+
+================================================================================
+DECLARE multiple variables
+================================================================================
+
+DECLARE @x INT, @y INT;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (declare_statement
+      (keyword_declare)
+      (variable_declaration
+        (variable)
+        (int
+          (keyword_int)))
+      (variable_declaration
+        (variable)
+        (int
+          (keyword_int))))))
+
+================================================================================
+IF statement simple
+================================================================================
+
+IF @x > 0
+BEGIN
+  SELECT 1;
+END
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (if_statement
+      (keyword_if)
+      (binary_expression
+        left: (variable)
+        right: (literal))
+      (compound_statement
+        (keyword_begin)
+        (statement
+          (select
+            (keyword_select)
+            (select_expression
+              (term
+                value: (literal)))))
+        (keyword_end)))))
+
+================================================================================
+IF ELSE block
+================================================================================
+
+IF @x > 0
+BEGIN
+  SELECT 'positive';
+END
+ELSE
+BEGIN
+  SELECT 'non-positive';
+END
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (if_statement
+      (keyword_if)
+      (binary_expression
+        left: (variable)
+        right: (literal))
+      (compound_statement
+        (keyword_begin)
+        (statement
+          (select
+            (keyword_select)
+            (select_expression
+              (term
+                value: (literal)))))
+        (keyword_end))
+      (keyword_else)
+      (compound_statement
+        (keyword_begin)
+        (statement
+          (select
+            (keyword_select)
+            (select_expression
+              (term
+                value: (literal)))))
+        (keyword_end)))))
+
+================================================================================
+WHILE loop
+================================================================================
+
+WHILE @i <= 10
+BEGIN
+  SET @i = @i + 1;
+END;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (while_statement
+      (keyword_while)
+      (binary_expression
+        left: (variable)
+        right: (literal))
+      (compound_statement
+        (keyword_begin)
+        (statement
+          (set_statement
+            (keyword_set)
+            (variable)
+            (binary_expression
+              left: (variable)
+              right: (literal))))
+        (keyword_end)))))
+
+================================================================================
+TRY CATCH
+================================================================================
+
+BEGIN TRY
+  SELECT 1 / 0;
+END TRY
+BEGIN CATCH
+  SELECT ERROR_MESSAGE();
+END CATCH;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (try_catch_statement
+      (keyword_begin)
+      (keyword_try)
+      (statement
+        (select
+          (keyword_select)
+          (select_expression
+            (term
+              value: (binary_expression
+                left: (literal)
+                right: (literal))))))
+      (keyword_end)
+      (keyword_try)
+      (keyword_begin)
+      (keyword_catch)
+      (statement
+        (select
+          (keyword_select)
+          (select_expression
+            (term
+              value: (invocation
+                (object_reference
+                  name: (identifier)))))))
+      (keyword_end)
+      (keyword_catch))))
+
+================================================================================
+THROW
+================================================================================
+
+THROW 50001, 'Error occurred', 1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (throw_statement
+      (keyword_throw)
+      (literal)
+      (literal)
+      (literal))))
+
+================================================================================
+RAISERROR
+================================================================================
+
+RAISERROR('Something went wrong', 16, 1);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (raiserror_statement
+      (keyword_raiserror)
+      (literal)
+      (literal)
+      (literal))))
+
+================================================================================
+PRINT statement
+================================================================================
+
+PRINT 'Hello, World!';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (print_statement
+      (keyword_print)
+      (literal))))
+
+================================================================================
+GO batch separator
+================================================================================
+
+SELECT 1
+GO
+SELECT 2;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (literal)))))
+  (keyword_go)
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (literal))))))
+
+================================================================================
+T-SQL: EXEC with positional arguments
+================================================================================
+
+EXEC usp_GetOrders 42, 'active';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (exec_statement
+      (keyword_exec)
+      (object_reference
+        name: (identifier))
+      (exec_param
+        value: (literal))
+      (exec_param
+        value: (literal)))))
+
+================================================================================
+T-SQL: EXECUTE with named parameter (= syntax)
+================================================================================
+
+EXECUTE usp_GetOrders @customer_id = 42;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (exec_statement
+      (keyword_execute)
+      (object_reference
+        name: (identifier))
+      (exec_param
+        value: (binary_expression
+          left: (variable)
+          right: (literal))))))
+
+================================================================================
+T-SQL: EXECUTE dynamic SQL string
+================================================================================
+
+EXECUTE (@sql);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (exec_statement
+      (keyword_execute)
+      (variable))))
+
+================================================================================
+T-SQL: RETURN with expression
+================================================================================
+
+RETURN -1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (return_statement
+      (keyword_return)
+      (literal))))
+
+================================================================================
+T-SQL: RETURN without expression
+================================================================================
+
+RETURN;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (return_statement
+      (keyword_return))))
+
+================================================================================
+T-SQL: WAITFOR DELAY
+================================================================================
+
+WAITFOR DELAY '00:00:30';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (waitfor_statement
+      (keyword_waitfor)
+      (keyword_delay)
+      (literal))))
+
+================================================================================
+T-SQL: OPTION query hint on SELECT
+================================================================================
+
+SELECT * FROM t OPTION (MAXDOP 4, RECOMPILE);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))))
+    (option_clause
+      (keyword_option)
+      (query_hint
+        (identifier)
+        (literal))
+      (query_hint
+        (identifier)))))

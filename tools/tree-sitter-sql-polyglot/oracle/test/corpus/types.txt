@@ -1,0 +1,320 @@
+================================================================================
+Oracle types: NUMBER with precision and scale
+================================================================================
+
+CREATE TABLE t (id NUMBER(10), amount NUMBER(10,2))
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (column_definitions
+        (column_definition
+          (identifier)
+          (number_type
+            (keyword_number)
+            (literal)))
+        (column_definition
+          (identifier)
+          (number_type
+            (keyword_number)
+            (literal)
+            (literal)))))))
+
+================================================================================
+Oracle types: NUMBER without precision
+================================================================================
+
+CREATE TABLE t (n NUMBER)
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (column_definitions
+        (column_definition
+          (identifier)
+          (number_type
+            (keyword_number)))))))
+
+================================================================================
+Oracle types: VARCHAR2 with BYTE and CHAR qualifiers
+================================================================================
+
+CREATE TABLE t (a VARCHAR2(100), b VARCHAR2(200 BYTE), c VARCHAR2(300 CHAR))
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (column_definitions
+        (column_definition
+          (identifier)
+          (varchar2
+            (keyword_varchar2)
+            (literal)))
+        (column_definition
+          (identifier)
+          (varchar2
+            (keyword_varchar2)
+            (literal)
+            (keyword_byte)))
+        (column_definition
+          (identifier)
+          (varchar2
+            (keyword_varchar2)
+            (literal)
+            (keyword_char)))))))
+
+================================================================================
+Oracle types: NVARCHAR2
+================================================================================
+
+CREATE TABLE t (name NVARCHAR2(100))
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (column_definitions
+        (column_definition
+          (identifier)
+          (nvarchar2
+            (keyword_nvarchar2)
+            (literal)))))))
+
+================================================================================
+Oracle types: LOB types
+================================================================================
+
+CREATE TABLE t (a CLOB, b NCLOB, c BLOB, d BFILE)
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (column_definitions
+        (column_definition
+          (identifier)
+          (clob
+            (keyword_clob)))
+        (column_definition
+          (identifier)
+          (nclob
+            (keyword_nclob)))
+        (column_definition
+          (identifier)
+          (blob
+            (keyword_blob)))
+        (column_definition
+          (identifier)
+          (bfile
+            (keyword_bfile)))))))
+
+================================================================================
+Oracle types: RAW and LONG RAW
+================================================================================
+
+CREATE TABLE t (a RAW(16), b LONG RAW)
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (column_definitions
+        (column_definition
+          (identifier)
+          (raw_type
+            (keyword_raw)
+            (literal)))
+        (column_definition
+          (identifier)
+          (raw_type
+            (keyword_long)
+            (keyword_raw)))))))
+
+================================================================================
+Oracle types: ROWID and UROWID
+================================================================================
+
+CREATE TABLE t (a ROWID, b UROWID)
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (column_definitions
+        (column_definition
+          (identifier)
+          (rowid
+            (keyword_rowid)))
+        (column_definition
+          (identifier)
+          (urowid
+            (keyword_urowid)))))))
+
+================================================================================
+Oracle types: BINARY_FLOAT and BINARY_DOUBLE
+================================================================================
+
+CREATE TABLE t (a BINARY_FLOAT, b BINARY_DOUBLE)
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (column_definitions
+        (column_definition
+          (identifier)
+          (binary_float
+            (keyword_binary_float)))
+        (column_definition
+          (identifier)
+          (binary_double
+            (keyword_binary_double)))))))
+
+================================================================================
+Oracle types: TIMESTAMP variants
+================================================================================
+
+CREATE TABLE t (a TIMESTAMP, b TIMESTAMP(3), c TIMESTAMP WITH TIME ZONE, d TIMESTAMP WITH LOCAL TIME ZONE)
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (column_definitions
+        (column_definition
+          (identifier)
+          (timestamp
+            (keyword_timestamp)))
+        (column_definition
+          (identifier)
+          (timestamp
+            (keyword_timestamp)
+            (literal)))
+        (column_definition
+          (identifier)
+          (timestamp
+            (keyword_timestamp)
+            (keyword_with)
+            (keyword_time)
+            (keyword_zone)))
+        (column_definition
+          (identifier)
+          (timestamp
+            (keyword_timestamp)
+            (keyword_with)
+            (keyword_local)
+            (keyword_time)
+            (keyword_zone)))))))
+
+================================================================================
+Oracle types: INTERVAL YEAR TO MONTH
+================================================================================
+
+CREATE TABLE t (a INTERVAL YEAR TO MONTH, b INTERVAL YEAR(4) TO MONTH)
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (column_definitions
+        (column_definition
+          (identifier)
+          (interval_year_to_month
+            (keyword_interval)
+            (keyword_year)
+            (keyword_to)
+            (keyword_month)))
+        (column_definition
+          (identifier)
+          (interval_year_to_month
+            (keyword_interval)
+            (keyword_year)
+            (literal)
+            (keyword_to)
+            (keyword_month)))))))
+
+================================================================================
+Oracle types: INTERVAL DAY TO SECOND
+================================================================================
+
+CREATE TABLE t (a INTERVAL DAY TO SECOND, b INTERVAL DAY(2) TO SECOND(6))
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_table
+      (keyword_create)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (column_definitions
+        (column_definition
+          (identifier)
+          (interval_day_to_second
+            (keyword_interval)
+            (keyword_day)
+            (keyword_to)
+            (keyword_second)))
+        (column_definition
+          (identifier)
+          (interval_day_to_second
+            (keyword_interval)
+            (keyword_day)
+            (literal)
+            (keyword_to)
+            (keyword_second)
+            (literal)))))))

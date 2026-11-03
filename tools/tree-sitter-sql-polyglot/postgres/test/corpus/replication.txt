@@ -1,0 +1,109 @@
+================================================================================
+PostgreSQL: CREATE PUBLICATION for specific tables
+================================================================================
+
+CREATE PUBLICATION my_pub FOR TABLE orders, customers;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_publication
+      (keyword_create)
+      (keyword_publication)
+      (identifier)
+      (keyword_for)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+PostgreSQL: CREATE PUBLICATION for all tables
+================================================================================
+
+CREATE PUBLICATION full_pub FOR ALL TABLES;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_publication
+      (keyword_create)
+      (keyword_publication)
+      (identifier)
+      (keyword_for)
+      (keyword_all)
+      (keyword_tables))))
+
+================================================================================
+PostgreSQL: CREATE SUBSCRIPTION
+================================================================================
+
+CREATE SUBSCRIPTION my_sub CONNECTION 'host=host1 dbname=db1' PUBLICATION my_pub;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_subscription
+      (keyword_create)
+      (keyword_subscription)
+      (identifier)
+      (keyword_connection)
+      (literal)
+      (keyword_publication)
+      (identifier))))
+
+================================================================================
+PostgreSQL: ALTER PUBLICATION add table
+================================================================================
+
+ALTER PUBLICATION my_pub ADD TABLE new_table;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_publication
+      (keyword_alter)
+      (keyword_publication)
+      (identifier)
+      (keyword_add)
+      (keyword_table)
+      (object_reference
+        name: (identifier)))))
+
+================================================================================
+PostgreSQL: DROP PUBLICATION IF EXISTS
+================================================================================
+
+DROP PUBLICATION IF EXISTS old_pub CASCADE;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_publication
+      (keyword_drop)
+      (keyword_publication)
+      (keyword_if)
+      (keyword_exists)
+      (identifier)
+      (keyword_cascade))))
+
+================================================================================
+PostgreSQL: DROP SUBSCRIPTION
+================================================================================
+
+DROP SUBSCRIPTION my_sub;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (drop_subscription
+      (keyword_drop)
+      (keyword_subscription)
+      (identifier))))

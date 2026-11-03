@@ -1,0 +1,130 @@
+================================================================================
+Athena: CREATE EXTERNAL TABLE stored as ORC
+================================================================================
+
+CREATE EXTERNAL TABLE orc_logs (id BIGINT, message STRING)
+STORED AS ORC
+LOCATION 's3://mybucket/orc/'
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_external_table
+      (keyword_create)
+      (keyword_external)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (bigint
+            (keyword_bigint)))
+        (column_definition
+          name: (identifier)
+          type: (keyword_string)))
+      (stored_as
+        (keyword_stored)
+        (keyword_as)
+        (keyword_orc))
+      (keyword_location)
+      location: (literal))))
+
+================================================================================
+Athena: CREATE EXTERNAL TABLE stored as AVRO
+================================================================================
+
+CREATE EXTERNAL TABLE avro_logs (id BIGINT, message STRING)
+STORED AS AVRO
+LOCATION 's3://mybucket/avro/'
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_external_table
+      (keyword_create)
+      (keyword_external)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (bigint
+            (keyword_bigint)))
+        (column_definition
+          name: (identifier)
+          type: (keyword_string)))
+      (stored_as
+        (keyword_stored)
+        (keyword_as)
+        (keyword_avro))
+      (keyword_location)
+      location: (literal))))
+
+================================================================================
+Athena: CREATE EXTERNAL TABLE stored as SEQUENCEFILE
+================================================================================
+
+CREATE EXTERNAL TABLE sequencefile_logs (id INT, val STRING)
+STORED AS SEQUENCEFILE
+LOCATION 's3://mybucket/seq/'
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_external_table
+      (keyword_create)
+      (keyword_external)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (int
+            (keyword_int)))
+        (column_definition
+          name: (identifier)
+          type: (keyword_string)))
+      (stored_as
+        (keyword_stored)
+        (keyword_as)
+        (keyword_sequencefile))
+      (keyword_location)
+      location: (literal))))
+
+================================================================================
+Athena: CREATE EXTERNAL TABLE stored as RCFILE
+================================================================================
+
+CREATE EXTERNAL TABLE rcfile_data (k STRING, v STRING)
+STORED AS RCFILE
+LOCATION 's3://mybucket/rcfile/'
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (create_external_table
+      (keyword_create)
+      (keyword_external)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (column_definitions
+        (column_definition
+          name: (identifier)
+          type: (keyword_string))
+        (column_definition
+          name: (identifier)
+          type: (keyword_string)))
+      (stored_as
+        (keyword_stored)
+        (keyword_as)
+        (keyword_rcfile))
+      (keyword_location)
+      location: (literal))))

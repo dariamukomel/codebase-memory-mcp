@@ -1,0 +1,38 @@
+; Intent-based tests: expected trees derived from reading the grammar rules,
+; not copied from parser output.
+;
+; snowflake/grammar/qualify.js defines:
+;   qualify: keyword_qualify + predicate:_expression
+;
+; Snowflake's from rule adds optional($.qualify) after optional($.having).
+; So SELECT * FROM t QUALIFY rank = 1 must produce a from node whose last
+; child is a qualify node containing keyword_qualify and a binary_expression
+; with predicate: field name.
+; The field 'predicate' is named in the qualify rule.
+
+================================================================================
+Snowflake: QUALIFY clause
+================================================================================
+
+SELECT * FROM t QUALIFY rank = 1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (qualify
+        (keyword_qualify)
+        predicate: (binary_expression
+          left: (field
+            name: (identifier))
+          right: (literal))))))

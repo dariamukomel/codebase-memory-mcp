@@ -1,0 +1,72 @@
+; Intent-based tests: expected trees derived from reading the grammar rules,
+; not copied from parser output.
+;
+; databricks/grammar/restore.js defines:
+;   restore_table_statement: keyword_restore + keyword_table + object_reference
+;                            + keyword_to
+;                            + choice(
+;                                seq(keyword_version + keyword_as + keyword_of + literal),
+;                                seq(keyword_timestamp + keyword_as + keyword_of + _expression)
+;                              )
+;
+; restore_table_statement is a named node; it appears in the tree.
+; VERSION AS OF 1 takes the first branch.
+; 1 is a numeric literal → (literal).
+
+================================================================================
+Databricks: RESTORE TABLE to version
+================================================================================
+
+RESTORE TABLE events TO VERSION AS OF 1;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (restore_table_statement
+      (keyword_restore)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_to)
+      (keyword_version)
+      (keyword_as)
+      (keyword_of)
+      (literal))))
+
+; databricks/grammar/grant.js defines:
+;   grant_statement: keyword_grant + _privilege_list + keyword_on
+;                    + _securable_object + keyword_to + _principal_list
+;
+; _privilege_list, _securable_object, _principal_list are hidden rules; their
+; children appear directly inside grant_statement.
+;
+; _privilege_type for SELECT = keyword_select (named node).
+; _securable_object = choice(keyword_xxx, ...) + optional(object_reference).
+;   Here: keyword_table + object_reference(name: identifier).
+; _principal = choice(keyword_user, keyword_group, ...) + literal.
+;   Here: keyword_user + literal (the quoted string 'alice').
+;
+; No named wrapper nodes exist for privilege, securable-object, or principal;
+; all keywords appear as direct children of grant_statement.
+
+================================================================================
+Databricks: GRANT SELECT ON TABLE to user
+================================================================================
+
+GRANT SELECT ON TABLE events TO USER 'alice';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (grant_statement
+      (keyword_grant)
+      (keyword_select)
+      (keyword_on)
+      (keyword_table)
+      (object_reference
+        name: (identifier))
+      (keyword_to)
+      (keyword_user)
+      (literal))))

@@ -1,0 +1,81 @@
+================================================================================
+CALL stored procedure
+================================================================================
+
+CALL myproject.mydataset.my_proc(arg1, arg2);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (call_statement
+      (keyword_call)
+      (object_reference
+        (identifier)
+        (identifier)
+        (identifier))
+      (field
+        (identifier))
+      (field
+        (identifier)))))
+
+================================================================================
+RAISE USING MESSAGE
+================================================================================
+
+RAISE USING MESSAGE = 'Something went wrong';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (raise_statement
+      (keyword_raise)
+      (keyword_using)
+      (keyword_message)
+      (literal))))
+
+================================================================================
+Bare RAISE re-raise
+================================================================================
+
+BEGIN
+  RAISE;
+END;
+
+--------------------------------------------------------------------------------
+
+(program
+  (compound_statement
+    (keyword_begin)
+    (statement
+      (raise_statement
+        (keyword_raise)))
+    (keyword_end)))
+
+================================================================================
+RETURN inside IF
+================================================================================
+
+IF x IS NULL THEN
+  RETURN;
+END IF;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (if_statement
+      (keyword_if)
+      (binary_expression
+        (field
+          (identifier))
+        (keyword_is)
+        (literal
+          (keyword_null)))
+      (keyword_then)
+      (statement
+        (return_statement
+          (keyword_return)))
+      (keyword_end)
+      (keyword_if))))

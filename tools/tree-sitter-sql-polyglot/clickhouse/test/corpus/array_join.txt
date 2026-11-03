@@ -1,0 +1,67 @@
+================================================================================
+ARRAY JOIN with alias
+================================================================================
+
+SELECT id, tag FROM t ARRAY JOIN tags AS tag
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))
+        (term
+          value: (field
+            name: (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (array_join
+        (keyword_array)
+        (keyword_join)
+        (array_join_item
+          (field
+            name: (identifier))
+          (keyword_as)
+          alias: (identifier))))))
+
+================================================================================
+LEFT ARRAY JOIN
+================================================================================
+
+SELECT id, tag FROM t LEFT ARRAY JOIN tags AS tag
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (field
+            name: (identifier)))
+        (term
+          value: (field
+            name: (identifier)))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier)))
+      (array_join
+        (keyword_left)
+        (keyword_array)
+        (keyword_join)
+        (array_join_item
+          (field
+            name: (identifier))
+          (keyword_as)
+          alias: (identifier))))))
+

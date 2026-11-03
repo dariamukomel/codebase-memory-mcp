@@ -1,0 +1,228 @@
+================================================================================
+SELECT TRANSFORM with USING and AS schema
+================================================================================
+
+SELECT TRANSFORM(id, name)
+USING 'python my_script.py'
+AS (out_id INT, out_name STRING)
+FROM my_table;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (transform_clause
+        (keyword_transform)
+        (field
+          (identifier))
+        (field
+          (identifier))
+        (keyword_using)
+        (literal)
+        (keyword_as)
+        (column_definition
+          (identifier)
+          (int
+            (keyword_int)))
+        (column_definition
+          (identifier)
+          (keyword_string))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier))))))
+
+================================================================================
+SELECT TRANSFORM with ROW FORMAT on both sides
+================================================================================
+
+SELECT TRANSFORM(col1, col2)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
+USING '/path/to/script.py'
+AS (result STRING)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '\n'
+FROM src;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (select
+      (keyword_select)
+      (transform_clause
+        (keyword_transform)
+        (field
+          (identifier))
+        (field
+          (identifier))
+        (row_format
+          (keyword_row)
+          (keyword_format)
+          (keyword_delimited)
+          (keyword_fields)
+          (keyword_terminated)
+          (keyword_by)
+          (literal))
+        (keyword_using)
+        (literal)
+        (keyword_as)
+        (column_definition
+          (identifier)
+          (keyword_string))
+        (row_format
+          (keyword_row)
+          (keyword_format)
+          (keyword_delimited)
+          (keyword_fields)
+          (keyword_terminated)
+          (keyword_by)
+          (literal))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          (identifier))))))
+
+================================================================================
+SHOW PARTITIONS
+================================================================================
+
+SHOW PARTITIONS my_table;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (show_statement
+      (keyword_show)
+      (keyword_partitions)
+      (object_reference
+        (identifier)))))
+
+================================================================================
+SHOW PARTITIONS with partition spec
+================================================================================
+
+SHOW PARTITIONS my_table PARTITION (year=2024);
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (show_statement
+      (keyword_show)
+      (keyword_partitions)
+      (object_reference
+        (identifier))
+      (partition_spec
+        (keyword_partition)
+        (identifier)
+        (literal)))))
+
+================================================================================
+SHOW TABLES and SHOW DATABASES
+================================================================================
+
+SHOW TABLES;
+SHOW DATABASES LIKE 'prod*';
+SHOW FUNCTIONS;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (show_statement
+      (keyword_show)
+      (keyword_tables)))
+  (statement
+    (show_statement
+      (keyword_show)
+      (keyword_databases)
+      (keyword_like)
+      (literal)))
+  (statement
+    (show_statement
+      (keyword_show)
+      (keyword_functions))))
+
+================================================================================
+DESCRIBE FORMATTED
+================================================================================
+
+DESCRIBE FORMATTED mydb.my_table;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (describe_statement
+      (keyword_describe)
+      (keyword_formatted)
+      (object_reference
+        (identifier)
+        (identifier)))))
+
+================================================================================
+DESCRIBE EXTENDED with partition
+================================================================================
+
+DESCRIBE EXTENDED my_table PARTITION (dt='2024-01-01');
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (describe_statement
+      (keyword_describe)
+      (keyword_extended)
+      (object_reference
+        (identifier))
+      (partition_spec
+        (keyword_partition)
+        (identifier)
+        (literal)))))
+
+================================================================================
+DESCRIBE table column
+================================================================================
+
+DESCRIBE my_table col_name;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (describe_statement
+      (keyword_describe)
+      (object_reference
+        (identifier))
+      (identifier))))
+
+================================================================================
+ALTER TABLE EXCHANGE PARTITION
+================================================================================
+
+ALTER TABLE target EXCHANGE PARTITION (dt='2024-01') WITH TABLE source;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_table
+      (keyword_alter)
+      (keyword_table)
+      (object_reference
+        (identifier))
+      (exchange_partition
+        (keyword_exchange)
+        (partition_spec
+          (keyword_partition)
+          (identifier)
+          (literal))
+        (keyword_with)
+        (keyword_table)
+        (object_reference
+          (identifier))))))

@@ -1,0 +1,61 @@
+================================================================================
+Snowflake: ALTER DATABASE SET properties
+================================================================================
+
+ALTER DATABASE db1 SET DATA_RETENTION_TIME_IN_DAYS = 5, COMMENT = 'docs';
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_database
+      (keyword_alter)
+      (keyword_database)
+      (object_reference
+        name: (identifier))
+      (keyword_set)
+      (snowflake_property
+        name: (identifier)
+        value: (literal))
+      (snowflake_property
+        name: (identifier)
+        value: (literal)))))
+
+================================================================================
+Snowflake: ALTER SCHEMA UNSET
+================================================================================
+
+ALTER SCHEMA s1 UNSET COMMENT;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_schema
+      (keyword_alter)
+      (keyword_schema)
+      (object_reference
+        (identifier))
+      (keyword_unset)
+      (identifier))))
+
+================================================================================
+Snowflake: ALTER WAREHOUSE with a newer property
+================================================================================
+
+ALTER WAREHOUSE wh1 SET MAX_CONCURRENCY_LEVEL = 8;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (alter_warehouse
+      (keyword_alter)
+      (keyword_warehouse)
+      (object_reference
+        name: (identifier))
+      (keyword_set)
+      (snowflake_property
+        name: (identifier)
+        value: (literal)))))
+

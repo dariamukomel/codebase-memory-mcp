@@ -1,0 +1,121 @@
+================================================================================
+PostgreSQL: WITH RECURSIVE SEARCH BREADTH FIRST
+================================================================================
+
+WITH RECURSIVE t AS (SELECT 1 AS id UNION ALL SELECT id + 1 FROM t WHERE id < 10) SEARCH BREADTH FIRST BY id SET ordercol SELECT * FROM t;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (keyword_with)
+    (keyword_recursive)
+    (cte
+      name: (identifier)
+      (keyword_as)
+      (statement
+        (set_operation
+          (select
+            (keyword_select)
+            (select_expression
+              (term
+                value: (literal)
+                (keyword_as)
+                alias: (identifier))))
+          operation: (keyword_union)
+          operation: (keyword_all)
+          (select
+            (keyword_select)
+            (select_expression
+              (term
+                value: (binary_expression
+                  left: (field
+                    name: (identifier))
+                  right: (literal)))))
+          (from
+            (keyword_from)
+            (relation
+              (object_reference
+                name: (identifier)))
+            (where
+              (keyword_where)
+              predicate: (binary_expression
+                left: (field
+                  name: (identifier))
+                right: (literal))))))
+      (keyword_search)
+      (keyword_breadth)
+      (keyword_first)
+      (keyword_by)
+      (identifier)
+      (keyword_set)
+      (identifier))
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))))))
+
+================================================================================
+PostgreSQL: WITH RECURSIVE CYCLE clause
+================================================================================
+
+WITH RECURSIVE t AS (SELECT 1 AS id UNION ALL SELECT id + 1 FROM t) CYCLE id SET is_cycle DEFAULT false USING path SELECT * FROM t;
+
+--------------------------------------------------------------------------------
+
+(program
+  (statement
+    (keyword_with)
+    (keyword_recursive)
+    (cte
+      name: (identifier)
+      (keyword_as)
+      (statement
+        (set_operation
+          (select
+            (keyword_select)
+            (select_expression
+              (term
+                value: (literal)
+                (keyword_as)
+                alias: (identifier))))
+          operation: (keyword_union)
+          operation: (keyword_all)
+          (select
+            (keyword_select)
+            (select_expression
+              (term
+                value: (binary_expression
+                  left: (field
+                    name: (identifier))
+                  right: (literal)))))
+          (from
+            (keyword_from)
+            (relation
+              (object_reference
+                name: (identifier))))))
+      (keyword_cycle)
+      (identifier)
+      (keyword_set)
+      (identifier)
+      (keyword_default)
+      (literal
+        (keyword_false))
+      (keyword_using)
+      (identifier))
+    (select
+      (keyword_select)
+      (select_expression
+        (term
+          value: (all_fields))))
+    (from
+      (keyword_from)
+      (relation
+        (object_reference
+          name: (identifier))))))
