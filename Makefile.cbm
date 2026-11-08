@@ -320,6 +320,31 @@ LDFLAGS = -lm $(CXX_STDLIB) -lpthread -lz $(WIN32_LIBS) $(STATIC_FLAGS) $(MIMALL
 LDFLAGS_TEST = -lm $(CXX_STDLIB) -lpthread -lz $(SANITIZE) $(WIN32_LIBS) $(MIMALLOC_WRAP_FLAGS) $(ELF_HARDENING_FLAGS)
 LDFLAGS_TSAN = -lm $(CXX_STDLIB) -lpthread -lz $(TSAN_SANITIZE) $(WIN32_LIBS) $(MIMALLOC_WRAP_FLAGS) $(ELF_HARDENING_FLAGS)
 
+# SQL parsing ships as one autonomous executable: a static CPython runtime is
+# linked here and a ZIP containing only the Python standard library + the
+# pinned, original SQLGlot package is appended after link. The target machine
+# never searches for Python, site-packages, PYTHONHOME or a companion library.
+# Run scripts/prepare-sqlglot-embed.sh once before a C build.
+SQLGLOT_EMBED_MK ?= build/sqlglot-embed/sqlglot-embed.mk
+-include $(SQLGLOT_EMBED_MK)
+SQLGLOT_RUNTIME_PREREQ := $(wildcard $(SQLGLOT_RUNTIME_ZIP))
+CFLAGS_COMMON += $(SQLGLOT_CFLAGS)
+LDFLAGS += $(SQLGLOT_LDFLAGS)
+LDFLAGS_TEST += $(SQLGLOT_LDFLAGS)
+LDFLAGS_TSAN += $(SQLGLOT_LDFLAGS)
+
+.PHONY: require-sqlglot-embed
+require-sqlglot-embed:
+	@test -f "$(SQLGLOT_EMBED_MK)" || \
+		(echo "Missing embedded SQLGlot runtime. Run scripts/prepare-sqlglot-embed.sh" >&2; exit 2)
+	@test -f "$(SQLGLOT_RUNTIME_ZIP)" || \
+		(echo "Missing SQLGlot runtime ZIP: $(SQLGLOT_RUNTIME_ZIP)" >&2; exit 2)
+
+define APPEND_SQLGLOT_RUNTIME
+	@"$(SQLGLOT_BUILD_PYTHON)" scripts/append-sqlglot-runtime.py "$@" "$(SQLGLOT_RUNTIME_ZIP)"
+	@chmod 0755 "$@"
+endef
+
 # ── Source files ─────────────────────────────────────────────────
 
 FOUNDATION_SRCS = \
@@ -374,6 +399,9 @@ EXTRACTION_SRCS = \
     $(CBM_DIR)/extract_channels.c \
     $(CBM_DIR)/extract_k8s.c \
     $(CBM_DIR)/extract_dbt.c \
+    $(CBM_DIR)/sql_dialect.c \
+    $(CBM_DIR)/extract_sqlglot.c \
+    $(CBM_DIR)/sqlglot_runtime.c \
     $(CBM_DIR)/doclink.c \
     $(CBM_DIR)/doclink_cs.c \
     $(CBM_DIR)/doclink_md.c \
@@ -506,6 +534,8 @@ PIPELINE_SRCS = \
     src/pipeline/worker_pool.c \
     src/pipeline/pass_parallel.c \
     src/pipeline/pass_definitions.c \
+    src/pipeline/sql_dialect_profile.c \
+    src/pipeline/pass_sql.c \
     src/pipeline/pass_calls.c \
     src/pipeline/pass_spawns.c \
     src/pipeline/pass_lsp_cross.c \
@@ -994,6 +1024,7 @@ PP_OBJ_TSAN = $(BUILD_DIR)/tsan_preprocessor.o
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
+	chmod 0755 $(BUILD_DIR)
 
 # ── Foundation-only test (fast, no extraction) ───────────────────
 
@@ -1152,12 +1183,13 @@ $(UNIXCODER_OBJ): $(UNIXCODER_BLOB_SRC) vendored/nomic/code_vectors.bin | $(BUIL
 OBJS_VENDORED_TEST = $(MIMALLOC_OBJ_TEST) $(SQLITE3_OBJ_TEST) $(TRE_OBJ_TEST) $(GRAMMAR_OBJS_TEST) $(TS_RUNTIME_OBJ_TEST) $(LSP_OBJ_TEST) $(PP_OBJ_TEST) $(LZ4_OBJ_TEST) $(ZSTD_OBJ_TEST) $(UNIXCODER_OBJ)
 OBJS_VENDORED_TSAN = $(MIMALLOC_OBJ_TSAN) $(SQLITE3_OBJ_TSAN) $(TRE_OBJ_TSAN) $(GRAMMAR_OBJS_TSAN) $(TS_RUNTIME_OBJ_TSAN) $(LSP_OBJ_TSAN) $(PP_OBJ_TSAN) $(LZ4_OBJ_TSAN) $(ZSTD_OBJ_TSAN) $(UNIXCODER_OBJ)
 
-$(BUILD_DIR)/test-runner: $(ALL_TEST_SRCS) $(PROD_SRCS) $(EXTRACTION_SRCS) $(AC_LZ4_SRCS) $(ZSTD_SRCS) $(SQLITE_WRITER_SRC) $(OBJS_VENDORED_TEST) $(PROJECT_HDRS) | $(BUILD_DIR)
+$(BUILD_DIR)/test-runner: $(ALL_TEST_SRCS) $(PROD_SRCS) $(EXTRACTION_SRCS) $(AC_LZ4_SRCS) $(ZSTD_SRCS) $(SQLITE_WRITER_SRC) $(OBJS_VENDORED_TEST) $(PROJECT_HDRS) $(SQLGLOT_RUNTIME_PREREQ) | $(BUILD_DIR) require-sqlglot-embed
 	$(CC) $(CFLAGS_TEST) -Itests -Itests/repro -o $@ \
 		$(ALL_TEST_SRCS) $(PROD_SRCS) \
 		$(EXTRACTION_SRCS) $(AC_LZ4_SRCS) $(ZSTD_SRCS) $(SQLITE_WRITER_SRC) \
 		$(OBJS_VENDORED_TEST) \
 		$(LDFLAGS_TEST)
+	$(APPEND_SQLGLOT_RUNTIME)
 
 test: $(BUILD_DIR)/test-runner
 	cd "$(CURDIR)" && $(BUILD_DIR)/test-runner
@@ -1180,12 +1212,13 @@ test-focused: $(BUILD_DIR)/test-runner
 # Mirrors test-runner's link line but uses repro_main.c (own main + counters)
 # and TEST_REPRO_SRCS instead of ALL_TEST_SRCS. Exits non-zero while any bug is
 # still reproduced (the expected state); bug-repro.yml surfaces it as a board.
-$(BUILD_DIR)/test-repro-runner: $(TEST_REPRO_SRCS) $(PROD_SRCS) $(EXTRACTION_SRCS) $(AC_LZ4_SRCS) $(ZSTD_SRCS) $(SQLITE_WRITER_SRC) $(OBJS_VENDORED_TEST) $(PROJECT_HDRS) | $(BUILD_DIR)
+$(BUILD_DIR)/test-repro-runner: $(TEST_REPRO_SRCS) $(PROD_SRCS) $(EXTRACTION_SRCS) $(AC_LZ4_SRCS) $(ZSTD_SRCS) $(SQLITE_WRITER_SRC) $(OBJS_VENDORED_TEST) $(PROJECT_HDRS) $(SQLGLOT_RUNTIME_PREREQ) | $(BUILD_DIR) require-sqlglot-embed
 	$(CC) $(CFLAGS_TEST) -Itests -o $@ \
 		$(TEST_REPRO_SRCS) $(PROD_SRCS) \
 		$(EXTRACTION_SRCS) $(AC_LZ4_SRCS) $(ZSTD_SRCS) $(SQLITE_WRITER_SRC) \
 		$(OBJS_VENDORED_TEST) \
 		$(LDFLAGS_TEST)
+	$(APPEND_SQLGLOT_RUNTIME)
 
 test-repro: $(BUILD_DIR)/test-repro-runner
 	cd $(CURDIR) && bash tests/repro/repro_script_summary.sh
@@ -1240,12 +1273,13 @@ TSAN_OPTIONS ?= halt_on_error=1:report_thread_leaks=0
 # Normal ASan/native/soak paths remain uncapped. High-worker TSan diagnostics
 # invoke test-runner-tsan directly so release gates cannot drift accidentally.
 
-$(BUILD_DIR)/test-runner-tsan: $(ALL_TEST_SRCS) $(PROD_SRCS) $(EXTRACTION_SRCS) $(AC_LZ4_SRCS) $(ZSTD_SRCS) $(SQLITE_WRITER_SRC) $(OBJS_VENDORED_TSAN) $(PROJECT_HDRS) | $(BUILD_DIR)
+$(BUILD_DIR)/test-runner-tsan: $(ALL_TEST_SRCS) $(PROD_SRCS) $(EXTRACTION_SRCS) $(AC_LZ4_SRCS) $(ZSTD_SRCS) $(SQLITE_WRITER_SRC) $(OBJS_VENDORED_TSAN) $(PROJECT_HDRS) $(SQLGLOT_RUNTIME_PREREQ) | $(BUILD_DIR) require-sqlglot-embed
 	$(CC) $(CFLAGS_TSAN) -Itests -Itests/repro -o $@ \
 		$(ALL_TEST_SRCS) $(PROD_SRCS) \
 		$(EXTRACTION_SRCS) $(AC_LZ4_SRCS) $(ZSTD_SRCS) $(SQLITE_WRITER_SRC) \
 		$(OBJS_VENDORED_TSAN) \
 		$(LDFLAGS_TSAN)
+	$(APPEND_SQLGLOT_RUNTIME)
 
 test-tsan: $(BUILD_DIR)/test-runner-tsan
 	@echo "ThreadSanitizer workers: 4"
@@ -1337,12 +1371,13 @@ $(BUILD_DIR)/.build-config: build-config-check | $(BUILD_DIR)
 	else mv -f $@.tmp $@; rm -f $(BUILD_DIR)/codebase-memory-mcp; \
 	echo "=== build config changed -> full rebuild: $(BUILD_CONFIG_SIG) ==="; fi
 
-$(BUILD_DIR)/codebase-memory-mcp: $(MAIN_SRC) $(PROD_SRCS) $(EXTRACTION_SRCS) $(AC_LZ4_SRCS) $(ZSTD_SRCS) $(SQLITE_WRITER_SRC) $(OBJS_VENDORED_PROD) $(BUILD_DIR)/.build-config $(PROJECT_HDRS) | $(BUILD_DIR)
+$(BUILD_DIR)/codebase-memory-mcp: $(MAIN_SRC) $(PROD_SRCS) $(EXTRACTION_SRCS) $(AC_LZ4_SRCS) $(ZSTD_SRCS) $(SQLITE_WRITER_SRC) $(OBJS_VENDORED_PROD) $(BUILD_DIR)/.build-config $(PROJECT_HDRS) $(SQLGLOT_RUNTIME_PREREQ) | $(BUILD_DIR) require-sqlglot-embed
 	$(CC) $(CFLAGS_PROD) -o $@ \
 		$(MAIN_SRC) $(PROD_SRCS) \
 		$(EXTRACTION_SRCS) $(AC_LZ4_SRCS) $(ZSTD_SRCS) $(SQLITE_WRITER_SRC) \
 		$(OBJS_VENDORED_PROD) \
 		$(LDFLAGS)
+	$(APPEND_SQLGLOT_RUNTIME)
 
 cbm: $(BUILD_DIR)/codebase-memory-mcp
 	@echo "Built: $(BUILD_DIR)/codebase-memory-mcp"
@@ -1356,22 +1391,33 @@ PROD_SRCS_WITH_ASSETS = $(subst src/ui/embedded_stub.c,src/ui/embedded_assets.c,
 # Embedded asset object files (generated by embed script)
 EMBED_OBJS = $(wildcard $(BUILD_DIR)/embedded/embed_*.o)
 
-# PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: the UI's dev dependencies include
-# playwright for its local browser proofs; a plain `npm ci` would otherwise
-# download browsers, which no build or gate needs.
-frontend:
-	cd graph-ui && PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm ci && npm run build
+# The embedded product uses onnxruntime-web. @huggingface/transformers also
+# depends on onnxruntime-node, whose install hook downloads a native archive
+# from NuGet even though Vite never bundles that backend. Disable dependency
+# install hooks for this browser-only build, and keep a lockfile stamp so a C
+# rebuild does not reinstall the same JavaScript tree every time.
+UI_DEPS_STAMP = graph-ui/node_modules/.cbm-browser-deps
+
+$(UI_DEPS_STAMP): graph-ui/package.json graph-ui/package-lock.json
+	cd graph-ui && PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm ci --ignore-scripts --prefer-offline
+	@touch $@
+
+frontend: $(UI_DEPS_STAMP)
+	cd graph-ui && npm run build
 
 embed: frontend
 	scripts/embed-frontend.sh graph-ui/dist $(BUILD_DIR)/embedded
 
-cbm-with-ui: embed $(OBJS_VENDORED_PROD)
+cbm-with-ui: embed $(OBJS_VENDORED_PROD) $(SQLGLOT_RUNTIME_PREREQ) | require-sqlglot-embed
 	$(CC) $(CFLAGS_PROD) -o $(BUILD_DIR)/codebase-memory-mcp \
 		$(MAIN_SRC) $(PROD_SRCS_WITH_ASSETS) \
 		$(EXTRACTION_SRCS) $(AC_LZ4_SRCS) $(ZSTD_SRCS) $(SQLITE_WRITER_SRC) \
 		$(OBJS_VENDORED_PROD) \
 		$(wildcard $(BUILD_DIR)/embedded/embed_*.o) \
 		$(LDFLAGS)
+	@"$(SQLGLOT_BUILD_PYTHON)" scripts/append-sqlglot-runtime.py \
+		"$(BUILD_DIR)/codebase-memory-mcp" "$(SQLGLOT_RUNTIME_ZIP)"
+	@chmod 0755 "$(BUILD_DIR)/codebase-memory-mcp"
 	@echo "Built with UI: $(BUILD_DIR)/codebase-memory-mcp"
 
 clean-c: export BUILD_DIR := $(BUILD_DIR)
@@ -1631,12 +1677,13 @@ fuzz:
 # Linux leaves out UBSan's C++ runtime, but the C++ objects (preprocessor,
 # simplecpp) carry -fsanitize=vptr checks that need it
 # (__ubsan_vptr_type_cache, __ubsan_handle_dynamic_type_cache_miss).
-$(BUILD_DIR)/cbm-fuzz: $(FUZZ_SRC) $(PROD_SRCS) $(EXTRACTION_SRCS) $(AC_LZ4_SRCS) $(ZSTD_SRCS) $(SQLITE_WRITER_SRC) $(OBJS_VENDORED_TEST) $(PROJECT_HDRS) | $(BUILD_DIR)
+$(BUILD_DIR)/cbm-fuzz: $(FUZZ_SRC) $(PROD_SRCS) $(EXTRACTION_SRCS) $(AC_LZ4_SRCS) $(ZSTD_SRCS) $(SQLITE_WRITER_SRC) $(OBJS_VENDORED_TEST) $(PROJECT_HDRS) $(SQLGLOT_RUNTIME_PREREQ) | $(BUILD_DIR) require-sqlglot-embed
 	$(CC) $(CFLAGS_TEST) -fsanitize=fuzzer -fsanitize-link-c++-runtime -o $@ \
 		$(FUZZ_SRC) $(PROD_SRCS) \
 		$(EXTRACTION_SRCS) $(AC_LZ4_SRCS) $(ZSTD_SRCS) $(SQLITE_WRITER_SRC) \
 		$(OBJS_VENDORED_TEST) \
 		$(LDFLAGS_TEST)
+	$(APPEND_SQLGLOT_RUNTIME)
 
 # Path-sensitive memory analysis: leak paths, null derefs, uninitialized reads.
 # Non-gating: triage findings against the code (this lane's first run produced

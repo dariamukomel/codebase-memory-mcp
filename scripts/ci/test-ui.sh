@@ -4,7 +4,7 @@
 # CI's `test-ui` job calls exactly this, and so does anyone checking the
 # frontend locally, so a green here means the same thing in both places:
 #
-#   1. npm ci with the same browser-download skip the product build uses
+#   1. npm ci with the same browser-only install policy the product build uses
 #      (the dev dependencies include playwright for the frontend's local
 #      browser proofs; nothing in this leg launches a browser);
 #   2. the frontend's vitest suite (render tests under jsdom);
@@ -22,8 +22,8 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "$ROOT/graph-ui"
 
-echo "=== test-ui: install (no browser download) ==="
-PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm ci
+echo "=== test-ui: install (browser-only; no native postinstall or browser download) ==="
+PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm ci --ignore-scripts --prefer-offline
 
 echo "=== test-ui: unit tests (vitest) ==="
 npm run test:unit

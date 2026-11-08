@@ -313,6 +313,14 @@ typedef struct {
      * change of all, store_impact.h follow_variant_keys). NULL on every other
      * definition. Tail field: zero-init stays valid. */
     const char *variant_key;
+    /* YAML/JSON configuration hierarchy. Config keys remain Variable nodes for
+     * compatibility with the config linker, but their identity is the full
+     * structural path. A non-NULL parent QN produces HAS_CONFIG_KEY instead of
+     * a flat File-DEFINES edge. */
+    const char *config_parent_qn;
+    /* True for the structural CTL/JSON key nodes above. They belong in the
+     * graph, but not in the source-code symbol registry. */
+    bool is_config_key;
 } CBMDefinition;
 
 /* Argument captured from a call expression */
@@ -653,6 +661,75 @@ typedef struct {
     int cap;
 } CBMDefArray;
 
+/* Compact, lineage-oriented SQL structure. SQLGlot's complete AST remains
+ * transient; only source-addressable semantic entities survive extraction. */
+typedef enum {
+    CBM_SQL_STATEMENT = 0,
+    CBM_SQL_CTE,
+    CBM_SQL_SUBQUERY,
+    CBM_SQL_QUERY,
+    CBM_SQL_RELATION,
+    CBM_SQL_PROJECTION,
+    CBM_SQL_CLAUSE,
+    CBM_SQL_ASSIGNMENT,
+    CBM_SQL_EXTERNAL_SOURCE,
+    CBM_SQL_TABLE_REF,
+    CBM_SQL_CTE_REF,
+    CBM_SQL_COLUMN_REF,
+    CBM_SQL_VARIABLE_REF,
+    CBM_SQL_UNPARSED_REGION,
+    CBM_SQL_KIND_COUNT
+} CBMSqlEntityKind;
+
+typedef enum {
+    CBM_SQL_ROLE_NEUTRAL = 0,
+    CBM_SQL_ROLE_SOURCE,
+    CBM_SQL_ROLE_TARGET,
+    CBM_SQL_ROLE_OUTPUT
+} CBMSqlRole;
+
+typedef struct {
+    CBMSqlEntityKind kind;
+    const char *name;
+    const char *syntax_type;
+    const char *detail;
+    const char *slot;
+    const char *alias;
+    /* Compact AST context. These are properties, not graph nodes: enough for
+     * an agent to interpret lineage without serializing SQLGlot's full AST. */
+    const char *clause_kind;
+    const char *syntax_path;
+    const char *ref_kind;   /* physical, cte, dynamic, or NULL */
+    const char *operation;  /* statement root operation, e.g. insert/create */
+    const char *write_mode; /* overwrite/into/replace, when present */
+    const char *source_form;/* query/like/clone/copy, when present */
+    const char *expression_kind; /* compact SQLGlot expression class/key */
+    const char *modifier;        /* join/set/clause modifier, e.g. left/all */
+    const char *dialect_source;  /* config/syntax/directory/fallback provenance */
+    const char *dialect_evidence; /* selected hint and lexical candidates */
+    CBMSqlRole role;
+    int parent;
+    int resolved_entity; /* lexical target index, -1 when unresolved */
+    uint32_t statement_ordinal;
+    uint32_t ordinal;
+    uint32_t start_byte;
+    uint32_t end_byte;
+    uint32_t start_line;
+    uint32_t start_column;
+    uint32_t end_line;
+    uint32_t end_column;
+    uint32_t error_count;
+    uint32_t ast_reference_count; /* statement: Table/Column/CTE facts checked */
+    uint32_t missing_reference_count; /* parsed AST facts not projected */
+    bool partial;
+} CBMSqlEntity;
+
+typedef struct {
+    CBMSqlEntity *items;
+    int count;
+    int cap;
+} CBMSqlEntityArray;
+
 typedef struct {
     CBMCall *items;
     int count;
@@ -850,6 +927,7 @@ typedef struct CBMFileResult {
     CBMArena arena; // owns local memory; composites may also retain child arenas below
 
     CBMDefArray defs;
+    CBMSqlEntityArray sql_entities;
     CBMCallArray calls;
     CBMImportArray imports;
     CBMPyNamespaceFacts py_namespace;
@@ -1365,6 +1443,7 @@ void cbm_extract_definitions_without_module(CBMExtractCtx *ctx);
 // per ref()/source() call. No-op unless the file parses as SQL and actually
 // contains a dbt builtin call. Defined in extract_dbt.c.
 void cbm_extract_dbt(CBMExtractCtx *ctx);
+void cbm_extract_sql_structure(CBMExtractCtx *ctx);
 void cbm_extract_imports(CBMExtractCtx *ctx);
 void cbm_extract_usages(CBMExtractCtx *ctx);
 void cbm_extract_semantic(CBMExtractCtx *ctx);

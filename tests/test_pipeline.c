@@ -28073,7 +28073,13 @@ TEST(pipeline_calls_args_overlong_argument_stops_cleanly) {
     PASS();
 }
 
+#include "test_sql_dialect_profile.h"
+
 SUITE(pipeline) {
+    RUN_TEST(sql_dialect_config_values_are_exact_and_directory_scoped);
+    RUN_TEST(sql_dialect_markers_are_lexical);
+    RUN_TEST(sql_dialect_ignores_comment_and_neighbor_values);
+    RUN_TEST(sql_dialect_fallback_order_uses_project_votes_and_directory);
     RUN_TEST(pipeline_python_module_callers_sequential);
     RUN_TEST(pipeline_python_module_callers_parallel);
     RUN_TEST(pipeline_python_class_body_calls_sequential);

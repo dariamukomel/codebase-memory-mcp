@@ -77,6 +77,47 @@ static bool has_strategy_with_key(const cbm_gbuf_edge_t **edges, int count, cons
     return false;
 }
 
+static bool has_typed_edge(cbm_gbuf_t *gb, const char *type, int64_t source, int64_t target) {
+    const cbm_gbuf_edge_t **edges = NULL;
+    int count = 0;
+    if (cbm_gbuf_find_edges_by_type(gb, type, &edges, &count) != 0) return false;
+    for (int i = 0; i < count; i++)
+        if (edges[i]->source_id == source && edges[i]->target_id == target) return true;
+    return false;
+}
+
+static bool has_config_file_edge(cbm_gbuf_t *gb, int64_t owner, int64_t file) {
+    const cbm_gbuf_edge_t **edges = NULL;
+    int count = 0;
+    cbm_gbuf_find_edges_by_source_type(gb, owner, "HAS_VARIANT", &edges, &count);
+    for (int i = 0; i < count; i++)
+        if (has_typed_edge(gb, "REFERENCES_FILE", edges[i]->target_id, file)) return true;
+    return false;
+}
+
+static bool has_sql_binding(cbm_gbuf_t *gb, int64_t use, int64_t init) {
+    const cbm_gbuf_node_t *use_node = cbm_gbuf_find_by_id(gb, use);
+    if (!use_node || cbm_configlink_resolve_sql(gb, use_node->file_path) < 0) return false;
+    const cbm_gbuf_node_t **nodes = NULL;
+    int count = 0;
+    cbm_gbuf_find_by_label(gb, "SqlConfigBinding", &nodes, &count);
+    for (int i = 0; i < count; i++)
+        if (has_typed_edge(gb, "BINDS_VARIABLE", nodes[i]->id, use) &&
+            has_typed_edge(gb, "RESOLVES_TO_CONFIG", nodes[i]->id, init)) return true;
+    return false;
+}
+
+static int64_t add_config_key(cbm_gbuf_t *gb, const char *qn, const char *name,
+                              const char *value) {
+    char props[512];
+    if (value) snprintf(props, sizeof(props),
+                        "{\"config_key\":\"true\",\"value_kind\":\"string\",\"value\":\"%s\"}",
+                        value);
+    else snprintf(props, sizeof(props), "{\"config_key\":\"true\",\"value_kind\":\"object\"}");
+    return cbm_gbuf_upsert_node(gb, "Variable", name, qn, "resources/ctl/ctl.yml", 1, 1,
+                                props);
+}
+
 /* Recursive remove */
 static void rm_rf(const char *path) {
     th_rmtree(path);
@@ -455,6 +496,249 @@ TEST(configlink_file_ref_no_false_positive) {
     PASS();
 }
 
+TEST(configlink_sql_file_and_dynamic_binding_are_caller_scoped) {
+    cbm_gbuf_t *gb = cbm_gbuf_new("test", "/tmp/test");
+    int64_t file = cbm_gbuf_upsert_node(gb, "File", "job.sql", "test.etl.job.sql",
+                                        "etl/job.sql", 1, 20, "{}");
+    int64_t use = cbm_gbuf_upsert_node(gb, "SqlVariableRef", "s2t.source.table.name",
+                                       "test.etl.job.sql.__sql__var", "etl/job.sql", 3, 3,
+                                       "{\"kind\":\"SqlVariableRef\"}");
+
+    int64_t scope_a = add_config_key(gb, "test.ctl.workflow_a", "workflow_a", NULL);
+    int64_t path_param_a = add_config_key(gb, "test.ctl.workflow_a.path", "param", NULL);
+    int64_t path_a = add_config_key(gb, "test.ctl.workflow_a.path.prior_value",
+                                    "prior_value", "{{root}}/etl/job.sql");
+    int64_t bind_param_a = add_config_key(gb, "test.ctl.workflow_a.binding", "param", NULL);
+    int64_t name_a = add_config_key(gb, "test.ctl.workflow_a.binding.name", "name",
+                                    "s2t.source.table.name");
+    int64_t init_a = add_config_key(gb, "test.ctl.workflow_a.binding.prior_value",
+                                    "prior_value", "raw.source_a");
+
+    int64_t scope_b = add_config_key(gb, "test.ctl.workflow_b", "workflow_b", NULL);
+    int64_t path_param_b = add_config_key(gb, "test.ctl.workflow_b.path", "param", NULL);
+    int64_t path_b = add_config_key(gb, "test.ctl.workflow_b.path.prior_value",
+                                    "prior_value", "{{root}}/etl/job.sql");
+    int64_t bind_param_b = add_config_key(gb, "test.ctl.workflow_b.binding", "param", NULL);
+    int64_t name_b = add_config_key(gb, "test.ctl.workflow_b.binding.name", "name",
+                                    "s2t.source.table.name");
+    int64_t init_b = add_config_key(gb, "test.ctl.workflow_b.binding.prior_value",
+                                    "prior_value", "raw.source_b");
+
+    cbm_gbuf_insert_edge(gb, scope_a, path_param_a, "HAS_CONFIG_KEY", "{}");
+    cbm_gbuf_insert_edge(gb, path_param_a, path_a, "HAS_CONFIG_KEY", "{}");
+    cbm_gbuf_insert_edge(gb, scope_a, bind_param_a, "HAS_CONFIG_KEY", "{}");
+    cbm_gbuf_insert_edge(gb, bind_param_a, name_a, "HAS_CONFIG_KEY", "{}");
+    cbm_gbuf_insert_edge(gb, bind_param_a, init_a, "HAS_CONFIG_KEY", "{}");
+    cbm_gbuf_insert_edge(gb, scope_b, path_param_b, "HAS_CONFIG_KEY", "{}");
+    cbm_gbuf_insert_edge(gb, path_param_b, path_b, "HAS_CONFIG_KEY", "{}");
+    cbm_gbuf_insert_edge(gb, scope_b, bind_param_b, "HAS_CONFIG_KEY", "{}");
+    cbm_gbuf_insert_edge(gb, bind_param_b, name_b, "HAS_CONFIG_KEY", "{}");
+    cbm_gbuf_insert_edge(gb, bind_param_b, init_b, "HAS_CONFIG_KEY", "{}");
+
+    ASSERT_GTE(run_configlink(gb, "test", NULL), 2);
+    ASSERT_TRUE(has_config_file_edge(gb, path_a, file));
+    ASSERT_TRUE(has_config_file_edge(gb, path_b, file));
+    ASSERT_TRUE(has_sql_binding(gb, use, init_a));
+    ASSERT_TRUE(has_sql_binding(gb, use, init_b));
+    ASSERT_EQ(cbm_gbuf_edge_count_by_type(gb, "RESOLVES_TO_CONFIG"), 2);
+
+    cbm_gbuf_free(gb);
+    PASS();
+}
+
+TEST(configlink_sql_dynamic_binding_supports_direct_map_keys) {
+    cbm_gbuf_t *gb = cbm_gbuf_new("test", "/tmp/test");
+    int64_t file = cbm_gbuf_upsert_node(gb, "File", "job.sql", "test.etl.job.sql",
+                                        "etl/job.sql", 1, 20, "{}");
+    int64_t use = cbm_gbuf_upsert_node(gb, "SqlVariableRef", "mart.X",
+                                       "test.etl.job.sql.__sql__var", "etl/job.sql", 3, 3,
+                                       "{\"kind\":\"SqlVariableRef\"}");
+    int64_t workflow = add_config_key(gb, "test.ctl.workflow", "workflow", NULL);
+    int64_t path = add_config_key(gb, "test.ctl.workflow.path", "sql_path",
+                                  "{{root}}/etl/job.sql?version=1");
+    int64_t variables = add_config_key(gb, "test.ctl.workflow.variables", "variables", NULL);
+    int64_t initializer = add_config_key(gb, "test.ctl.workflow.variables.mart.X", "mart.X",
+                                         "raw.source");
+    cbm_gbuf_insert_edge(gb, workflow, path, "HAS_CONFIG_KEY", "{}");
+    cbm_gbuf_insert_edge(gb, workflow, variables, "HAS_CONFIG_KEY", "{}");
+    cbm_gbuf_insert_edge(gb, variables, initializer, "HAS_CONFIG_KEY", "{}");
+
+    ASSERT_GTE(run_configlink(gb, "test", NULL), 1);
+    ASSERT_TRUE(has_config_file_edge(gb, path, file));
+    ASSERT_TRUE(has_sql_binding(gb, use, initializer));
+    cbm_gbuf_free(gb);
+    PASS();
+}
+
+TEST(configlink_template_paths_resolve_before_matching) {
+    const char *templates[] = {
+        "{{root}}/sql/{{mart.X}}/job.sql", "sql/${mart.X}/job.sql",
+        "{{whole}}", "sql/{{missing}}/sub/job.sql", "sql/{{loop}}/job.sql",
+        "{{root}}/sql/{{duplicate}}/job.sql", "{{root}}/sql/a/job.sql"
+    };
+    const char *statuses[] = {"suffix_match", "resolved", "resolved", "unresolved",
+                             "cycle", "multiple_values", "ambiguous"};
+    for (int k = 0; k < 7; k++) {
+        cbm_gbuf_t *gb = cbm_gbuf_new("test", "/tmp/test");
+        int64_t file = cbm_gbuf_upsert_node(gb, "File", "job.sql", "test.job",
+                                           "sql/a/job.sql", 1, 2, "{}");
+        if (k == 6) cbm_gbuf_upsert_node(gb, "File", "job.sql", "test.other",
+                                        "other/sql/a/job.sql", 1, 2, "{}");
+        if (k == 3) cbm_gbuf_upsert_node(gb, "File", "job.sql", "test.false",
+                                        "sql/a/sub/job.sql", 1, 2, "{}");
+        int64_t wf = add_config_key(gb, "test.wf", "workflow", NULL);
+        int64_t path = add_config_key(gb, "test.wf.path", "sql_path", templates[k]);
+        int64_t mart = add_config_key(gb, "test.wf.mart", "mart.X", "${leaf}");
+        int64_t leaf = add_config_key(gb, "test.wf.leaf", "leaf", "a");
+        int64_t whole = add_config_key(gb, "test.wf.whole", "whole", "sql/${mart.X}/job.sql");
+        int64_t loop = add_config_key(gb, "test.wf.loop", "loop", "{{loop}}");
+        int64_t dup1 = add_config_key(gb, "test.wf.dup1", "duplicate", "a");
+        int64_t dup2 = add_config_key(gb, "test.wf.dup2", "duplicate", "b");
+        int64_t keys[] = {path, mart, leaf, whole, loop, dup1, dup2};
+        for (size_t j = 0; j < sizeof(keys) / sizeof(keys[0]); j++)
+            cbm_gbuf_insert_edge(gb, wf, keys[j], "HAS_CONFIG_KEY", "{}");
+        run_configlink(gb, "test", NULL);
+        const cbm_gbuf_node_t *node = cbm_gbuf_find_by_id(gb, path);
+        char status[80];
+        snprintf(status, sizeof(status), "\"resolution_status\":\"%s\"", statuses[k]);
+        ASSERT_NOT_NULL(strstr(node->properties_json, status));
+        ASSERT_NOT_NULL(strstr(node->properties_json, templates[k]));
+        ASSERT_EQ(has_config_file_edge(gb, path, file), k < 3 || k == 5);
+        if (k < 2) {
+            const cbm_gbuf_node_t **uses = NULL;
+            int n = 0;
+            cbm_gbuf_find_by_label(gb, "ConfigVariableRef", &uses, &n);
+            bool linked = false;
+            for (int j = 0; j < n; j++)
+                if (has_typed_edge(gb, "HAS_VARIABLE_REF", path, uses[j]->id) &&
+                    has_typed_edge(gb, "RESOLVES_TO_CONFIG", uses[j]->id, mart)) linked = true;
+            ASSERT_TRUE(linked);
+        }
+        cbm_gbuf_free(gb);
+    }
+    PASS();
+}
+
+TEST(configlink_template_paths_rebuild_and_bind_sql) {
+    cbm_gbuf_t *gb = cbm_gbuf_new("test", "/tmp/test");
+    int64_t file = cbm_gbuf_upsert_node(gb, "File", "job.sql", "test.job",
+                                       "sql/a/job.sql", 1, 2, "{}");
+    int64_t sql = cbm_gbuf_upsert_node(gb, "SqlVariableRef", "mart.X", "test.sql.use",
+                                      "sql/a/job.sql", 1, 1, "{}");
+    int64_t wf = add_config_key(gb, "test.wf", "workflow", NULL);
+    int64_t path = add_config_key(gb, "test.wf.path", "path", "sql/{{mart.X}}/job.sql");
+    int64_t param = add_config_key(gb, "test.wf.param", "parameter", NULL);
+    int64_t name = add_config_key(gb, "test.wf.param.name", "name", "mart.X");
+    int64_t init = add_config_key(gb, "test.wf.param.value", "value", "a");
+    cbm_gbuf_insert_edge(gb, wf, path, "HAS_CONFIG_KEY", "{}");
+    cbm_gbuf_insert_edge(gb, wf, param, "HAS_CONFIG_KEY", "{}");
+    cbm_gbuf_insert_edge(gb, param, name, "HAS_CONFIG_KEY", "{}");
+    cbm_gbuf_insert_edge(gb, param, init, "HAS_CONFIG_KEY", "{}");
+    run_configlink(gb, "test", NULL);
+    ASSERT_TRUE(has_config_file_edge(gb, path, file));
+    ASSERT_TRUE(has_sql_binding(gb, sql, init));
+    ASSERT_NOT_NULL(strstr(cbm_gbuf_find_by_id(gb, path)->properties_json,
+                           "\"resolved_path\":\"sql/a/job.sql\""));
+    add_config_key(gb, "test.wf.param.value", "value", "b");
+    run_configlink(gb, "test", NULL);
+    ASSERT_FALSE(has_config_file_edge(gb, path, file));
+    ASSERT_FALSE(has_sql_binding(gb, sql, init));
+    ASSERT_NOT_NULL(strstr(cbm_gbuf_find_by_id(gb, path)->properties_json, "file_not_found"));
+    cbm_gbuf_free(gb);
+    PASS();
+}
+
+static int64_t add_named_config_value(cbm_gbuf_t *gb, const char *qn, const char *file,
+                                     const char *key, const char *value) {
+    char props[1024];
+    snprintf(props, sizeof(props), "{\"config_key\":true,\"value\":\"%s\"}", value);
+    return cbm_gbuf_upsert_node(gb, "Variable", key, qn, file, 1, 1, props);
+}
+
+TEST(configlink_cross_file_variants_keep_all_origins_and_call_context) {
+    cbm_gbuf_t *gb = cbm_gbuf_new("test", "/tmp/test");
+    int64_t path = add_config_key(gb, "test.path", "path", "etl/{{mart.X}}/sql.sql");
+    const char *values[] = {"a", "b", "c", "a"};
+    int64_t declarations[4], files[3], sql[3];
+    for (int i = 0; i < 4; i++) {
+        char qn[80]; snprintf(qn, sizeof(qn), "test.mart.X.%d", i);
+        declarations[i] = add_named_config_value(gb, qn,
+            i == 3 ? "other/mart.json" : "config/mart.yml", i == 3 ? "mart.X" : "X", values[i]);
+    }
+    for (int i = 0; i < 3; i++) {
+        char fp[80], qn[80]; snprintf(fp, sizeof(fp), "etl/%s/sql.sql", values[i]);
+        snprintf(qn, sizeof(qn), "test.file.%d", i);
+        files[i] = cbm_gbuf_upsert_node(gb, "File", "sql.sql", qn, fp, 1, 5, "{}");
+        snprintf(qn, sizeof(qn), "test.sql.%d", i);
+        sql[i] = cbm_gbuf_upsert_node(gb, "SqlVariableRef", "mart.X", qn, fp, 2, 2, "{}");
+    }
+    ASSERT_GTE(run_configlink(gb, "test", NULL), 0);
+    const cbm_gbuf_edge_t **variants = NULL;
+    int n = 0;
+    cbm_gbuf_find_edges_by_source_type(gb, path, "HAS_VARIANT", &variants, &n);
+    ASSERT_EQ(n, 3);
+    for (int i = 0; i < 3; i++) {
+        ASSERT_TRUE(has_config_file_edge(gb, path, files[i]));
+        ASSERT_TRUE(has_sql_binding(gb, sql[i], declarations[i]));
+        ASSERT_FALSE(has_sql_binding(gb, sql[i], declarations[(i + 1) % 3]));
+    }
+    ASSERT_TRUE(has_sql_binding(gb, sql[0], declarations[3]));
+    for (int i = 0; i < n; i++) {
+        if (has_typed_edge(gb, "REFERENCES_FILE", variants[i]->target_id, files[0])) {
+            ASSERT_TRUE(has_typed_edge(gb, "DERIVED_FROM", variants[i]->target_id, declarations[0]));
+            ASSERT_TRUE(has_typed_edge(gb, "DERIVED_FROM", variants[i]->target_id, declarations[3]));
+        }
+    }
+    const cbm_gbuf_edge_t **uses = NULL;
+    cbm_gbuf_find_edges_by_source_type(gb, path, "HAS_VARIABLE_REF", &uses, &n);
+    ASSERT_EQ(n, 1);
+    for (int i = 0; i < 4; i++)
+        ASSERT_TRUE(has_typed_edge(gb, "RESOLVES_TO_CONFIG", uses[0]->target_id, declarations[i]));
+    ASSERT_FALSE(has_typed_edge(gb, "REFERENCES_FILE", path, files[0]));
+    cbm_gbuf_free(gb);
+    PASS();
+}
+
+TEST(configlink_variant_product_has_no_policy_limit) {
+    cbm_gbuf_t *gb = cbm_gbuf_new("test", "/tmp/test");
+    int64_t path = add_config_key(gb, "test.path", "path", "etl/{{mart.X}}/{{env.Y}}/sql.sql");
+    for (int i = 0; i < 17; i++) {
+        char qn[80], value[20]; snprintf(value, sizeof(value), "%d", i);
+        snprintf(qn, sizeof(qn), "test.mart.%d", i);
+        add_named_config_value(gb, qn, "mart.json", "X", value);
+        snprintf(qn, sizeof(qn), "test.env.%d", i);
+        add_named_config_value(gb, qn, "env.yml", "Y", value);
+    }
+    ASSERT_GTE(run_configlink(gb, "test", NULL), 0);
+    const cbm_gbuf_edge_t **edges = NULL;
+    int n = 0;
+    cbm_gbuf_find_edges_by_source_type(gb, path, "HAS_VARIANT", &edges, &n);
+    ASSERT_EQ(n, 289);
+    cbm_gbuf_free(gb);
+    PASS();
+}
+
+TEST(configlink_cross_file_cycles_keep_noncyclic_values) {
+    cbm_gbuf_t *gb = cbm_gbuf_new("test", "/tmp/test");
+    int64_t path = add_config_key(gb, "test.path", "path", "etl/{{mart.X}}/sql.sql");
+    int64_t a = add_named_config_value(gb, "test.mart.a", "mart.yml", "X", "{{env.Y}}");
+    int64_t b = add_named_config_value(gb, "test.mart.b", "mart.yml", "X", "valid");
+    add_named_config_value(gb, "test.env", "env.json", "Y", "{{mart.X}}");
+    int64_t file = cbm_gbuf_upsert_node(gb, "File", "sql.sql", "test.sql",
+                                       "etl/valid/sql.sql", 1, 2, "{}");
+    ASSERT_GTE(run_configlink(gb, "test", NULL), 0);
+    ASSERT_TRUE(has_config_file_edge(gb, path, file));
+    ASSERT_NOT_NULL(strstr(cbm_gbuf_find_by_id(gb, path)->properties_json, "cycle"));
+    const cbm_gbuf_edge_t **edges = NULL;
+    int n = 0;
+    cbm_gbuf_find_edges_by_source_type(gb, path, "HAS_VARIANT", &edges, &n);
+    ASSERT_EQ(n, 1);
+    ASSERT_TRUE(has_typed_edge(gb, "DERIVED_FROM", edges[0]->target_id, a));
+    ASSERT_TRUE(has_typed_edge(gb, "DERIVED_FROM", edges[0]->target_id, b));
+    cbm_gbuf_free(gb);
+    PASS();
+}
+
 /* ── Determinism: candidate truncation must not depend on insert order ── */
 
 static int cl_cmp_row(const void *pa, const void *pb) {
@@ -564,7 +848,321 @@ TEST(configlink_candidate_truncation_is_order_independent) {
 
 /* ── Suite ───────────────────────────────────────────────────────── */
 
+TEST(configlink_call_chain_keeps_workflows_separate) {
+    cbm_gbuf_t *gb = cbm_gbuf_new("test", "/tmp/test");
+    int64_t cfg = cbm_gbuf_upsert_node(gb, "File", "flow.json", "test.cfg", "conf/flow.json", 0, 0, "{}");
+    int64_t sql = cbm_gbuf_upsert_node(gb, "File", "job.sql", "test.sql", "sql/job.sql", 0, 0, "{}");
+    int64_t path = cbm_gbuf_upsert_node(gb, "Variable", "filePath", "test.cfg.path", "conf/flow.json", 1, 1,
+        "{\"config_key\":\"true\",\"value\":\"sql/job.sql\"}");
+    int64_t use = cbm_gbuf_upsert_node(gb, "SqlVariableRef", "app.X", "test.use", "sql/job.sql", 1, 1, "{}");
+    cbm_gbuf_upsert_node(gb, "Variable", "entity", "test.cfg.use", "conf/flow.json", 2, 2,
+        "{\"config_key\":\"true\",\"value\":\"${app.X}\"}");
+    int64_t init[2], paths[2];
+    for (int i = 0; i < 2; i++) {
+        char qn[80]; snprintf(qn,sizeof(qn),"test.wf%d",i);
+        int64_t wf = add_config_key(gb, qn, "workflow", NULL);
+        snprintf(qn,sizeof(qn),"test.wf%d.path",i);
+        paths[i] = add_config_key(gb, qn, "path", "{{root}}/conf/flow.json");
+        snprintf(qn,sizeof(qn),"test.wf%d.X",i);
+        init[i] = add_config_key(gb, qn, "app.X", i ? "b" : "a");
+        cbm_gbuf_insert_edge(gb,wf,paths[i],"HAS_CONFIG_KEY","{}");
+        cbm_gbuf_insert_edge(gb,wf,init[i],"HAS_CONFIG_KEY","{}");
+    }
+    for (int pass = 0; pass < 2; pass++) {
+        ASSERT_GTE(run_configlink(gb,"test",NULL), 0);
+        ASSERT_TRUE(has_config_file_edge(gb,paths[0],cfg));
+        ASSERT_TRUE(has_config_file_edge(gb,paths[1],cfg));
+        ASSERT_TRUE(has_config_file_edge(gb,path,sql));
+        ASSERT_TRUE(has_sql_binding(gb,use,init[0]));
+        ASSERT_TRUE(has_sql_binding(gb,use,init[1]));
+        const cbm_gbuf_node_t **bindings = NULL; int count = 0;
+        cbm_gbuf_find_by_label(gb,"SqlConfigBinding",&bindings,&count);
+        ASSERT_EQ(count,2);
+        for(int j=0;j<count;j++) {
+            bool a=has_typed_edge(gb,"RESOLVES_TO_CONFIG",bindings[j]->id,init[0]);
+            bool b=has_typed_edge(gb,"RESOLVES_TO_CONFIG",bindings[j]->id,init[1]);
+            ASSERT_TRUE(a != b);
+        }
+        cbm_gbuf_find_by_label(gb,"ConfigBinding",&bindings,&count);
+        ASSERT_EQ(count,2);
+        for(int j=0;j<count;j++) {
+            bool a=has_typed_edge(gb,"RESOLVES_TO_CONFIG",bindings[j]->id,init[0]);
+            bool b=has_typed_edge(gb,"RESOLVES_TO_CONFIG",bindings[j]->id,init[1]);
+            ASSERT_TRUE(a != b);
+        }
+    }
+    cbm_gbuf_free(gb); PASS();
+}
+
+TEST(configlink_yaml_anchor_defaults_and_explicit_override) {
+    cbm_gbuf_t *gb = cbm_gbuf_new("test", "/tmp/test");
+    cbm_gbuf_upsert_node(gb,"File","job.sql","test.sql","sql/job.sql",0,0,"{}");
+    int64_t use=cbm_gbuf_upsert_node(gb,"SqlVariableRef","X","test.use","sql/job.sql",1,1,"{}");
+    int64_t anchor=cbm_gbuf_upsert_node(gb,"Variable","defaults","test.defaults","resources/ctl/ctl.yml",1,3,
+        "{\"config_key\":\"true\",\"value_kind\":\"mapping\",\"yaml_anchor\":\"defaults\"}");
+    int64_t init=add_config_key(gb,"test.defaults.X","X","a");
+    cbm_gbuf_insert_edge(gb,anchor,init,"HAS_CONFIG_KEY","{}");
+    int64_t wf=add_config_key(gb,"test.wf","wf",NULL);
+    int64_t alias=cbm_gbuf_upsert_node(gb,"Variable","<<","test.wf.alias","resources/ctl/ctl.yml",5,5,
+        "{\"config_key\":\"true\",\"value_kind\":\"alias\",\"yaml_alias\":\"defaults\",\"value\":\"*defaults\"}");
+    int64_t path=add_config_key(gb,"test.wf.path","path","sql/job.sql");
+    cbm_gbuf_insert_edge(gb,wf,alias,"HAS_CONFIG_KEY","{}");
+    cbm_gbuf_insert_edge(gb,wf,path,"HAS_CONFIG_KEY","{}");
+    ASSERT_GTE(run_configlink(gb,"test",NULL),0);
+    ASSERT_TRUE(has_typed_edge(gb,"RESOLVES_TO_ANCHOR",alias,anchor));
+    ASSERT_TRUE(has_sql_binding(gb,use,init));
+    int64_t explicit=add_config_key(gb,"test.wf.X","X","b");
+    cbm_gbuf_insert_edge(gb,wf,explicit,"HAS_CONFIG_KEY","{}");
+    ASSERT_GTE(run_configlink(gb,"test",NULL),0);
+    ASSERT_TRUE(has_sql_binding(gb,use,explicit));
+    ASSERT_FALSE(has_sql_binding(gb,use,init));
+    cbm_gbuf_free(gb); PASS();
+}
+
+TEST(configlink_config_uses_are_caller_scoped_and_local_values_shadow) {
+    const char *paths[] = {"conf/shared.json", "conf/shared.yml"};
+    for (int format = 0; format < 2; format++) {
+        cbm_gbuf_t *gb = cbm_gbuf_new("test", "/tmp/test");
+        cbm_gbuf_upsert_node(gb, "File", "shared", "test.shared", paths[format], 0, 0, "{}");
+        int64_t root = cbm_gbuf_upsert_node(gb, "Variable", "config", "test.shared.root",
+            paths[format], 1, 4, "{\"config_key\":\"true\",\"value_kind\":\"mapping\"}");
+        int64_t slot = cbm_gbuf_upsert_node(gb, "Variable", "entityId", "test.shared.use",
+            paths[format], 2, 2, "{\"config_key\":\"true\",\"value\":\"${app.entity}\"}");
+        cbm_gbuf_insert_edge(gb, root, slot, "HAS_CONFIG_KEY", "{}");
+        int64_t init[2];
+        for (int i = 0; i < 2; i++) {
+            char qn[80]; snprintf(qn, sizeof(qn), "test.caller%d", i);
+            int64_t caller = add_config_key(gb, qn, "arbitrary", NULL);
+            snprintf(qn, sizeof(qn), "test.caller%d.path", i);
+            int64_t path = add_config_key(gb, qn, "file", paths[format]);
+            snprintf(qn, sizeof(qn), "test.caller%d.X", i);
+            init[i] = add_config_key(gb, qn, "app.entity", i ? "beta" : "alpha");
+            cbm_gbuf_insert_edge(gb, caller, path, "HAS_CONFIG_KEY", "{}");
+            cbm_gbuf_insert_edge(gb, caller, init[i], "HAS_CONFIG_KEY", "{}");
+        }
+        int64_t local = 0;
+        for (int pass = 0; pass < 5; pass++) {
+            if (pass == 2) {
+                /* Same-QN replacement uses the graph buffer's canonical
+                 * name ordering; choose a winning, different name. */
+                add_config_key(gb, "test.caller1.X", "zz_other_variable", "beta");
+            }
+            if (pass == 3) {
+                local = cbm_gbuf_upsert_node(gb, "Variable", "app.entity", "test.shared.local",
+                    paths[format], 3, 3, "{\"config_key\":\"true\",\"value\":\"local\"}");
+                cbm_gbuf_insert_edge(gb, root, local, "HAS_CONFIG_KEY", "{}");
+            }
+            ASSERT_GTE(run_configlink(gb, "test", NULL), 0);
+            const cbm_gbuf_node_t **bindings = NULL, **uses = NULL;
+            int n = 0, use_count = 0;
+            cbm_gbuf_find_by_label(gb, "ConfigBinding", &bindings, &n);
+            cbm_gbuf_find_by_label(gb, "ConfigVariableRef", &uses, &use_count);
+            ASSERT_EQ(n, 2); ASSERT_EQ(use_count, 1);
+            ASSERT_NOT_NULL(strstr(uses[0]->properties_json, pass == 2
+                ? "\"context_resolution_status\":\"partial\""
+                : "\"context_resolution_status\":\"resolved\""));
+            ASSERT_NOT_NULL(strstr(uses[0]->properties_json, "\"context_binding_count\":2"));
+            int matched[2] = {0};
+            for (int i = 0; i < n; i++) {
+                ASSERT_TRUE(has_typed_edge(gb, "BINDS_VARIABLE", bindings[i]->id, uses[0]->id));
+                bool a = has_typed_edge(gb, "RESOLVES_TO_CONFIG", bindings[i]->id, init[0]);
+                bool b = has_typed_edge(gb, "RESOLVES_TO_CONFIG", bindings[i]->id, init[1]);
+                if (!local) {
+                    if (pass == 2) { ASSERT_FALSE(b); }
+                    else ASSERT_TRUE(a != b);
+                    matched[0] += a; matched[1] += b;
+                }
+                else {
+                    ASSERT_FALSE(a); ASSERT_FALSE(b);
+                    ASSERT_TRUE(has_typed_edge(gb, "RESOLVES_TO_CONFIG", bindings[i]->id, local));
+                }
+            }
+            if (!local) { ASSERT_EQ(matched[0], 1); ASSERT_EQ(matched[1], pass == 2 ? 0 : 1); }
+            /* No caller-dependent union on the source occurrence itself. */
+            ASSERT_FALSE(has_typed_edge(gb, "RESOLVES_TO_CONFIG", uses[0]->id, init[0]));
+            ASSERT_FALSE(has_typed_edge(gb, "RESOLVES_TO_CONFIG", uses[0]->id, init[1]));
+        }
+        cbm_gbuf_free(gb);
+    }
+    PASS();
+}
+
+TEST(configlink_paths_use_callers_without_persisting_sql_bindings) {
+    cbm_gbuf_t *gb = cbm_gbuf_new("test", "/tmp/test");
+    cbm_gbuf_upsert_node(gb, "File", "flow.json", "test.cfg", "conf/flow.json", 0, 0, "{}");
+    int64_t root = cbm_gbuf_upsert_node(gb, "Variable", "step", "test.cfg.step", "conf/flow.json", 1, 9,
+        "{\"config_key\":true,\"value_kind\":\"object\"}");
+    int64_t path = cbm_gbuf_upsert_node(gb, "Variable", "filePath", "test.cfg.path", "conf/flow.json", 2, 2,
+        "{\"config_key\":true,\"value\":\"sql/${app.X}/job.sql\"}");
+    cbm_gbuf_insert_edge(gb, root, path, "HAS_CONFIG_KEY", "{}");
+    int64_t sql[2], use[2], init[2], caller_path[2];
+    for (int i = 0; i < 2; i++) {
+        char qn[80], file[80];
+        snprintf(file, sizeof(file), "sql/%s/job.sql", i ? "b" : "a");
+        snprintf(qn, sizeof(qn), "test.sql%d", i);
+        sql[i] = cbm_gbuf_upsert_node(gb, "File", "job.sql", qn, file, 0, 0, "{}");
+        snprintf(qn, sizeof(qn), "test.use%d", i);
+        use[i] = cbm_gbuf_upsert_node(gb, "SqlVariableRef", "app.X", qn, file, 1, 1, "{}");
+        snprintf(qn, sizeof(qn), "test.wf%d", i);
+        int64_t wf = add_config_key(gb, qn, "workflow", NULL);
+        snprintf(qn, sizeof(qn), "test.wf%d.path", i);
+        caller_path[i] = add_config_key(gb, qn, "path", "conf/flow.json");
+        snprintf(qn, sizeof(qn), "test.wf%d.X", i);
+        init[i] = add_config_key(gb, qn, "app.X", i ? "b" : "a");
+        cbm_gbuf_insert_edge(gb, wf, caller_path[i], "HAS_CONFIG_KEY", "{}");
+        cbm_gbuf_insert_edge(gb, wf, init[i], "HAS_CONFIG_KEY", "{}");
+    }
+    for (int pass = 0; pass < 2; pass++) {
+        ASSERT_GTE(run_configlink(gb, "test", NULL), 0);
+        const cbm_gbuf_node_t **nodes = NULL; int n = 0;
+        cbm_gbuf_find_by_label(gb, "SqlConfigBinding", &nodes, &n);
+        ASSERT_EQ(n, 0);
+        ASSERT_TRUE(has_config_file_edge(gb, path, sql[0]));
+        ASSERT_TRUE(has_config_file_edge(gb, path, sql[1]));
+        ASSERT_TRUE(has_sql_binding(gb, use[0], init[0]));
+        ASSERT_FALSE(has_sql_binding(gb, use[0], init[1]));
+        ASSERT_TRUE(has_sql_binding(gb, use[1], init[1]));
+        ASSERT_FALSE(has_sql_binding(gb, use[1], init[0]));
+    }
+    cbm_gbuf_free(gb); PASS();
+}
+
+TEST(configlink_multihop_paths_discard_provisional_root_contexts) {
+    cbm_gbuf_t *gb = cbm_gbuf_new("test", "/tmp/test");
+    cbm_gbuf_upsert_node(gb, "File", "outer.json", "test.outer", "conf/outer.json", 0, 0, "{}");
+    cbm_gbuf_upsert_node(gb, "Variable", "path", "test.outer.path", "conf/outer.json", 1, 1,
+        "{\"config_key\":true,\"value\":\"conf/${app.X}/inner.json\"}");
+    cbm_gbuf_upsert_node(gb, "File", "job.sql", "test.sql", "sql/job.sql", 0, 0, "{}");
+    int64_t use = cbm_gbuf_upsert_node(gb, "SqlVariableRef", "app.X", "test.use", "sql/job.sql", 1, 1, "{}");
+    int64_t init[2];
+    for (int i = 0; i < 2; i++) {
+        char qn[80], file[80];
+        snprintf(file, sizeof(file), "conf/%s/inner.json", i ? "b" : "a");
+        snprintf(qn, sizeof(qn), "test.inner%d", i);
+        cbm_gbuf_upsert_node(gb, "File", "inner.json", qn, file, 0, 0, "{}");
+        snprintf(qn, sizeof(qn), "test.inner%d.path", i);
+        cbm_gbuf_upsert_node(gb, "Variable", "path", qn, file, 1, 1,
+            "{\"config_key\":true,\"value\":\"sql/job.sql\"}");
+        snprintf(qn, sizeof(qn), "test.inner%d.value", i);
+        cbm_gbuf_upsert_node(gb, "Variable", "entity", qn, file, 2, 2,
+            "{\"config_key\":true,\"value\":\"${app.X}\"}");
+        snprintf(qn, sizeof(qn), "test.wf%d", i);
+        int64_t wf = add_config_key(gb, qn, "workflow", NULL);
+        snprintf(qn, sizeof(qn), "test.wf%d.path", i);
+        int64_t path = add_config_key(gb, qn, "path", "conf/outer.json");
+        snprintf(qn, sizeof(qn), "test.wf%d.X", i);
+        init[i] = add_config_key(gb, qn, "app.X", i ? "b" : "a");
+        cbm_gbuf_insert_edge(gb, wf, path, "HAS_CONFIG_KEY", "{}");
+        cbm_gbuf_insert_edge(gb, wf, init[i], "HAS_CONFIG_KEY", "{}");
+    }
+    ASSERT_GTE(run_configlink(gb, "test", NULL), 0);
+    ASSERT_TRUE(has_sql_binding(gb, use, init[0]));
+    ASSERT_TRUE(has_sql_binding(gb, use, init[1]));
+    const cbm_gbuf_node_t **nodes = NULL; int n = 0;
+    cbm_gbuf_find_by_label(gb, "SqlConfigBinding", &nodes, &n);
+    ASSERT_EQ(n, 2);
+    for (int i = 0; i < n; i++) {
+        const cbm_gbuf_edge_t **contexts = NULL; int cn = 0;
+        cbm_gbuf_find_edges_by_source_type(gb, nodes[i]->id, "HAS_CALLER_CONTEXT", &contexts, &cn);
+        ASSERT_EQ(cn, 3);
+    }
+    cbm_gbuf_find_by_label(gb, "ConfigBinding", &nodes, &n);
+    ASSERT_EQ(n, 4); /* outer path + inner value, in each of two callers */
+    cbm_gbuf_free(gb); PASS();
+}
+
+TEST(configlink_yaml_alias_chains_and_cycles) {
+    cbm_gbuf_t *gb = cbm_gbuf_new("test", "/tmp/test");
+    int64_t anchors[2];
+    for (int i = 0; i < 2; i++) {
+        char qn[80], props[200];
+        snprintf(qn, sizeof(qn), "test.anchor%d", i);
+        snprintf(props, sizeof(props), "{\"config_key\":true,\"value_kind\":\"mapping\",\"yaml_anchor\":\"%s\"}", i ? "b" : "a");
+        anchors[i] = cbm_gbuf_upsert_node(gb, "Variable", "@anchor", qn, "resources/ctl/ctl.yml", 1, 10, props);
+        snprintf(qn, sizeof(qn), "test.anchor%d.alias", i);
+        snprintf(props, sizeof(props), "{\"config_key\":true,\"yaml_alias\":\"%s\"}", i ? "a" : "b");
+        int64_t alias = cbm_gbuf_upsert_node(gb, "Variable", "@alias", qn, "resources/ctl/ctl.yml", 2, 2, props);
+        cbm_gbuf_insert_edge(gb, anchors[i], alias, "HAS_CONFIG_KEY", "{}");
+    }
+    int64_t init = add_config_key(gb, "test.anchor1.X", "X", "alpha");
+    cbm_gbuf_insert_edge(gb, anchors[1], init, "HAS_CONFIG_KEY", "{}");
+    int64_t wf = add_config_key(gb, "test.wf", "workflow", NULL);
+    int64_t path = add_config_key(gb, "test.wf.path", "path", "sql/job.sql");
+    int64_t alias = cbm_gbuf_upsert_node(gb, "Variable", "@alias", "test.wf.alias", "resources/ctl/ctl.yml", 20, 20,
+        "{\"config_key\":true,\"yaml_alias\":\"a\"}");
+    cbm_gbuf_insert_edge(gb, wf, path, "HAS_CONFIG_KEY", "{}");
+    cbm_gbuf_insert_edge(gb, wf, alias, "HAS_CONFIG_KEY", "{}");
+    cbm_gbuf_upsert_node(gb, "File", "job.sql", "test.file", "sql/job.sql", 0, 0, "{}");
+    int64_t use = cbm_gbuf_upsert_node(gb, "SqlVariableRef", "X", "test.X", "sql/job.sql", 1, 1, "{}");
+    int64_t missing = cbm_gbuf_upsert_node(gb, "SqlVariableRef", "Y", "test.Y", "sql/job.sql", 1, 1, "{}");
+    ASSERT_GTE(run_configlink(gb, "test", NULL), 0);
+    ASSERT_TRUE(has_sql_binding(gb, use, init));
+    ASSERT_FALSE(has_sql_binding(gb, missing, init));
+    cbm_gbuf_free(gb); PASS();
+}
+
+TEST(configlink_nonpath_templates_keep_uses_without_products) {
+    cbm_gbuf_t *gb = cbm_gbuf_new("test", "/tmp/test");
+    int64_t command = add_config_key(gb, "test.command", "command", "run {{mart.X}} {{env.Y}} --done");
+    for (int i = 0; i < 17; i++) {
+        char qn[80], value[20]; snprintf(value, sizeof(value), "%d", i);
+        snprintf(qn, sizeof(qn), "test.mart.%d", i);
+        add_named_config_value(gb, qn, "mart.json", "X", value);
+        snprintf(qn, sizeof(qn), "test.env.%d", i);
+        add_named_config_value(gb, qn, "env.yml", "Y", value);
+    }
+    ASSERT_GTE(run_configlink(gb, "test", NULL), 0);
+    const cbm_gbuf_edge_t **edges = NULL; int n = 0;
+    cbm_gbuf_find_edges_by_source_type(gb, command, "HAS_VARIANT", &edges, &n);
+    ASSERT_EQ(n, 0);
+    cbm_gbuf_find_edges_by_source_type(gb, command, "HAS_VARIABLE_REF", &edges, &n);
+    ASSERT_EQ(n, 2);
+    ASSERT_EQ(cbm_gbuf_edge_count_by_type(gb, "RESOLVES_TO_CONFIG"), 34);
+    cbm_gbuf_free(gb); PASS();
+}
+
+TEST(configlink_namespace_choices_survive_nested_paths) {
+    cbm_gbuf_t *gb = cbm_gbuf_new("test", "/tmp/test");
+    add_config_key(gb, "test.call", "path", "conf/{{mart.X}}/flow.json");
+    int64_t paths[2], files[2], init[2];
+    for (int i = 0; i < 2; i++) {
+        char qn[80], file[80]; const char *value = i ? "b" : "a";
+        snprintf(qn, sizeof(qn), "test.mart.%d", i);
+        init[i] = add_named_config_value(gb, qn, "mart.yml", "X", value);
+        snprintf(file, sizeof(file), "conf/%s/flow.json", value);
+        snprintf(qn, sizeof(qn), "test.flow%d", i);
+        cbm_gbuf_upsert_node(gb, "File", "flow.json", qn, file, 0, 0, "{}");
+        snprintf(qn, sizeof(qn), "test.flow%d.path", i);
+        paths[i] = cbm_gbuf_upsert_node(gb, "Variable", "path", qn, file, 1, 1,
+            "{\"config_key\":true,\"value\":\"sql/{{mart.X}}/job.sql\"}");
+        snprintf(file, sizeof(file), "sql/%s/job.sql", value);
+        snprintf(qn, sizeof(qn), "test.sql%d", i);
+        files[i] = cbm_gbuf_upsert_node(gb, "File", "job.sql", qn, file, 0, 0, "{}");
+    }
+    ASSERT_GTE(run_configlink(gb, "test", NULL), 0);
+    for (int i = 0; i < 2; i++) {
+        ASSERT_TRUE(has_config_file_edge(gb, paths[i], files[i]));
+        ASSERT_FALSE(has_config_file_edge(gb, paths[i], files[1-i]));
+        const cbm_gbuf_edge_t **uses = NULL, **bindings = NULL; int un = 0, bn = 0;
+        cbm_gbuf_find_edges_by_source_type(gb, paths[i], "HAS_VARIABLE_REF", &uses, &un);
+        ASSERT_EQ(un, 1);
+        cbm_gbuf_find_edges_by_target_type(gb, uses[0]->target_id, "BINDS_VARIABLE", &bindings, &bn);
+        ASSERT_EQ(bn, 1);
+        ASSERT_TRUE(has_typed_edge(gb, "RESOLVES_TO_CONFIG", bindings[0]->source_id, init[i]));
+        ASSERT_FALSE(has_typed_edge(gb, "RESOLVES_TO_CONFIG", bindings[0]->source_id, init[1-i]));
+    }
+    cbm_gbuf_free(gb); PASS();
+}
+
 SUITE(configlink) {
+    RUN_TEST(configlink_namespace_choices_survive_nested_paths);
+    RUN_TEST(configlink_nonpath_templates_keep_uses_without_products);
+    RUN_TEST(configlink_yaml_alias_chains_and_cycles);
+    RUN_TEST(configlink_multihop_paths_discard_provisional_root_contexts);
+    RUN_TEST(configlink_paths_use_callers_without_persisting_sql_bindings);
+    RUN_TEST(configlink_config_uses_are_caller_scoped_and_local_values_shadow);
+    RUN_TEST(configlink_call_chain_keeps_workflows_separate);
+    RUN_TEST(configlink_yaml_anchor_defaults_and_explicit_override);
     /* Strategy 1: Key → Symbol */
     RUN_TEST(configlink_key_symbol_exact_match);
     RUN_TEST(configlink_key_symbol_substring_match);
@@ -583,6 +1181,13 @@ SUITE(configlink) {
 
     /* Strategy 3: File Path → Reference */
     RUN_TEST(configlink_file_ref_no_false_positive);
+    RUN_TEST(configlink_sql_file_and_dynamic_binding_are_caller_scoped);
+    RUN_TEST(configlink_sql_dynamic_binding_supports_direct_map_keys);
+    RUN_TEST(configlink_template_paths_resolve_before_matching);
+    RUN_TEST(configlink_template_paths_rebuild_and_bind_sql);
+    RUN_TEST(configlink_cross_file_variants_keep_all_origins_and_call_context);
+    RUN_TEST(configlink_variant_product_has_no_policy_limit);
+    RUN_TEST(configlink_cross_file_cycles_keep_noncyclic_values);
 
     /* Determinism */
     RUN_TEST(configlink_candidate_truncation_is_order_independent);

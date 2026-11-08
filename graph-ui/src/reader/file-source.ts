@@ -29,7 +29,7 @@
 import { fileNodeForPath, moduleForFile, COLUMNS } from '../provider/cypher';
 import type { RpcIntelligenceClient } from '../provider/rpc-client';
 import type { CodeSnippetResult } from '../provider/rpc-schemas';
-import { moduleQualifiedName, moduleQnFromFileQn, normalizeWorkspacePath } from '../app/module-qn';
+import { moduleQualifiedName, normalizeWorkspacePath } from '../app/module-qn';
 import { reportError } from '../provider/error-observer';
 
 /** Das Werkzeug, aus dem der Inhalt des Readers kommt. Der Beweislauf schreibt es mit. */
@@ -99,9 +99,9 @@ function toOptionalNumber(cell: string | undefined): number | undefined {
  * Der Modul-Knoten dieser Datei, beim Graphen nachgefragt.
  *
  * Zuerst das Modul-Label, weil nur der Modul-Knoten eine Zeilenspanne mitbringt.
- * Wenn es keinen gibt, der File-Knoten: aus seinem Namen laesst sich der des
- * Moduls zurueckrechnen, aber eine Spanne kommt nicht mit, und dann weiss der
- * Reader spaeter nicht, wie lang die Datei wirklich ist.
+ * Wenn es keinen gibt, wird der File-Knoten selbst verwendet. SQL- und andere
+ * strukturorientierte Extraktoren muessen keinen Module-Knoten erzeugen, der
+ * File-Knoten ist aber ein vollwertiges get_code_snippet-Ziel.
  */
 async function lookupModuleNode(
     client: RpcIntelligenceClient,
@@ -125,8 +125,7 @@ async function lookupModuleNode(
     if (fileQualifiedName.length === 0) {
         return undefined;
     }
-    const derived = moduleQnFromFileQn(fileQualifiedName);
-    return derived === undefined ? undefined : { qualifiedName: derived, source: 'graph-file' };
+    return { qualifiedName: fileQualifiedName, source: 'graph-file' };
 }
 
 /** What the server writes in place of source when it cannot read the file. */

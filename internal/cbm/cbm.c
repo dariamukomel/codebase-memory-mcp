@@ -3715,6 +3715,31 @@ static CBMFileResult *extract_file_ex_body(const char *source, int source_len, C
         return result;
     }
 
+    /* SQL is parsed by the embedded SQLGlot runtime, not by the legacy
+     * Tree-sitter SQL grammar. Keeping this branch ahead of cbm_lang_spec and
+     * cbm_ts_language also makes the replacement real: SQL files never build
+     * the old CST and cannot leak its generic definitions/usages into the
+     * lineage graph. */
+    if (language == CBM_LANG_SQL) {
+        result->module_qn = cbm_fqn_module_source_lang(a, project, rel_path, language);
+        result->is_test_file = cbm_is_test_file(rel_path, language);
+        CBMExtractCtx sql_ctx = {
+            .arena = a,
+            .scratch = scratch,
+            .result = result,
+            .source = source,
+            .source_len = source_len,
+            .language = language,
+            .project = project,
+            .rel_path = rel_path,
+            .module_qn = result->module_qn,
+        };
+        cbm_extract_sql_structure(&sql_ctx);
+        cbm_extract_dbt(&sql_ctx);
+        cbm_index_mark_done(rel_path);
+        return result;
+    }
+
     // Get language spec
     const CBMLangSpec *spec = cbm_lang_spec(language);
     if (!spec) {

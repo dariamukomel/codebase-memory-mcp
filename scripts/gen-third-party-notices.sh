@@ -42,6 +42,30 @@ mkdir -p "$(dirname "$OUT")"
         cat "$f"
     done
 
+    SQLGLOT_RUNTIME="$ROOT/build/sqlglot-embed/sqlglot-runtime.zip"
+    if [ -f "$SQLGLOT_RUNTIME" ]; then
+        python3 - "$SQLGLOT_RUNTIME" <<'PY'
+import pathlib
+import sys
+import zipfile
+
+runtime = pathlib.Path(sys.argv[1])
+with zipfile.ZipFile(runtime) as archive:
+    names = sorted(
+        name for name in archive.namelist()
+        if name == "_licenses/cpython.txt"
+        or (".dist-info/licenses/" in name and not name.endswith("/"))
+    )
+    for name in names:
+        print()
+        print("===============================================================")
+        print(f"  embedded-runtime/{name}")
+        print("===============================================================")
+        print()
+        print(archive.read(name).decode("utf-8", "replace"))
+PY
+    fi
+
     # With-ui packaging path: node_modules exists (make frontend ran npm ci),
     # so append the license texts of the npm packages compiled into the
     # external UI pack. Standard archives carry no pack — the section is

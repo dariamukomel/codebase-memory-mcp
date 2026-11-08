@@ -1496,6 +1496,11 @@ TEST(mcp_tools_have_behavior_annotations) {
         {"trace_path", true, false, true, false},
         {"get_code_snippet", true, false, true, false},
         {"get_file_outline", true, false, true, false},
+        {"get_sql_file_outline", true, false, true, false},
+        {"get_sql_statement", true, false, true, false},
+        {"get_sql_structure", true, false, true, false},
+        {"search_sql", true, false, true, false},
+        {"get_sql_snippet", true, false, true, false},
         {"get_graph_schema", true, false, true, false},
         {"compare_graphs", true, false, true, false},
         {"get_architecture", true, false, true, false},
@@ -2204,7 +2209,9 @@ TEST(server_handle_analysis_profile_filters_and_rejects_mutators) {
     ASSERT_NOT_NULL(resp);
     static const char *const analysis_tools[] = {
         "search_graph",     "query_graph",      "trace_path",     "get_code_snippet",
-        "get_file_outline", "get_graph_schema", "compare_graphs", "get_architecture",
+        "get_file_outline", "get_sql_file_outline", "get_sql_statement", "get_sql_structure",
+        "search_sql", "get_sql_snippet",
+        "get_graph_schema", "compare_graphs", "get_architecture",
         "search_code",      "list_projects",    "index_status",   "check_index_coverage",
         "detect_changes",
     };
@@ -3490,12 +3497,14 @@ TEST(tool_get_code_snippet_clips_whole_file_node) {
 
     cbm_node_t mod = {0};
     mod.project = proj;
-    mod.label = "Module";
+    mod.label = "File";
     mod.name = "big";
     mod.qualified_name = "test-project.big";
     mod.file_path = "big.py";
     mod.start_line = 1;
-    mod.end_line = BIG_LINES;
+    /* A File emitted by a lightweight extractor may have no span metadata.
+     * get_code_snippet must derive the real boundary from disk. */
+    mod.end_line = 0;
     ASSERT_GT(cbm_store_upsert_node(st, &mod), 0);
 
     char *resp = cbm_mcp_server_handle(
@@ -25057,7 +25066,106 @@ TEST(search_code_scan_in_process_limits_and_failures) {
 #undef SCAN_FS
 #undef SCAN_RS
 
+static int sql_statement_progress_budget(void *data) {
+    int *ticks = data;
+    return ++*ticks > 10000;
+}
+
+TEST(tool_get_sql_statement_pages_structure_and_exposes_cross_file_links) {
+    cbm_mcp_server_t *srv = cbm_mcp_server_new(NULL);
+    ASSERT_NOT_NULL(srv);
+    cbm_store_t *st = cbm_mcp_server_store(srv);
+    const char *project = "sqltools";
+    cbm_mcp_server_set_project(srv, project);
+    cbm_store_upsert_project(st, project, "/tmp/sqltools");
+    cbm_node_t nodes[] = {
+        {.project=project,.label="File",.name="job.sql",.qualified_name="sqltools.job",
+         .file_path="etl/job.sql"},
+        {.project=project,.label="SqlStatement",.name="statement_1",.qualified_name="sqltools.stmt",
+         .file_path="etl/job.sql",.start_line=1,.end_line=4,.properties_json="{\"parse_status\":\"complete\"}"},
+        {.project=project,.label="SqlQuery",.name="select",.qualified_name="sqltools.query",
+         .file_path="etl/job.sql",.start_line=1,.end_line=4,.properties_json="{}"},
+        {.project=project,.label="SqlVariableRef",.name="mart.X",.qualified_name="sqltools.use",
+         .file_path="etl/job.sql",.start_line=2,.end_line=2,.properties_json="{}"},
+        {.project=project,.label="Variable",.name="mart.X",.qualified_name="sqltools.init",
+         .file_path="resources/ctl/ctl.yml",.start_line=8,.end_line=8,.properties_json="{\"config_key\":true,\"value\":\"raw.t\"}"},
+        {.project=project,.label="Variable",.name="sql_path",.qualified_name="sqltools.path",
+         .file_path="resources/ctl/ctl.yml",.start_line=2,.end_line=2,.properties_json="{\"config_key\":true,\"value\":\"etl/job.sql\"}"},
+        {.project=project,.label="ConfigValueVariant",.name="etl/job.sql",.qualified_name="sqltools.path.variant",
+         .file_path="resources/ctl/ctl.yml",.properties_json="{\"value\":\"etl/job.sql\"}"},
+        {.project=project,.label="Variable",.name="step",.qualified_name="sqltools.step",
+         .file_path="resources/ctl/ctl.yml",.properties_json="{\"config_key\":true,\"value_kind\":\"object\"}"},
+    };
+    int64_t ids[8];
+    for (int i = 0; i < 8; i++) { ids[i] = cbm_store_upsert_node(st, &nodes[i]); ASSERT_GT(ids[i], 0); }
+    cbm_edge_t edges[] = {
+        {.project=project,.source_id=ids[1],.target_id=ids[2],.type="CONTAINS_QUERY",.properties_json="{}"},
+        {.project=project,.source_id=ids[2],.target_id=ids[3],.type="HAS_DYNAMIC_PART",.properties_json="{}"},
+        {.project=project,.source_id=ids[5],.target_id=ids[6],.type="HAS_VARIANT",.properties_json="{}"},
+        {.project=project,.source_id=ids[6],.target_id=ids[0],.type="REFERENCES_FILE",.properties_json="{}"},
+        {.project=project,.source_id=ids[7],.target_id=ids[4],.type="HAS_CONFIG_KEY",.properties_json="{}"},
+        {.project=project,.source_id=ids[7],.target_id=ids[5],.type="HAS_CONFIG_KEY",.properties_json="{}"},
+    };
+    for (size_t i = 0; i < sizeof(edges) / sizeof(edges[0]); i++)
+        ASSERT_GT(cbm_store_insert_edge(st, &edges[i]), 0);
+    /* Unrelated CTE edges must not rerun the recursive SQL walk once per
+     * project edge. An instruction budget is deterministic, unlike a timer. */
+    sqlite3 *db = cbm_store_get_db(st);
+    ASSERT_EQ(sqlite3_exec(db,
+        "WITH RECURSIVE seq(x) AS (VALUES(1) UNION ALL SELECT x+1 FROM seq WHERE x<1000) "
+        "INSERT INTO nodes(project,label,name,qualified_name,file_path,start_line,end_line,properties) "
+        "SELECT 'sqltools','SqlCteRef','noise','sqltools.noise.'||x,'other.sql',1,1,'{}' FROM seq;"
+        "INSERT INTO edges(project,source_id,target_id,type,properties) "
+        "SELECT 'sqltools',n.id,t.id,'RESOLVES_TO_CTE','{}' FROM nodes n CROSS JOIN nodes t "
+        "WHERE n.project='sqltools' AND n.label='SqlCteRef' AND t.qualified_name='sqltools.query';",
+        NULL, NULL, NULL), SQLITE_OK);
+    char request[512];
+    snprintf(request, sizeof(request),
+             "{\"jsonrpc\":\"2.0\",\"id\":700,\"method\":\"tools/call\",\"params\":{"
+             "\"name\":\"get_sql_statement\",\"arguments\":{\"project\":\"sqltools\","
+             "\"statement_id\":%lld,\"limit\":1,\"format\":\"json\"}}}",
+             (long long)ids[1]);
+    int changes_before = sqlite3_total_changes(cbm_store_get_db(st));
+    int progress_ticks = 0;
+    sqlite3_progress_handler(db, 1000, sql_statement_progress_budget, &progress_ticks);
+    char *response = cbm_mcp_server_handle(srv, request);
+    sqlite3_progress_handler(db, 0, NULL, NULL);
+    ASSERT(progress_ticks <= 10000);
+    ASSERT_EQ(sqlite3_total_changes(cbm_store_get_db(st)), changes_before);
+    ASSERT_NOT_NULL(response);
+    char *inner = extract_text_content(response);
+    free(response);
+    ASSERT_NOT_NULL(inner);
+    ASSERT_NOT_NULL(strstr(inner, "\"has_more\":true"));
+    ASSERT_NOT_NULL(strstr(inner, "RESOLVES_TO_CONFIG"));
+    ASSERT_NOT_NULL(strstr(inner, "config_callers"));
+    ASSERT_NOT_NULL(strstr(inner, "sqltools.path"));
+    ASSERT_NOT_NULL(strstr(inner, "caller_variant_id"));
+    ASSERT_NOT_NULL(strstr(inner, "\"resolution_mode\":\"on_demand\""));
+    char context[128];
+    snprintf(context, sizeof(context), "\"caller_context_variant_ids\":[%lld]", (long long)ids[6]);
+    ASSERT_NOT_NULL(strstr(inner, context));
+    free(inner);
+    snprintf(request, sizeof(request),
+        "{\"jsonrpc\":\"2.0\",\"id\":701,\"method\":\"tools/call\",\"params\":{"
+        "\"name\":\"get_sql_structure\",\"arguments\":{\"project\":\"sqltools\","
+        "\"statement_id\":%lld,\"offset\":100,\"resolution_offset\":1,\"format\":\"json\"}}}", (long long)ids[1]);
+    response = cbm_mcp_server_handle(srv, request);
+    ASSERT_NOT_NULL(response);
+    inner = extract_text_content(response); free(response);
+    ASSERT_NOT_NULL(inner);
+    ASSERT_NOT_NULL(strstr(inner, "\"resolution_total\":1"));
+    ASSERT_NOT_NULL(strstr(inner, "\"resolution_returned\":0"));
+    ASSERT_NOT_NULL(strstr(inner, "\"total\":2"));
+    ASSERT_NOT_NULL(strstr(inner, "\"returned\":0"));
+    ASSERT_EQ(sqlite3_total_changes(cbm_store_get_db(st)), changes_before);
+    free(inner);
+    cbm_mcp_server_free(srv);
+    PASS();
+}
+
 SUITE(mcp) {
+    RUN_TEST(tool_get_sql_statement_pages_structure_and_exposes_cross_file_links);
     RUN_TEST(index_repository_async_and_status_refused_without_daemon_issue2144);
     RUN_TEST(index_repository_schema_documents_async_polling_issue2144);
     RUN_TEST(tool_result_add_notice_keeps_payload_shape_issue2144);

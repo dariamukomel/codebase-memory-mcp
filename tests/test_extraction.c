@@ -19,6 +19,7 @@
 #include "iris_export_xml.h"
 #include "helpers.h"    /* cbm_count_branching (walker stack cap) */
 #include "lang_specs.h" /* cbm_lang_spec, cbm_ts_language */
+#include "sql_dialect.h"
 
 /* Deep-nesting probes: extraction on a worker-sized stack, crash-isolated. */
 #include "pipeline/worker_pool.h"            /* CBM_WORKER_STACK_SIZE */
@@ -97,6 +98,23 @@ static int count_defs_named(CBMFileResult *r, const char *label, const char *nam
         }
     }
     return count;
+}
+
+static const char *def_extra_prop(const CBMDefinition *def, const char *key) {
+    for (const char **kv = def ? def->extra_props : NULL;
+         kv && kv[0] && kv[SKIP_ONE]; kv += PAIR_LEN) {
+        if (strcmp(kv[0], key) == 0) return kv[SKIP_ONE];
+    }
+    return NULL;
+}
+
+static const CBMDefinition *find_config_def(CBMFileResult *r, const char *key_path) {
+    for (int i = 0; i < r->defs.count; i++) {
+        const CBMDefinition *def = &r->defs.items[i];
+        const char *path = def_extra_prop(def, "key_path");
+        if (path && strcmp(path, key_path) == 0) return def;
+    }
+    return NULL;
 }
 
 static int count_calls_named(CBMFileResult *r, const char *callee) {
@@ -1927,6 +1945,50 @@ TEST(yaml_variables) {
     PASS();
 }
 
+TEST(ctl_yaml_deep_config_keys_and_values) {
+    const char *src =
+        "workflows:\n"
+        "  - init_b2c_credit:\n"
+        "      params:\n"
+        "        - param: { name: \"app.b2c_credit.schema.name\", prior_value: "
+        "\"{{src_b2c_credit_schema_name}}\" }\n"
+        "        - param: { name: \"app.b2c_credit.table.name\", prior_value: \"credit\" }\n";
+    CBMFileResult *r = extract(src, CBM_LANG_YAML, "t", "resources/ctl/ctl.yml");
+    ASSERT_NOT_NULL(r);
+    ASSERT_FALSE(r->has_error);
+
+    const CBMDefinition *workflows = find_config_def(r, "workflows");
+    const CBMDefinition *workflow = find_config_def(r, "workflows[0].init_b2c_credit");
+    const CBMDefinition *params =
+        find_config_def(r, "workflows[0].init_b2c_credit.params");
+    const CBMDefinition *param0 =
+        find_config_def(r, "workflows[0].init_b2c_credit.params[0].param");
+    const CBMDefinition *name0 =
+        find_config_def(r, "workflows[0].init_b2c_credit.params[0].param.name");
+    const CBMDefinition *prior0 =
+        find_config_def(r, "workflows[0].init_b2c_credit.params[0].param.prior_value");
+    const CBMDefinition *name1 =
+        find_config_def(r, "workflows[0].init_b2c_credit.params[1].param.name");
+    ASSERT_NOT_NULL(workflows);
+    ASSERT_NOT_NULL(workflow);
+    ASSERT_NOT_NULL(params);
+    ASSERT_NOT_NULL(param0);
+    ASSERT_NOT_NULL(name0);
+    ASSERT_NOT_NULL(prior0);
+    ASSERT_NOT_NULL(name1);
+    ASSERT_TRUE(workflows->is_config_key);
+    ASSERT_STR_EQ(workflow->config_parent_qn, workflows->qualified_name);
+    ASSERT_STR_EQ(params->config_parent_qn, workflow->qualified_name);
+    ASSERT_STR_EQ(param0->config_parent_qn, params->qualified_name);
+    ASSERT_STR_EQ(name0->config_parent_qn, param0->qualified_name);
+    ASSERT_STR_EQ(def_extra_prop(name0, "value"), "app.b2c_credit.schema.name");
+    ASSERT_STR_EQ(def_extra_prop(prior0, "value"), "{{src_b2c_credit_schema_name}}");
+    ASSERT_STR_EQ(def_extra_prop(prior0, "is_template"), "true");
+    ASSERT(strcmp(name0->qualified_name, name1->qualified_name) != 0);
+    cbm_free_result(r);
+    PASS();
+}
+
 /* --- HCL --- */
 TEST(hcl_blocks) {
     CBMFileResult *r = extract("resource \"aws_instance\" \"web\" {\n  ami = \"abc-123\"\n  "
@@ -2909,9 +2971,35 @@ TEST(sql_function) {
                                CBM_LANG_SQL, "t", "funcs.sql");
     ASSERT_NOT_NULL(r);
     ASSERT_FALSE(r->has_error);
-    ASSERT_GTE(r->defs.count, 1);
+    ASSERT_GTE(r->sql_entities.count, 1);
     cbm_free_result(r);
     PASS();
+}
+
+static int has_sql_entity(CBMFileResult *r, CBMSqlEntityKind kind, const char *name) {
+    for (int i = 0; i < r->sql_entities.count; i++) {
+        CBMSqlEntity *entity = &r->sql_entities.items[i];
+        if (entity->kind == kind && entity->name && strcmp(entity->name, name) == 0) return 1;
+    }
+    return 0;
+}
+
+static int count_sql_entities(CBMFileResult *r, CBMSqlEntityKind kind) {
+    int count = 0;
+    for (int i = 0; i < r->sql_entities.count; i++) {
+        count += r->sql_entities.items[i].kind == kind;
+    }
+    return count;
+}
+
+static CBMSqlEntity *find_sql_entity(CBMFileResult *r, CBMSqlEntityKind kind,
+                                     const char *name) {
+    for (int i = 0; i < r->sql_entities.count; i++) {
+        CBMSqlEntity *entity = &r->sql_entities.items[i];
+        if (entity->kind == kind && (!name || (entity->name && strcmp(entity->name, name) == 0)))
+            return entity;
+    }
+    return NULL;
 }
 
 TEST(sql_ddl_node_labels) {
@@ -2920,8 +3008,8 @@ TEST(sql_ddl_node_labels) {
                                CBM_LANG_SQL, "t", "schema.sql");
     ASSERT_NOT_NULL(r);
     ASSERT_FALSE(r->has_error);
-    ASSERT(has_def(r, "Table", "users"));
-    ASSERT(has_def(r, "View", "active_users"));
+    ASSERT(has_sql_entity(r, CBM_SQL_TABLE_REF, "users"));
+    ASSERT(has_sql_entity(r, CBM_SQL_TABLE_REF, "active_users"));
     cbm_free_result(r);
     PASS();
 }
@@ -2934,13 +3022,7 @@ TEST(sql_view_lineage_usages) {
                                CBM_LANG_SQL, "t", "schema.sql");
     ASSERT_NOT_NULL(r);
     ASSERT_FALSE(r->has_error);
-    int found_users = 0;
-    for (int i = 0; i < r->usages.count; i++) {
-        if (r->usages.items[i].ref_name && strcmp(r->usages.items[i].ref_name, "users") == 0) {
-            found_users = 1;
-        }
-    }
-    ASSERT(found_users);
+    ASSERT(has_sql_entity(r, CBM_SQL_TABLE_REF, "users"));
     cbm_free_result(r);
     PASS();
 }
@@ -2953,16 +3035,354 @@ TEST(sql_schema_qualified_name) {
                                CBM_LANG_SQL, "t", "schema.sql");
     ASSERT_NOT_NULL(r);
     ASSERT_FALSE(r->has_error);
-    ASSERT(has_def(r, "Table", "users"));
-    ASSERT(has_def(r, "View", "active"));
-    int found_users = 0;
-    for (int i = 0; i < r->usages.count; i++) {
-        if (r->usages.items[i].ref_name && strcmp(r->usages.items[i].ref_name, "users") == 0) {
-            found_users = 1;
+    ASSERT(has_sql_entity(r, CBM_SQL_TABLE_REF, "app.users"));
+    ASSERT(has_sql_entity(r, CBM_SQL_TABLE_REF, "app.active"));
+    cbm_free_result(r);
+    PASS();
+}
+
+TEST(sqlglot_dynamic_identifiers_and_gsql_islands) {
+    CBMFileResult *r = extract(
+        "LET label = 'hidden_runtime_table';\n"
+        "PRINT 'starting';\n"
+        "INSERT INTO ${dst.schema}_stg.${dst.table}\n"
+        "SELECT s.id FROM ${src.schema}.${src.table} s;\n",
+        CBM_LANG_SQL, "t", "job.sql");
+    ASSERT_NOT_NULL(r);
+    ASSERT_FALSE(r->has_error);
+    ASSERT(has_sql_entity(r, CBM_SQL_TABLE_REF, "${dst.schema}_stg.${dst.table}"));
+    ASSERT(has_sql_entity(r, CBM_SQL_TABLE_REF, "${src.schema}.${src.table}"));
+    ASSERT(has_sql_entity(r, CBM_SQL_VARIABLE_REF, "dst.schema"));
+    ASSERT(has_sql_entity(r, CBM_SQL_VARIABLE_REF, "dst.table"));
+    ASSERT(has_sql_entity(r, CBM_SQL_VARIABLE_REF, "src.schema"));
+    ASSERT(has_sql_entity(r, CBM_SQL_VARIABLE_REF, "src.table"));
+    ASSERT_FALSE(has_sql_entity(r, CBM_SQL_TABLE_REF, "hidden_runtime_table"));
+    cbm_free_result(r);
+    PASS();
+}
+
+TEST(sqlglot_dynamic_variable_refs_are_normalized) {
+    CBMFileResult *r = extract(
+        "SELECT '${$s2t.source.table.name}', '{{mart.schema}}', $plain_name, :named, @session "
+        "FROM ${$s2t.source.table.name}; -- ${ignored.comment}\n",
+        CBM_LANG_SQL, "t", "variables.sql");
+    ASSERT_NOT_NULL(r);
+    ASSERT(has_sql_entity(r, CBM_SQL_VARIABLE_REF, "s2t.source.table.name"));
+    ASSERT(has_sql_entity(r, CBM_SQL_VARIABLE_REF, "mart.schema"));
+    ASSERT(has_sql_entity(r, CBM_SQL_VARIABLE_REF, "plain_name"));
+    ASSERT(has_sql_entity(r, CBM_SQL_VARIABLE_REF, "named"));
+    ASSERT(has_sql_entity(r, CBM_SQL_VARIABLE_REF, "session"));
+    ASSERT_FALSE(has_sql_entity(r, CBM_SQL_VARIABLE_REF, "ignored.comment"));
+    cbm_free_result(r);
+    PASS();
+}
+
+TEST(sqlglot_dynamic_sql_is_reported_incomplete) {
+    CBMFileResult *r = extract("LET query = 'SELECT * FROM runtime_table';\nEXECUTE query;\n",
+                               CBM_LANG_SQL, "t", "dynamic.sql");
+    ASSERT_NOT_NULL(r);
+    ASSERT_FALSE(r->has_error);
+    ASSERT(r->parse_incomplete);
+    ASSERT_NOT_NULL(r->error_ranges);
+    ASSERT_FALSE(has_sql_entity(r, CBM_SQL_TABLE_REF, "runtime_table"));
+    ASSERT_GTE(count_sql_entities(r, CBM_SQL_UNPARSED_REGION), 1);
+    cbm_free_result(r);
+    PASS();
+}
+
+TEST(sqlglot_structural_statement_fallback) {
+    CBMFileResult *r = extract(
+        "DROP TABLE old_table;\n"
+        "ALTER TABLE current_table RENAME TO renamed_table;\n"
+        "TRUNCATE TABLE emptied_table;\n"
+        "CACHE TABLE cached_table AS SELECT amount FROM source_table;\n"
+        "VALUES (1 + 2), (3 * 4);\n",
+        CBM_LANG_SQL, "t", "operations.sql");
+    ASSERT_NOT_NULL(r);
+    ASSERT_FALSE(r->parse_incomplete);
+    ASSERT_EQ(count_sql_entities(r, CBM_SQL_STATEMENT), 5);
+    ASSERT(has_sql_entity(r, CBM_SQL_TABLE_REF, "old_table"));
+    ASSERT(has_sql_entity(r, CBM_SQL_TABLE_REF, "renamed_table"));
+    ASSERT(has_sql_entity(r, CBM_SQL_TABLE_REF, "emptied_table"));
+    ASSERT(has_sql_entity(r, CBM_SQL_TABLE_REF, "source_table"));
+    CBMSqlEntity *table = find_sql_entity(r, CBM_SQL_TABLE_REF, "old_table");
+    ASSERT_EQ(table->role, CBM_SQL_ROLE_NEUTRAL);
+    ASSERT_STR_EQ(table->syntax_path, "drop.tables[0]");
+    ASSERT_LT(r->sql_entities.count, 25);
+    cbm_free_result(r);
+    PASS();
+}
+
+TEST(sqlglot_opaque_command_is_preserved) {
+    CBMFileResult *r = extract("VACUUM some_table;\nSELECT 1;", CBM_LANG_SQL, "t", "opaque.sql");
+    ASSERT_NOT_NULL(r);
+    ASSERT_TRUE(r->parse_incomplete);
+    CBMSqlEntity *statement = find_sql_entity(r, CBM_SQL_STATEMENT, NULL);
+    ASSERT_NOT_NULL(statement);
+    ASSERT_STR_EQ(statement->expression_kind, "opaque_command");
+    ASSERT_STR_EQ(statement->operation, "VACUUM");
+    ASSERT_EQ(statement->start_byte, 0u);
+    ASSERT_EQ(count_sql_entities(r, CBM_SQL_TABLE_REF), 0);
+    ASSERT_EQ(count_sql_entities(r, CBM_SQL_UNPARSED_REGION), 1);
+    for (int i = 0; i < r->sql_entities.count; i++) {
+        CBMSqlEntity *e = &r->sql_entities.items[i];
+        if (e->kind == CBM_SQL_STATEMENT && strcmp(e->operation, "select") == 0)
+            ASSERT_FALSE(e->partial);
+    }
+    cbm_free_result(r);
+    PASS();
+}
+
+TEST(sqlglot_dialect_statement_registrations) {
+    const struct { const char *dialect, *sql, *kind; } cases[] = {
+        {"bigquery", "EXPORT DATA OPTIONS(uri='gs://bucket/*',format='CSV') AS SELECT * FROM t", "export"},
+        {"duckdb", "ATTACH 'test.db' AS db", "attach"},
+        {"duckdb", "INSTALL httpfs", "install"},
+        {"duckdb", "SUMMARIZE t", "summarize"},
+        {"duckdb", "PIVOT t ON x USING sum(y)", "pivot"},
+        {"snowflake", "UNDROP TABLE t", "undrop"},
+        {"snowflake", "PUT 'file:///tmp/x' @stage", "put"},
+        {"tsql", "EXEC dbo.p", "execute"},
+        {"oracle", "INSERT ALL INTO t VALUES (x) INTO u VALUES (x) SELECT x FROM s", "multitableinserts"},
+        {"teradata", "LOCKING TABLE t FOR READ SELECT * FROM t", "lockingstatement"},
+        {"hive", "LOAD DATA INPATH '/tmp/x' INTO TABLE t", "loaddata"},
+    };
+    for (size_t i = 0; i < sizeof(cases) / sizeof(cases[0]); i++) {
+        cbm_sql_dialect_hint_set(cases[i].dialect, "test");
+        CBMFileResult *r = extract(cases[i].sql, CBM_LANG_SQL, "t", "dialect.sql");
+        cbm_sql_dialect_hint_set(NULL, NULL);
+        ASSERT_NOT_NULL(r);
+        ASSERT_FALSE(r->parse_incomplete);
+        ASSERT_EQ(count_sql_entities(r, CBM_SQL_STATEMENT), 1);
+        CBMSqlEntity *statement = find_sql_entity(r, CBM_SQL_STATEMENT, NULL);
+        ASSERT_STR_EQ(statement->operation, cases[i].kind);
+        cbm_free_result(r);
+    }
+    PASS();
+}
+
+TEST(sqlglot_compact_predicate_context) {
+    CBMFileResult *r = extract(
+        "SELECT a.amount FROM accounts a WHERE a.status = 'active' "
+        "AND EXISTS (SELECT 1 FROM flags f WHERE f.id = a.id);",
+        CBM_LANG_SQL, "t", "predicate.sql");
+    ASSERT_NOT_NULL(r);
+    ASSERT_FALSE(r->parse_incomplete);
+    ASSERT(has_sql_entity(r, CBM_SQL_TABLE_REF, "flags"));
+    CBMSqlEntity *column = find_sql_entity(r, CBM_SQL_COLUMN_REF, "a.status");
+    ASSERT_NOT_NULL(column);
+    ASSERT_STR_EQ(column->clause_kind, "where");
+    ASSERT_EQ(count_sql_entities(r, CBM_SQL_CLAUSE), 0);
+    cbm_free_result(r);
+    PASS();
+}
+
+TEST(sqlglot_constant_ast_does_not_expand_graph) {
+    char sql[4096] = "VALUES (1";
+    for (int i = 0; i < 200; i++) strcat(sql, " + 1");
+    strcat(sql, ");");
+    CBMFileResult *r = extract(sql, CBM_LANG_SQL, "t", "constants.sql");
+    ASSERT_NOT_NULL(r);
+    ASSERT_FALSE(r->parse_incomplete);
+    ASSERT_EQ(r->sql_entities.count, 1);
+    cbm_free_result(r);
+    PASS();
+}
+
+TEST(sqlglot_recovery_reports_numeric_source_ranges) {
+    CBMFileResult *r = extract(
+        "create temporary view v_status (status string)\n"
+        "using csv options (header true, path '/tmp/status.csv');\n"
+        "insert into mart.status select status from v_status;\n"
+        "let tableLocation = '/data/mart/status';\n"
+        "coalesce_files(\"$tableLocation\", \"$tableLocation${'_coalesce'}\", 10);\n",
+        CBM_LANG_SQL, "t", "recovered.sql");
+    ASSERT_NOT_NULL(r);
+    ASSERT_TRUE(r->parse_incomplete);
+    ASSERT_NOT_NULL(r->error_ranges);
+    ASSERT_NULL(strstr(r->error_ranges, "recovered SQL island"));
+    for (const char *p = r->error_ranges; *p; p++)
+        ASSERT_TRUE((*p >= '0' && *p <= '9') || *p == '-' || *p == ',');
+    ASSERT_GTE(count_sql_entities(r, CBM_SQL_UNPARSED_REGION), 1);
+    cbm_free_result(r);
+    PASS();
+}
+
+TEST(sqlglot_unparsed_ranges_exclude_boundary_whitespace) {
+    CBMFileResult *r = extract(
+        "insert into mart.metric\n"
+        "select *\n"
+        "from staging.metric;\n"
+        "\n"
+        "let blocker = (select max(critical_flag) from staging.metric)[0][0];\n",
+        CBM_LANG_SQL, "t", "unparsed_boundaries.sql");
+    ASSERT_NOT_NULL(r);
+    ASSERT_TRUE(r->parse_incomplete);
+    ASSERT_NOT_NULL(r->error_ranges);
+    ASSERT_STR_EQ("5-5", r->error_ranges);
+
+    CBMSqlEntity *region = find_sql_entity(r, CBM_SQL_UNPARSED_REGION, NULL);
+    ASSERT_NOT_NULL(region);
+    ASSERT_EQ(region->start_line, 5u);
+    ASSERT_EQ(region->end_line, 5u);
+    ASSERT_EQ(region->start_column, 0u);
+    ASSERT_GT(region->end_column, region->start_column);
+    cbm_free_result(r);
+    PASS();
+}
+
+TEST(sqlglot_compact_cte_lineage) {
+    CBMFileResult *r = extract(
+        "INSERT INTO mart.report (customer_id, name)\n"
+        "WITH recent AS (SELECT customer_id FROM raw.orders)\n"
+        "SELECT r.customer_id, d.name\n"
+        "FROM recent r JOIN raw.dictionary d ON d.id = r.customer_id;\n",
+        CBM_LANG_SQL, "t", "lineage.sql");
+    ASSERT_NOT_NULL(r);
+    ASSERT_FALSE(r->has_error);
+    ASSERT(has_sql_entity(r, CBM_SQL_TABLE_REF, "mart.report"));
+    ASSERT(has_sql_entity(r, CBM_SQL_TABLE_REF, "raw.orders"));
+    ASSERT(has_sql_entity(r, CBM_SQL_CTE_REF, "recent"));
+    ASSERT(has_sql_entity(r, CBM_SQL_TABLE_REF, "raw.dictionary"));
+    ASSERT_EQ(count_sql_entities(r, CBM_SQL_CTE), 1);
+    ASSERT_GTE(count_sql_entities(r, CBM_SQL_QUERY), 2);
+    ASSERT_GTE(count_sql_entities(r, CBM_SQL_COLUMN_REF), 4);
+    CBMSqlEntity *cte_ref = find_sql_entity(r, CBM_SQL_CTE_REF, "recent");
+    ASSERT_NOT_NULL(cte_ref);
+    ASSERT_STR_EQ(cte_ref->ref_kind, "cte");
+    ASSERT_STR_EQ(cte_ref->clause_kind, "from");
+    cbm_free_result(r);
+    PASS();
+}
+
+TEST(sqlglot_create_like_source) {
+    CBMFileResult *r = extract("CREATE TABLE mart.copy LIKE raw.source;\n",
+                               CBM_LANG_SQL, "t", "like.sql");
+    ASSERT_NOT_NULL(r);
+    ASSERT_FALSE(r->has_error);
+    ASSERT(has_sql_entity(r, CBM_SQL_TABLE_REF, "mart.copy"));
+    ASSERT(has_sql_entity(r, CBM_SQL_TABLE_REF, "raw.source"));
+    CBMSqlEntity *statement = find_sql_entity(r, CBM_SQL_STATEMENT, NULL);
+    CBMSqlEntity *source = find_sql_entity(r, CBM_SQL_TABLE_REF, "raw.source");
+    ASSERT_NOT_NULL(statement);
+    ASSERT_NOT_NULL(source);
+    ASSERT_STR_EQ(statement->source_form, "like");
+    ASSERT_STR_EQ(source->clause_kind, "like");
+    ASSERT_STR_EQ(source->ref_kind, "physical");
+    ASSERT_EQ(source->statement_ordinal, statement->statement_ordinal);
+    cbm_free_result(r);
+    PASS();
+}
+
+TEST(sqlglot_profile_wins_and_command_tries_generic) {
+    const struct { const char *hint, *sql, *dialect; } cases[] = {
+        {"spark", "CREATE TABLE t(x INT) STORED AS PARQUET TBLPROPERTIES ('x'='y');", "spark"},
+        {"postgres", "SELECT 'TBLPROPERTIES' AS marker FROM t;", "postgres"},
+        {"tsql", "BEGIN;", "sqlglot"},
+    };
+    for (size_t i = 0; i < sizeof(cases) / sizeof(cases[0]); i++) {
+        cbm_sql_dialect_hint_set(cases[i].hint, "directory");
+        CBMFileResult *r = extract(cases[i].sql, CBM_LANG_SQL, "t", "dialect.sql");
+        cbm_sql_dialect_hint_set(NULL, NULL);
+        ASSERT_NOT_NULL(r);
+        ASSERT_FALSE(r->has_error);
+        CBMSqlEntity *statement = find_sql_entity(r, CBM_SQL_STATEMENT, NULL);
+        ASSERT_NOT_NULL(statement);
+        ASSERT_STR_EQ(statement->detail, cases[i].dialect);
+        cbm_free_result(r);
+    }
+    PASS();
+}
+
+TEST(sqlglot_insert_overwrite_preserves_write_mode_and_statement_owner) {
+    cbm_sql_dialect_hint_set("spark", "test");
+    CBMFileResult *r = extract(
+        "INSERT OVERWRITE TABLE mart.out SELECT id FROM raw.input;\n",
+        CBM_LANG_SQL, "t", "overwrite.sql");
+    cbm_sql_dialect_hint_set(NULL, NULL);
+    ASSERT_NOT_NULL(r);
+    ASSERT_FALSE(r->has_error);
+    CBMSqlEntity *statement = find_sql_entity(r, CBM_SQL_STATEMENT, NULL);
+    CBMSqlEntity *target = find_sql_entity(r, CBM_SQL_TABLE_REF, "mart.out");
+    CBMSqlEntity *source = find_sql_entity(r, CBM_SQL_TABLE_REF, "raw.input");
+    ASSERT_NOT_NULL(statement);
+    ASSERT_NOT_NULL(target);
+    ASSERT_NOT_NULL(source);
+    ASSERT_STR_EQ(statement->operation, "insert");
+    ASSERT_STR_EQ(statement->write_mode, "overwrite");
+    ASSERT_STR_EQ(target->clause_kind, "insert_target");
+    ASSERT_STR_EQ(source->clause_kind, "from");
+    ASSERT_EQ(source->statement_ordinal, statement->statement_ordinal);
+    cbm_free_result(r);
+    PASS();
+}
+
+TEST(sqlglot_preserves_join_set_and_assignment_context) {
+    CBMFileResult *r = extract(
+        "UPDATE mart.out AS o SET amount = s.amount "
+        "FROM raw.source AS s WHERE o.id = s.id;\n"
+        "SELECT id FROM a UNION ALL SELECT id FROM b;\n",
+        CBM_LANG_SQL, "t", "semantics.sql");
+    ASSERT_NOT_NULL(r);
+    ASSERT_FALSE(r->has_error);
+    ASSERT_GTE(count_sql_entities(r, CBM_SQL_ASSIGNMENT), 1);
+    CBMSqlEntity *filter = find_sql_entity(r, CBM_SQL_COLUMN_REF, "o.id");
+    ASSERT_NOT_NULL(filter);
+    ASSERT_STR_EQ(filter->clause_kind, "where");
+    CBMSqlEntity *set_query = find_sql_entity(r, CBM_SQL_QUERY, NULL);
+    bool found_all = false;
+    for (int i = 0; i < r->sql_entities.count; i++) {
+        CBMSqlEntity *e = &r->sql_entities.items[i];
+        if (e->kind == CBM_SQL_QUERY && e->modifier && strcmp(e->modifier, "all") == 0)
+            found_all = true;
+    }
+    (void)set_query;
+    ASSERT_TRUE(found_all);
+    cbm_free_result(r);
+    PASS();
+}
+
+TEST(sqlglot_cte_resolution_is_lexically_scoped) {
+    CBMFileResult *r = extract(
+        "WITH x AS (SELECT id FROM outer_source) "
+        "SELECT * FROM x WHERE EXISTS (WITH x AS (SELECT id FROM inner_source) SELECT * FROM x);\n",
+        CBM_LANG_SQL, "t", "cte_scope.sql");
+    ASSERT_NOT_NULL(r);
+    ASSERT_EQ(count_sql_entities(r, CBM_SQL_CTE), 2);
+    for (int i = 0; i < r->sql_entities.count; i++) {
+        CBMSqlEntity *e = &r->sql_entities.items[i];
+        if (e->kind == CBM_SQL_CTE_REF) {
+            ASSERT_GTE(e->resolved_entity, 0);
+            ASSERT_TRUE(e->resolved_entity < r->sql_entities.count);
+            ASSERT_TRUE(r->sql_entities.items[e->resolved_entity].kind == CBM_SQL_CTE);
         }
     }
-    ASSERT(found_users);
     cbm_free_result(r);
+    PASS();
+}
+
+TEST(sql_dialect_registry_returns_only_ranked_candidates) {
+    CBMSqlDialectCandidate candidates[CBM_SQL_DIALECT_CANDIDATE_MAX] = {{0}};
+    const char *redshift = "CREATE TABLE x (id INT) DISTKEY(id) SORTKEY(id)";
+    int count = cbm_sql_dialect_candidates(redshift, strlen(redshift), candidates);
+    ASSERT_TRUE(count == 1);
+    ASSERT_STR_EQ(candidates[0].name, "redshift");
+
+    const char *shared = "SELECT * FROM t QUALIFY row_number() OVER () = 1";
+    count = cbm_sql_dialect_candidates(shared, strlen(shared), candidates);
+    ASSERT_TRUE(count == 3);
+    ASSERT_TRUE(candidates[0].score == candidates[1].score);
+    PASS();
+}
+
+TEST(sql_dialect_hint_is_thread_local_extraction_context) {
+    const char *source = NULL;
+    cbm_sql_dialect_hint_set("spark", "directory");
+    ASSERT_STR_EQ(cbm_sql_dialect_hint_get(&source), "spark");
+    ASSERT_STR_EQ(source, "directory");
+    cbm_sql_dialect_hint_set(NULL, NULL);
+    ASSERT_TRUE(cbm_sql_dialect_hint_get(&source) == NULL);
+    ASSERT_TRUE(source == NULL);
     PASS();
 }
 
@@ -3054,8 +3474,8 @@ TEST(dbt_plain_sql_untouched) {
                                CBM_LANG_SQL, "t", "schema.sql");
     ASSERT_NOT_NULL(r);
     ASSERT_FALSE(r->has_error);
-    ASSERT(has_def(r, "Table", "users"));
-    ASSERT(has_def(r, "View", "active_users"));
+    ASSERT(has_sql_entity(r, CBM_SQL_TABLE_REF, "users"));
+    ASSERT(has_sql_entity(r, CBM_SQL_TABLE_REF, "active_users"));
     ASSERT_FALSE(has_def(r, "Model", "schema"));
     cbm_free_result(r);
     PASS();
@@ -4803,6 +5223,34 @@ TEST(json_package_json_deps) {
     ASSERT(has_def(r, "Variable", "dependencies"));
     ASSERT(has_def(r, "Variable", "express"));
     ASSERT(has_def(r, "Variable", "lodash"));
+    cbm_free_result(r);
+    PASS();
+}
+
+TEST(json_deep_config_keys_and_values) {
+    CBMFileResult *r = extract(
+        "{\"workflow\":{\"params\":[{\"name\":\"sql.file\",\"value\":\"x.sql\"},"
+        "{\"name\":\"table.name\",\"value\":\"target\"}],"
+        "\"api_token\":\"token-value\"}}",
+        CBM_LANG_JSON, "t", "resources/config/workflow.json");
+    ASSERT_NOT_NULL(r);
+    ASSERT_FALSE(r->has_error);
+
+    const CBMDefinition *workflow = find_config_def(r, "workflow");
+    const CBMDefinition *params = find_config_def(r, "workflow.params");
+    const CBMDefinition *name0 = find_config_def(r, "workflow.params[0].name");
+    const CBMDefinition *name1 = find_config_def(r, "workflow.params[1].name");
+    const CBMDefinition *token = find_config_def(r, "workflow.api_token");
+    ASSERT_NOT_NULL(workflow);
+    ASSERT_NOT_NULL(params);
+    ASSERT_NOT_NULL(name0);
+    ASSERT_NOT_NULL(name1);
+    ASSERT_NOT_NULL(token);
+    ASSERT_STR_EQ(params->config_parent_qn, workflow->qualified_name);
+    ASSERT_STR_EQ(def_extra_prop(name0, "value"), "sql.file");
+    ASSERT_STR_EQ(def_extra_prop(name1, "value"), "table.name");
+    ASSERT(strcmp(name0->qualified_name, name1->qualified_name) != 0);
+    ASSERT_STR_EQ(def_extra_prop(token, "value"), "token-value");
     cbm_free_result(r);
     PASS();
 }
@@ -13119,7 +13567,17 @@ TEST(python_namespace_facts_multiple_bindings_and_unsupported_effects) {
     PASS();
 }
 
+#include "test_sql_audit.h"
+
 SUITE(extraction) {
+    RUN_TEST(sql_audit_root_cte_insert);
+    RUN_TEST(sql_audit_cte_self_reference_needs_recursive);
+    RUN_TEST(sql_audit_partition_lateral_values);
+    RUN_TEST(sql_audit_optimizer_hint_is_not_missing_data);
+    RUN_TEST(sql_audit_dsl_only_has_coverage_gap);
+    RUN_TEST(sql_audit_projection_loss_is_not_complete);
+    RUN_TEST(yaml_audit_nested_values_and_aliases);
+    RUN_TEST(yaml_audit_anchored_sequence_items);
     RUN_TEST(extract_compact_keeps_every_field_and_shrinks_the_arena);
     RUN_TEST(extract_compact_is_idempotent_and_survives_empty_results);
     RUN_TEST(extract_spill_round_trip_keeps_every_field);
@@ -13297,6 +13755,7 @@ SUITE(extraction) {
 
     /* Markup/Config */
     RUN_TEST(yaml_variables);
+    RUN_TEST(ctl_yaml_deep_config_keys_and_values);
     RUN_TEST(hcl_blocks);
     RUN_TEST(sql_create_table);
     RUN_TEST(dockerfile_stages);
@@ -13377,6 +13836,24 @@ SUITE(extraction) {
     RUN_TEST(sql_ddl_node_labels);
     RUN_TEST(sql_view_lineage_usages);
     RUN_TEST(sql_schema_qualified_name);
+    RUN_TEST(sqlglot_dynamic_identifiers_and_gsql_islands);
+    RUN_TEST(sqlglot_dynamic_variable_refs_are_normalized);
+    RUN_TEST(sqlglot_dynamic_sql_is_reported_incomplete);
+    RUN_TEST(sqlglot_structural_statement_fallback);
+    RUN_TEST(sqlglot_opaque_command_is_preserved);
+    RUN_TEST(sqlglot_dialect_statement_registrations);
+    RUN_TEST(sqlglot_compact_predicate_context);
+    RUN_TEST(sqlglot_constant_ast_does_not_expand_graph);
+    RUN_TEST(sqlglot_recovery_reports_numeric_source_ranges);
+    RUN_TEST(sqlglot_unparsed_ranges_exclude_boundary_whitespace);
+    RUN_TEST(sqlglot_compact_cte_lineage);
+    RUN_TEST(sqlglot_create_like_source);
+    RUN_TEST(sqlglot_insert_overwrite_preserves_write_mode_and_statement_owner);
+    RUN_TEST(sqlglot_profile_wins_and_command_tries_generic);
+    RUN_TEST(sqlglot_preserves_join_set_and_assignment_context);
+    RUN_TEST(sqlglot_cte_resolution_is_lexically_scoped);
+    RUN_TEST(sql_dialect_registry_returns_only_ranked_candidates);
+    RUN_TEST(sql_dialect_hint_is_thread_local_extraction_context);
     RUN_TEST(dbt_model_and_ref_lineage);
     RUN_TEST(dbt_source_and_two_arg_ref);
     RUN_TEST(dbt_ignores_non_dbt_jinja);
@@ -13485,6 +13962,7 @@ SUITE(extraction) {
     RUN_TEST(json_empty_object);
     RUN_TEST(json_boolean_null_values);
     RUN_TEST(json_package_json_deps);
+    RUN_TEST(json_deep_config_keys_and_values);
     RUN_TEST(xml_basic_element);
     RUN_TEST(xml_self_closing_tag);
     RUN_TEST(xml_empty_document);

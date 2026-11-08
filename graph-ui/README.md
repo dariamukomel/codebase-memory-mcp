@@ -59,9 +59,12 @@ From the repository root:
 make -f Makefile.cbm cbm-with-ui
 ```
 
-This installs the locked frontend dependencies, builds `dist/` and embeds it in the
-native binary. For frontend development, run `npm ci` and `npm run dev` in this
-directory. Vite listens on 5173 and proxies `/api` and `/rpc` to the local server on
+This installs the locked frontend dependencies without native dependency hooks,
+builds `dist/` and embeds it in the native binary. The UI uses `onnxruntime-web`;
+the unused `onnxruntime-node` postinstall is deliberately disabled so a browser
+build does not download a native archive from NuGet. For frontend development,
+run `npm ci --ignore-scripts` and `npm run dev` in this directory. Vite listens on
+5173 and proxies `/api` and `/rpc` to the local server on
 9749. `npm run build` creates a production bundle.
 
 The standalone test preview in `tools/lib/static-proxy.mjs` snapshots `dist/` when

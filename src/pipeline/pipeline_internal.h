@@ -436,6 +436,10 @@ typedef struct {
                                * NULL-safe. */
     int mode;                 /* cbm_index_mode_t (0=full, 1=moderate, 2=fast, 3=advanced) */
 
+    /* Optional project-wide SQL dialect profile. Incremental repair supplies
+     * the profile built from all discovered files, not merely changed files. */
+    const void *sql_dialect_profile;
+
     /* Extraction result cache (sequential pipeline optimization).
      * When non-NULL, pass_definitions stores results here instead of freeing,
      * and pass_calls/usages/semantic reuse cached results instead of re-extracting.
@@ -1226,6 +1230,9 @@ void cbm_pipeline_create_route_nodes(cbm_gbuf_t *gb);
 int cbm_pipeline_pass_definitions(cbm_pipeline_ctx_t *ctx, const cbm_file_info_t *files,
                                   int file_count);
 
+int cbm_pipeline_sql_structure(cbm_pipeline_ctx_t *ctx, const CBMFileResult *result,
+                               const char *rel_path);
+
 int cbm_pipeline_pass_k8s(cbm_pipeline_ctx_t *ctx, const cbm_file_info_t *files, int file_count);
 
 int cbm_pipeline_pass_calls(cbm_pipeline_ctx_t *ctx, const cbm_file_info_t *files, int file_count);
@@ -1656,7 +1663,11 @@ int cbm_pipeline_build_fresh_semantic_manifest(cbm_pipeline_t *p, const char *pr
  *      (pass_ansible.c). An external Chart is keyed by its publisher URL.
  *      An index built before holds none of them, so it rebuilds once on
  *      upgrade. */
-enum { CBM_SEMANTIC_INDEX_VERSION = 9 };
+/* v11: caller-scoped ConfigBinding nodes for uses inside JSON/YAML. Older
+ * generations must rebuild even when the repository files are unchanged. */
+/* v12: anchored YAML list items, context-expanded config paths, lazy SQL bindings. */
+enum { CBM_SEMANTIC_INDEX_VERSION = 12 };
+
 
 typedef struct {
     cbm_gbuf_t *gbuf;

@@ -2008,7 +2008,10 @@ static void predump_sem(cbm_pipeline_ctx_t *ctx) {
     cbm_pipeline_pass_semantic_edges(ctx);
 }
 static void predump_cfg(cbm_pipeline_ctx_t *ctx) {
-    cbm_pipeline_pass_configlink(ctx);
+    if (cbm_pipeline_pass_configlink(ctx) < 0) {
+        cbm_log_error("configlinker.failed", "reason", "cannot_complete_config_variants");
+        if (ctx->cancelled) atomic_store(ctx->cancelled, 1);
+    }
 }
 static void predump_operator(cbm_pipeline_ctx_t *ctx) {
     (void)cbm_pipeline_pass_operator(ctx);
@@ -2148,7 +2151,7 @@ static void log_result_census(const char *tag, CBMFileResult **cache, int file_c
             str_def_misc += census_len(def->route_path) + census_len(def->route_method) +
                             census_len(def->impl_trait) + census_len(def->http_base_url) +
                             census_list(def->extra_props) + census_len(def->decl_namespace) +
-                            census_len(def->variant_key);
+                            census_len(def->variant_key) + census_len(def->config_parent_qn);
         }
         for (int c = 0; c < r->calls.count; c++) {
             const CBMCall *call = &r->calls.items[c];

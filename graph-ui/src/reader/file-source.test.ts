@@ -89,7 +89,7 @@ describe('loadFileDocument', () => {
     });
 
     it('faellt auf den File-Knoten zurueck, wenn es keinen Modul-Knoten gibt', async () => {
-        const { client } = clientFor([
+        const { client, rpc } = clientFor([
             noModuleRoute,
             {
                 tool: 'query_graph',
@@ -101,11 +101,13 @@ describe('loadFileDocument', () => {
 
         const doc = await loadFileDocument(client, PROJECT, 'src/services/userService.ts');
 
-        expect(doc.qualifiedName).toBe('probe-small.src.services.userService');
+        expect(doc.qualifiedName).toBe('probe-small.src.services.userService.ts.__file__');
         // Der Rueckfallweg bringt keine Spanne mit, also ist die Dateilaenge
         // unbekannt und wird nicht erfunden.
         expect(doc.fileLastLine).toBeUndefined();
-        expect(doc.qnSource).toBe('derived');
+        expect(doc.qnSource).toBe('graph-file');
+        expect(rpc.callsTo('get_code_snippet')[0]?.args['qualified_name'])
+            .toBe('probe-small.src.services.userService.ts.__file__');
     });
 
     it('benennt die fehlenden Zeilen, wenn der Server gekappt hat', async () => {

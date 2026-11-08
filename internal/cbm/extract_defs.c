@@ -10649,6 +10649,287 @@ static const char *config_scalar_value(CBMArena *a, const char *raw) {
     return v ? strip_surrounding_quotes(v) : NULL;
 }
 
+/* Deep config keys are intentionally enabled for JSON and CTL YAML only. Helm
+ * values and Kubernetes manifests keep their existing bounded policies. */
+static bool is_ctl_yaml_file(const char *rel) {
+    if (!rel) return false;
+    const char *base = strrchr(rel, '/');
+    base = base ? base + 1 : rel;
+    if (strcmp(base, "ctl.yml") == 0 || strcmp(base, "ctl.yaml") == 0) return true;
+    return strstr(rel, "/ctl/") != NULL || strncmp(rel, "ctl/", 4) == 0;
+}
+
+static bool config_pair_kind(const char *kind, CBMLanguage lang) {
+    if (lang == CBM_LANG_JSON) return strcmp(kind, "pair") == 0;
+    return strcmp(kind, "block_mapping_pair") == 0 || strcmp(kind, "flow_pair") == 0;
+}
+
+static bool config_mapping_kind(const char *kind, CBMLanguage lang) {
+    if (lang == CBM_LANG_JSON) return strcmp(kind, "object") == 0;
+    return strcmp(kind, "block_mapping") == 0 || strcmp(kind, "flow_mapping") == 0;
+}
+
+static bool config_sequence_kind(const char *kind, CBMLanguage lang) {
+    if (lang == CBM_LANG_JSON) return strcmp(kind, "array") == 0;
+    return strcmp(kind, "block_sequence") == 0 || strcmp(kind, "flow_sequence") == 0;
+}
+
+/* Find the first structured value below YAML's block_node/flow_node wrappers. */
+static const char *config_container_kind(CBMExtractCtx *ctx, TSNode value) {
+    TSNode stack[CBM_SZ_32];
+    int count = 0;
+    stack[count++] = value;
+    while (count > 0) {
+        TSNode node = stack[--count];
+        const char *kind = ts_node_type(node);
+        if (config_mapping_kind(kind, ctx->language)) {
+            return "mapping";
+        }
+        if (config_sequence_kind(kind, ctx->language)) {
+            return "sequence";
+        }
+        uint32_t n = ts_node_named_child_count(node);
+        for (uint32_t i = 0; i < n && count < CBM_SZ_32; i++) {
+            stack[count++] = ts_node_named_child(node, i);
+        }
+    }
+    return NULL;
+}
+
+static const char *config_scalar_kind(const char *value) {
+    if (!value || !value[0] || strcmp(value, "null") == 0 || strcmp(value, "~") == 0) {
+        return "null";
+    }
+    if (strcmp(value, "true") == 0 || strcmp(value, "false") == 0) return "boolean";
+    char *end = NULL;
+    (void)strtod(value, &end);
+    if (end && end != value && *end == '\0') return "number";
+    if (value[0] == '*') return "alias";
+    return "string";
+}
+
+static char *config_identity_segment(CBMArena *a, const char *key) {
+    size_t n = strlen(key);
+    char *out = cbm_arena_alloc(a, n * 3 + 1);
+    if (!out) return NULL;
+    static const char hex[] = "0123456789ABCDEF";
+    size_t p = 0;
+    for (size_t i = 0; i < n; i++) {
+        unsigned char c = (unsigned char)key[i];
+        if (isalnum(c) || c == '_' || c == '-') {
+            out[p++] = (char)c;
+        } else {
+            out[p++] = '_';
+            out[p++] = hex[c >> 4];
+            out[p++] = hex[c & 15];
+        }
+    }
+    out[p] = '\0';
+    return out;
+}
+
+typedef struct {
+    TSNode node;
+    const char *path_prefix;
+    const char *identity_prefix;
+    const char *parent_qn;
+    bool sequence_item;
+} ConfigWalkFrame;
+
+static bool config_frame_push(ConfigWalkFrame **items, int *count, int *cap,
+                              ConfigWalkFrame frame) {
+    if (*count == *cap) {
+        int next = *cap ? *cap * PAIR_LEN : CBM_SZ_256;
+        ConfigWalkFrame *grown = realloc(*items, (size_t)next * sizeof(*grown));
+        if (!grown) return false;
+        *items = grown;
+        *cap = next;
+    }
+    (*items)[(*count)++] = frame;
+    return true;
+}
+
+static const char **config_extra_props(CBMExtractCtx *ctx, const char *path,
+                                       const char *kind, const char *value,
+                                       const char *anchor, const char *alias) {
+    const char **props = cbm_arena_alloc(ctx->arena, 15 * sizeof(*props));
+    if (!props) return NULL;
+    int n = 0;
+    props[n++] = "config_key"; props[n++] = "true";
+    props[n++] = "key_path"; props[n++] = path;
+    props[n++] = "value_kind"; props[n++] = kind;
+    if (value) {
+        props[n++] = "value"; props[n++] = value;
+    }
+    if (value && (strstr(value, "${") || strstr(value, "{{") || value[0] == '$')) {
+        props[n++] = "is_template"; props[n++] = "true";
+    }
+    if (anchor) { props[n++] = "yaml_anchor"; props[n++] = anchor; }
+    if (alias) { props[n++] = "yaml_alias"; props[n++] = alias; }
+    props[n] = NULL;
+    return props;
+}
+
+/* Inspect wrappers only: an anchor in a nested mapping belongs to that key,
+ * not to every ancestor. Keep aliases as references instead of duplicating
+ * the anchored subtree and losing source coordinates. */
+static const char *config_yaml_marker(CBMExtractCtx *ctx, TSNode node, const char *want) {
+    if (ts_node_is_null(node) || ctx->language != CBM_LANG_YAML) return NULL;
+    const char *kind = ts_node_type(node);
+    if (!strcmp(kind, want)) {
+        const char *raw = cbm_node_text(ctx->arena, node, ctx->source);
+        return raw && (*raw == '&' || *raw == '*') ? raw + 1 : raw;
+    }
+    if (config_mapping_kind(kind, ctx->language) || config_sequence_kind(kind, ctx->language)) return NULL;
+    uint32_t n = ts_node_named_child_count(node);
+    for (uint32_t i = 0; i < n; i++) {
+        const char *found = config_yaml_marker(ctx, ts_node_named_child(node, i), want);
+        if (found) return found;
+    }
+    return NULL;
+}
+
+static const char *config_leaf_value(CBMExtractCtx *ctx, TSNode node) {
+    if (ts_node_is_null(node)) return NULL;
+    if (ctx->language == CBM_LANG_YAML) {
+        const char *kind = ts_node_type(node);
+        if (!strcmp(kind, "anchor") || !strcmp(kind, "tag") || !strcmp(kind, "comment")) return NULL;
+        if (!strcmp(kind, "block_node") || !strcmp(kind, "flow_node") ||
+            !strcmp(kind, "block_sequence_item")) {
+            uint32_t n = ts_node_named_child_count(node);
+            for (uint32_t i = 0; i < n; i++) {
+                const char *value = config_leaf_value(ctx, ts_node_named_child(node, i));
+                if (value) return value;
+            }
+            return NULL;
+        }
+    }
+    return config_scalar_value(ctx->arena, cbm_node_text(ctx->arena, node, ctx->source));
+}
+
+/* Materialize every mapping key while keeping the graph compact: containers
+ * become key nodes, scalar values stay properties, and sequence indices only
+ * disambiguate paths/QNs (they do not become nodes). */
+static void extract_deep_config_keys(CBMExtractCtx *ctx, TSNode root) {
+    ConfigWalkFrame *stack = NULL;
+    int count = 0, cap = 0;
+    if (!config_frame_push(&stack, &count, &cap, (ConfigWalkFrame){.node = root})) return;
+    while (count > 0) {
+        ConfigWalkFrame frame = stack[--count];
+        TSNode node = frame.node;
+        const char *node_kind = ts_node_type(node);
+        /* An anchor on `- &name` belongs to the whole list item, not to
+         * one of its keys. Only anchored items need an extra container. */
+        const char *item_anchor = frame.sequence_item
+            ? config_yaml_marker(ctx, node, "anchor") : NULL;
+        if (item_anchor) {
+            CBMDefinition def = {0};
+            def.name = "@anchor"; def.label = "Variable"; def.file_path = ctx->rel_path;
+            def.qualified_name = cbm_fqn_compute_source_lang(ctx->arena, ctx->project,
+                ctx->rel_path, cbm_arena_sprintf(ctx->arena, "%s.anchor",
+                    frame.identity_prefix), ctx->language);
+            def.start_line = ts_node_start_point(node).row + TS_LINE_OFFSET;
+            def.end_line = ts_node_end_point(node).row + TS_LINE_OFFSET;
+            def.config_parent_qn = frame.parent_qn; def.is_config_key = true;
+            const char *kind = config_container_kind(ctx, node);
+            const char *value = kind ? NULL : config_leaf_value(ctx, node);
+            def.extra_props = config_extra_props(ctx, frame.path_prefix,
+                kind ? kind : config_scalar_kind(value), value, item_anchor, NULL);
+            cbm_defs_push(&ctx->result->defs, ctx->arena, def);
+            frame.parent_qn = def.qualified_name;
+        }
+        if (config_pair_kind(node_kind, ctx->language)) {
+            TSNode key_node = ts_node_child_by_field_name(node, TS_FIELD("key"));
+            TSNode value_node = ts_node_child_by_field_name(node, TS_FIELD("value"));
+            if (ts_node_is_null(key_node)) continue;
+            char *raw_key = cbm_node_text(ctx->arena, key_node, ctx->source);
+            const char *key = strip_surrounding_quotes(raw_key);
+            if (!key || !key[0]) continue;
+            char *segment = config_identity_segment(ctx->arena, key);
+            if (!segment) continue;
+            const char *path = frame.path_prefix && frame.path_prefix[0]
+                                   ? cbm_arena_sprintf(ctx->arena, "%s.%s", frame.path_prefix, key)
+                                   : cbm_arena_strdup(ctx->arena, key);
+            const char *identity = frame.identity_prefix && frame.identity_prefix[0]
+                                       ? cbm_arena_sprintf(ctx->arena, "%s.%s",
+                                                           frame.identity_prefix, segment)
+                                       : cbm_arena_sprintf(ctx->arena, "__config__.%s", segment);
+            if (!path || !identity) continue;
+            const char *container = ts_node_is_null(value_node)
+                                        ? NULL : config_container_kind(ctx, value_node);
+            const char *value = NULL;
+            const char *value_kind = container;
+            if (!container && !ts_node_is_null(value_node)) {
+                value = config_leaf_value(ctx, value_node);
+                value_kind = config_scalar_kind(value);
+            }
+            CBMDefinition def = {0};
+            def.name = key;
+            def.qualified_name = cbm_fqn_compute_source_lang(
+                ctx->arena, ctx->project, ctx->rel_path, identity, ctx->language);
+            def.label = "Variable";
+            def.file_path = ctx->rel_path;
+            def.start_line = ts_node_start_point(node).row + TS_LINE_OFFSET;
+            def.end_line = ts_node_end_point(node).row + TS_LINE_OFFSET;
+            def.config_parent_qn = frame.parent_qn;
+            def.is_config_key = true;
+            def.extra_props =
+                config_extra_props(ctx, path, value_kind ? value_kind : "null", value,
+                                   config_yaml_marker(ctx, value_node, "anchor"),
+                                   config_yaml_marker(ctx, value_node, "alias"));
+            cbm_defs_push(&ctx->result->defs, ctx->arena, def);
+            if (!ts_node_is_null(value_node) && container && def.qualified_name) {
+                (void)config_frame_push(&stack, &count, &cap,
+                    (ConfigWalkFrame){.node = value_node, .path_prefix = path,
+                                      .identity_prefix = identity,
+                                      .parent_qn = def.qualified_name});
+            }
+            continue;
+        }
+
+        if (ctx->language == CBM_LANG_YAML && !strcmp(node_kind, "alias")) {
+            const char *raw = cbm_node_text(ctx->arena, node, ctx->source);
+            CBMDefinition def = {0};
+            def.name = "@alias"; def.label = "Variable"; def.file_path = ctx->rel_path;
+            def.qualified_name = cbm_fqn_compute_source_lang(ctx->arena, ctx->project,
+                ctx->rel_path, cbm_arena_sprintf(ctx->arena, "%s.alias",
+                    frame.identity_prefix ? frame.identity_prefix : "__config__"), ctx->language);
+            def.start_line = ts_node_start_point(node).row + TS_LINE_OFFSET;
+            def.end_line = ts_node_end_point(node).row + TS_LINE_OFFSET;
+            def.config_parent_qn = frame.parent_qn; def.is_config_key = true;
+            def.extra_props = config_extra_props(ctx, frame.path_prefix ? frame.path_prefix : "",
+                "alias", raw, NULL, raw && raw[0] == '*' ? raw + 1 : raw);
+            cbm_defs_push(&ctx->result->defs, ctx->arena, def);
+            continue;
+        }
+
+        uint32_t n = ts_node_named_child_count(node);
+        bool sequence = config_sequence_kind(node_kind, ctx->language);
+        for (uint32_t rev = n; rev > 0; rev--) {
+            uint32_t i = rev - 1;
+            const char *path = frame.path_prefix;
+            const char *identity = frame.identity_prefix;
+            if (sequence) {
+                path = path && path[0]
+                           ? cbm_arena_sprintf(ctx->arena, "%s[%u]", path, i)
+                           : cbm_arena_sprintf(ctx->arena, "[%u]", i);
+                identity = identity && identity[0]
+                               ? cbm_arena_sprintf(ctx->arena, "%s.i%u", identity, i)
+                               : cbm_arena_sprintf(ctx->arena, "__config__.i%u", i);
+            }
+            if (!config_frame_push(&stack, &count, &cap,
+                    (ConfigWalkFrame){.node = ts_node_named_child(node, i),
+                                      .path_prefix = path, .identity_prefix = identity,
+                                      .parent_qn = frame.parent_qn,
+                                      .sequence_item = sequence})) {
+                free(stack);
+                return;
+            }
+        }
+    }
+    free(stack);
+}
+
 // Value of `pair` when its key is `want`, else NULL. A YAML block_mapping_pair
 // and a JSON pair both expose key/value fields, so one reader serves both.
 static const char *config_pair_value_if_key(CBMExtractCtx *ctx, TSNode pair, const char *want) {
@@ -10753,6 +11034,12 @@ static void extract_variables(CBMExtractCtx *ctx, TSNode root, const CBMLangSpec
         return;
     }
 
+    if (ctx->language == CBM_LANG_JSON ||
+        (ctx->language == CBM_LANG_YAML && is_ctl_yaml_file(ctx->rel_path))) {
+        extract_deep_config_keys(ctx, root);
+        return;
+    }
+
     // Helm values.yaml: only top-level keys, not the per-leaf flood.
     if (ctx->language == CBM_LANG_YAML && is_helm_values_file(ctx->rel_path)) {
         extract_yaml_toplevel_keys(ctx, root);
@@ -10763,6 +11050,11 @@ static void extract_variables(CBMExtractCtx *ctx, TSNode root, const CBMLangSpec
     // status) are its envelope, which its Resource node carries; as Variables
     // they repeated in every manifest and fed name-similarity config links.
     if (ctx->language == CBM_LANG_YAML && yaml_is_k8s_object(ctx, root)) {
+        return;
+    }
+
+    if (ctx->language == CBM_LANG_YAML) {
+        extract_deep_config_keys(ctx, root);
         return;
     }
 

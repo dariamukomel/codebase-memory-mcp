@@ -74,6 +74,8 @@ enum { PP_CSHARP_M_PREFIX_LEN = 2 };
 #include "result_spill.h"
 #include "foundation/platform.h"     /* cbm_resolve_cache_dir */
 #include "pipeline/pass_lsp_cross.h" /* cbm_pxc_* helpers for fused cross-file LSP */
+#include "pipeline/sql_dialect_profile.h"
+#include "sql_dialect.h"
 #include "pipeline/lsp_resolve.h"
 #include "pipeline/laravel_routing.h"
 #include "lsp/rust_cargo.h"
@@ -679,6 +681,7 @@ typedef struct {
     int file_count;
     const char *project_name;
     const char *repo_path;
+    const CBMSqlDialectProfile *sql_dialect_profile;
 
     extract_worker_state_t *workers;
     int max_workers;
@@ -1348,6 +1351,7 @@ static void extract_worker(int worker_id, void *ctx_ptr) {
         /* Export XML uses the same cache slot as every physical file, so its
          * generated classes are composed before entering the common registry
          * and resolution lifecycle. */
+        cbm_sql_dialect_profile_apply_path(ec->sql_dialect_profile, fi->rel_path);
         CBMFileResult *result =
             cbm_pipeline_test_force_extract_null(ec->pctx, fi->language) ? NULL
             : fi->language == CBM_LANG_OBJECTSCRIPT_EXPORT
@@ -1358,6 +1362,7 @@ static void extract_worker(int worker_id, void *ctx_ptr) {
                                                  fi->rel_path, CBM_EXTRACT_BUDGET, NULL, NULL,
                                                  ec->macro_table, ec->return_type_table,
                                                  ec->pctx->test_declarations);
+        cbm_sql_dialect_hint_set(NULL, NULL);
 
         uint64_t file_elapsed_ms = (extract_now_ns() - file_t0) / PP_USEC_PER_MS;
 
@@ -1659,6 +1664,12 @@ int cbm_parallel_extract_ex(cbm_pipeline_ctx_t *ctx, const cbm_file_info_t *file
     /* ObjectScript macro table (NULL when no .inc include files present). */
     CBMMacroTable *pp_macro_table =
         cbm_build_macro_table_from_files(files, file_count, ctx->repo_path);
+    CBMSqlDialectProfile *owned_sql_dialect_profile = NULL;
+    const CBMSqlDialectProfile *sql_dialect_profile = ctx->sql_dialect_profile;
+    if (!sql_dialect_profile) {
+        owned_sql_dialect_profile = cbm_sql_dialect_profile_build(files, file_count);
+        sql_dialect_profile = owned_sql_dialect_profile;
+    }
 
     extract_ctx_t ec = {
         .files = files,
@@ -1666,6 +1677,7 @@ int cbm_parallel_extract_ex(cbm_pipeline_ctx_t *ctx, const cbm_file_info_t *file
         .file_count = file_count,
         .project_name = ctx->project_name,
         .repo_path = ctx->repo_path,
+        .sql_dialect_profile = sql_dialect_profile,
         .workers = workers,
         .max_workers = worker_count,
         .result_cache = result_cache,
@@ -1768,6 +1780,7 @@ int cbm_parallel_extract_ex(cbm_pipeline_ctx_t *ctx, const cbm_file_info_t *file
     cbm_aligned_free(workers);
     free(sorted);
     cbm_macro_table_free(pp_macro_table); /* ObjectScript macro table (NULL-safe) */
+    cbm_sql_dialect_profile_free(owned_sql_dialect_profile);
 
     /* The over-budget verdict outranks the cancel sentinel: a caller must be
      * able to name the cause, and the orchestrator discards the staging DB on
@@ -1812,7 +1825,7 @@ static int register_and_link_def(cbm_pipeline_ctx_t *ctx, const CBMDefinition *d
     }
     /* Registry membership is defined ONCE by cbm_label_is_registry_symbol
      * (helpers.c) — see pass_definitions.c for the per-label rationale. */
-    if (cbm_label_is_registry_symbol(def->label)) {
+    if (!def->is_config_key && cbm_label_is_registry_symbol(def->label)) {
         cbm_registry_add_lang_in_module(ctx->registry, def->name, def->qualified_name, def->label,
                                         lang, module_prefix_len);
         (*reg_entries)++;
@@ -1823,7 +1836,7 @@ static int register_and_link_def(cbm_pipeline_ctx_t *ctx, const CBMDefinition *d
                                                     def->file_path, lang, marked, sizeof(marked))
                          : def->qualified_name;
     const cbm_gbuf_node_t *def_node = cbm_gbuf_find_by_qn(ctx->gbuf, qn);
-    if (file_node_id > 0 && def_node) {
+    if (file_node_id > 0 && def_node && !def->config_parent_qn) {
         cbm_gbuf_insert_edge(ctx->gbuf, file_node_id, def_node->id, "DEFINES", "{}");
         edges++;
     }
@@ -1831,6 +1844,13 @@ static int register_and_link_def(cbm_pipeline_ctx_t *ctx, const CBMDefinition *d
         const cbm_gbuf_node_t *parent = cbm_gbuf_find_by_qn(ctx->gbuf, def->parent_class);
         if (parent && def_node) {
             cbm_gbuf_insert_edge(ctx->gbuf, parent->id, def_node->id, "DEFINES_METHOD", "{}");
+        }
+    }
+    if (def->config_parent_qn && def_node) {
+        const cbm_gbuf_node_t *parent = cbm_gbuf_find_by_qn(ctx->gbuf, def->config_parent_qn);
+        if (parent) {
+            cbm_gbuf_insert_edge(ctx->gbuf, parent->id, def_node->id, "HAS_CONFIG_KEY", "{}");
+            edges++;
         }
     }
     if (def_node) {
@@ -2032,6 +2052,7 @@ int cbm_build_registry_from_cache(cbm_pipeline_ctx_t *ctx, const cbm_file_info_t
             }
         }
 
+        (void)cbm_pipeline_sql_structure(ctx, result, rel);
         imports_edges += create_imports_edges(ctx, result, rel, namespace_map);
         create_channel_edges(ctx, result, rel);
         cbm_pipeline_diagram_arrows(ctx, result);

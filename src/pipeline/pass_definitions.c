@@ -33,6 +33,8 @@ enum { PD_JSON_FIELD_OVERHEAD = 6 };
 #include "iris_export_xml.h"
 #include "simhash/minhash.h"
 #include "semantic/ast_profile.h"
+#include "pipeline/sql_dialect_profile.h"
+#include "sql_dialect.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -471,6 +473,12 @@ static void link_def_parents(cbm_pipeline_ctx_t *ctx, const CBMDefinition *def, 
             cbm_gbuf_insert_edge(ctx->gbuf, parent->id, node_id, "DEFINES_METHOD", "{}");
         }
     }
+    if (def->config_parent_qn) {
+        const cbm_gbuf_node_t *parent = cbm_gbuf_find_by_qn(ctx->gbuf, def->config_parent_qn);
+        if (parent) {
+            cbm_gbuf_insert_edge(ctx->gbuf, parent->id, node_id, "HAS_CONFIG_KEY", "{}");
+        }
+    }
     cbm_pipeline_diagram_parent_edge(ctx, def, node_id);
 }
 
@@ -510,14 +518,14 @@ static void process_def(cbm_pipeline_ctx_t *ctx, const CBMDefinition *def, const
      * field resolution), Variable/Field (READS/WRITES resolution), and Table/View
      * (SQL FROM/JOIN lineage). pass_parallel.c and pipeline_incremental.c seed
      * through the same predicate, so the three registries cannot diverge. */
-    if (node_id > 0 && cbm_label_is_registry_symbol(def->label)) {
+    if (node_id > 0 && !def->is_config_key && cbm_label_is_registry_symbol(def->label)) {
         cbm_registry_add_lang_in_module(ctx->registry, def->name, def->qualified_name, def->label,
                                         lang, module_prefix_len);
     }
     char *file_qn = cbm_pipeline_fqn_compute(ctx->project_name, rel, "__file__");
     const cbm_gbuf_node_t *file_node = cbm_gbuf_find_by_qn(ctx->gbuf, file_qn);
     pd_add_file_doc(file_node, file_doc);
-    if (file_node && node_id > 0) {
+    if (file_node && node_id > 0 && !def->config_parent_qn) {
         cbm_gbuf_insert_edge(ctx->gbuf, file_node->id, node_id, "DEFINES", "{}");
     }
     free(file_qn);
@@ -545,7 +553,7 @@ static void link_cached_def_parents(cbm_pipeline_ctx_t *ctx, CBMFileResult **cac
         }
         for (int d = 0; d < result->defs.count; d++) {
             const CBMDefinition *def = &result->defs.items[d];
-            if (!def->parent_class || !def->qualified_name) {
+            if ((!def->parent_class && !def->config_parent_qn) || !def->qualified_name) {
                 continue;
             }
             const cbm_gbuf_node_t *node = cbm_gbuf_find_by_qn(ctx->gbuf, def->qualified_name);
@@ -969,6 +977,12 @@ int cbm_pipeline_pass_definitions(cbm_pipeline_ctx_t *ctx, const cbm_file_info_t
     int total_calls = 0;
     int total_imports = 0;
     int errors = 0;
+    CBMSqlDialectProfile *owned_sql_dialect_profile = NULL;
+    const CBMSqlDialectProfile *sql_dialect_profile = ctx->sql_dialect_profile;
+    if (!sql_dialect_profile) {
+        owned_sql_dialect_profile = cbm_sql_dialect_profile_build(files, file_count);
+        sql_dialect_profile = owned_sql_dialect_profile;
+    }
 
     /* Sequential pass must extract all defs (which create Module/Function/...
      * nodes) BEFORE resolving imports — otherwise a workspace import in the
@@ -1000,6 +1014,7 @@ int cbm_pipeline_pass_definitions(cbm_pipeline_ctx_t *ctx, const cbm_file_info_t
                 }
                 cbm_free(CBM_MEM_CLASS_EXTRACT, local_cache);
             }
+            cbm_sql_dialect_profile_free(owned_sql_dialect_profile);
             return CBM_NOT_FOUND;
         }
 
@@ -1063,6 +1078,7 @@ int cbm_pipeline_pass_definitions(cbm_pipeline_ctx_t *ctx, const cbm_file_info_t
 
         /* Studio Export XML is transformed to one cacheable aggregate so later
          * passes see the same calls/usages/semantic carriers as native UDL. */
+        cbm_sql_dialect_profile_apply_path(sql_dialect_profile, rel);
         CBMFileResult *result =
             cbm_pipeline_test_force_extract_null(ctx, lang) ? NULL
             : lang == CBM_LANG_OBJECTSCRIPT_EXPORT
@@ -1072,6 +1088,7 @@ int cbm_pipeline_pass_definitions(cbm_pipeline_ctx_t *ctx, const cbm_file_info_t
                                                  CBM_EXTRACT_BUDGET, NULL,
                                                  NULL /* no extra defines or include paths */,
                                                  ctx->macro_table, NULL, ctx->test_declarations);
+        cbm_sql_dialect_hint_set(NULL, NULL);
         free(source);
 
         if (!cbm_pipeline_test_extraction_ok(ctx, lang, result)) {
@@ -1106,6 +1123,12 @@ int cbm_pipeline_pass_definitions(cbm_pipeline_ctx_t *ctx, const cbm_file_info_t
                 ctx->pipeline, rel, result->error_ranges ? result->error_ranges : "unknown",
                 result->parse_unusable ? "parse_unusable" : "parse_partial");
         }
+        if (result->walk_truncated) {
+            char how_far[CBM_SZ_64];
+            snprintf(how_far, sizeof(how_far), "%u/%u nodes walked",
+                     result->walk_nodes_visited, result->tree_nodes);
+            cbm_pipeline_add_file_error(ctx->pipeline, rel, how_far, "walk_truncated");
+        }
         if (result->test_declarations_degraded) {
             /* Its configured test forms could not be mapped: indexed without
              * configured test roles (degraded per file, not the index). */
@@ -1127,6 +1150,7 @@ int cbm_pipeline_pass_definitions(cbm_pipeline_ctx_t *ctx, const cbm_file_info_t
             file_doc = NULL;
             total_defs++;
         }
+        (void)cbm_pipeline_sql_structure(ctx, result, rel);
 
         /* Store calls for pass_calls (we save them in the extraction results
          * for now — a future optimization would batch these) */
@@ -1200,6 +1224,7 @@ int cbm_pipeline_pass_definitions(cbm_pipeline_ctx_t *ctx, const cbm_file_info_t
     cbm_log_info("pass.done", "pass", "definitions", "defs", itoa_log(total_defs), "calls",
                  itoa_log(total_calls), "imports", itoa_log(total_imports), "errors",
                  itoa_log(errors));
+    cbm_sql_dialect_profile_free(owned_sql_dialect_profile);
     return 0;
 
 configured_failure:
@@ -1209,5 +1234,7 @@ configured_failure:
         }
         cbm_free(CBM_MEM_CLASS_EXTRACT, local_cache);
     }
+    cbm_sql_dialect_hint_set(NULL, NULL);
+    cbm_sql_dialect_profile_free(owned_sql_dialect_profile);
     return CBM_PIPELINE_ABORT_PRESERVE_DB;
 }

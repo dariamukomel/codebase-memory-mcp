@@ -27,6 +27,9 @@
 typedef struct cbm_store cbm_store_t;
 typedef struct cbm_gbuf cbm_gbuf_t;
 
+/* Resolve SQL uses in a disposable config graph snapshot, never the live index. */
+int cbm_configlink_resolve_sql(cbm_gbuf_t *snapshot, const char *file_path);
+
 /* ── Opaque handle ──────────────────────────────────────────────── */
 
 typedef struct cbm_pipeline cbm_pipeline_t;

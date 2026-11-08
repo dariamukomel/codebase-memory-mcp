@@ -149,6 +149,16 @@ cp "$BINARY" "$DEBUG_STRIPPED"
 cp "$BINARY" "$STRIPPED"
 chmod 0755 "$UNSTRIPPED" "$DEBUG_STRIPPED" "$STRIPPED"
 
+SQLGLOT_RUNTIME_ZIP="$ROOT/build/sqlglot-embed/sqlglot-runtime.zip"
+ensure_sqlglot_runtime() {
+    local candidate="$1"
+    [ -f "$SQLGLOT_RUNTIME_ZIP" ] || return 0
+    if ! python3 "$ROOT/scripts/append-sqlglot-runtime.py" --check "$candidate"; then
+        python3 "$ROOT/scripts/append-sqlglot-runtime.py" \
+            "$candidate" "$SQLGLOT_RUNTIME_ZIP"
+    fi
+}
+
 STRIP_INVOCATION="$(basename "$STRIP_TOOL") --strip-all"
 if ! "$STRIP_TOOL" --strip-all "$STRIPPED" 2>/dev/null; then
     # Apple's strip rejects GNU/LLVM --strip-all.  Plain Apple strip is the
@@ -187,6 +197,13 @@ if ! "$STRIP_TOOL" --strip-debug "$DEBUG_STRIPPED" 2>/dev/null; then
     DEBUG_STRIP_INVOCATION="$(basename "$STRIP_TOOL") -S"
 fi
 
+# Strip implementations differ on whether they retain an executable's ZIP
+# overlay. Restore the autonomous SQLGlot payload only when it was removed;
+# never append a duplicate archive.
+ensure_sqlglot_runtime "$UNSTRIPPED"
+ensure_sqlglot_runtime "$DEBUG_STRIPPED"
+ensure_sqlglot_runtime "$STRIPPED"
+
 UNSTRIPPED_PRE_SIGN_SHA="$(sha256_file "$UNSTRIPPED")"
 DEBUG_STRIPPED_PRE_SIGN_SHA="$(sha256_file "$DEBUG_STRIPPED")"
 STRIPPED_PRE_SIGN_SHA="$(sha256_file "$STRIPPED")"
@@ -204,6 +221,14 @@ if [ "$GOOS" = darwin ]; then
     done
     SIGNATURE=adhoc-verified
 fi
+
+for candidate in "$UNSTRIPPED" "$DEBUG_STRIPPED" "$STRIPPED"; do
+    if [ -f "$SQLGLOT_RUNTIME_ZIP" ] &&
+       ! python3 "$ROOT/scripts/append-sqlglot-runtime.py" --check "$candidate"; then
+        echo "prepare-release-candidates: signing damaged embedded SQLGlot runtime" >&2
+        exit 2
+    fi
+done
 
 UNSTRIPPED_SHA="$(sha256_file "$UNSTRIPPED")"
 DEBUG_STRIPPED_SHA="$(sha256_file "$DEBUG_STRIPPED")"

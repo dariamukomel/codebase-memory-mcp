@@ -245,6 +245,21 @@ dealings in these Data Files or Software without prior written
 authorization of the copyright holder.
 ```
 
+## Embedded SQL Parser
+
+SQL files are parsed by the unmodified upstream SQLGlot Python package running
+inside a statically linked CPython interpreter. Both are build-time pinned and
+packed into the single executable; the installed program does not use a Python
+installation or site-packages from the target machine.
+
+- **SQLGlot:** version 30.21.0, [tobymao/sqlglot](https://github.com/tobymao/sqlglot),
+  MIT license, (c) Toby Mao and contributors.
+- **CPython:** version 3.12.12, [python/cpython](https://github.com/python/cpython),
+  Python Software Foundation License Version 2.
+
+Their verbatim license files are included in the executable's embedded runtime
+archive and copied into the generated release notices.
+
 ## Hybrid LSP — Reference Language Servers
 
 The Hybrid LSP layer (`internal/cbm/lsp/`) is an original C implementation

@@ -3,10 +3,9 @@
 // A dbt model is an ordinary .sql file in the repository whose SELECT is
 // templated with Jinja: dependencies are written `{{ ref('other_model') }}`
 // (another model in the project) or `{{ source('group', 'table') }}` (a raw
-// warehouse table), never as literal table names. The SQL grammar cannot read
-// those — `FROM {{ ref('x') }}` is a parse error to it — so the dependency
-// structure of an entire dbt project is invisible to the code graph without
-// this pass.
+// warehouse table), never as literal table names. SQLGlot deliberately does
+// not interpret Jinja expressions, so dbt dependency identities still need
+// this small template-specific pass.
 //
 // The vendored tree-sitter-jinja2 grammar models `{{ ... }}` expressions
 // (jinja_expression / fn_call / lit_string) but has no node types at all for
@@ -23,12 +22,10 @@
 // declared in plain DDL elsewhere in the same repository, and the registry's
 // relation veto keeps these names out of every non-lineage consumer.
 //
-// Gate: the file must parse as SQL, contain a Jinja expression delimiter, and
-// contain at least one real ref()/source() call. Generic templated SQL (an
-// Airflow `{{ ds }}` parameter, say) therefore produces nothing at all — the
-// dbt builtins are the evidence that this is a dbt model, so no dbt_project.yml
-// lookup is needed and no non-dbt repository pays for a Model node it did not
-// ask for.
+// Gate: the file must contain a Jinja expression delimiter and at least one
+// real ref()/source() call. Generic templated SQL (an Airflow `{{ ds }}`
+// parameter, say) therefore produces nothing at all — the dbt builtins are the
+// evidence that this is a dbt model, so no dbt_project.yml lookup is needed.
 
 #include "cbm.h"
 #include "arena.h"
@@ -209,7 +206,7 @@ void cbm_extract_dbt(CBMExtractCtx *ctx) {
     def.label = "Model";
     def.file_path = ctx->rel_path;
     def.start_line = DBT_FIRST_LINE;
-    def.end_line = ts_node_end_point(ctx->root).row + TS_LINE_OFFSET;
+    def.end_line = cbm_source_line_count(ctx->source, ctx->source_len);
     def.is_exported = true;
     cbm_defs_push(&ctx->result->defs, ctx->arena, def);
 

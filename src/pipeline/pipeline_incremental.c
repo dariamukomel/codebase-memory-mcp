@@ -23,6 +23,7 @@ enum { INCR_RING_BUF = 4, INCR_RING_MASK = 3, INCR_TS_BUF = 24 };
 #include "pipeline/pipeline_internal.h"
 #include "helpers.h" /* cbm_fqn_module */
 #include "pipeline/doc_links.h"
+#include "pipeline/sql_dialect_profile.h"
 #include "store/store.h"
 #include "graph_buffer/graph_buffer.h"
 #include "discover/discover.h"
@@ -1349,7 +1350,10 @@ typedef struct {
 
 static void registry_visitor(const cbm_gbuf_node_t *node, void *userdata) {
     registry_seed_t *seed = (registry_seed_t *)userdata;
-    if (!incr_label_is_registry_symbol(node->label)) {
+    /* Deep CTL/JSON keys intentionally keep the Variable label for config
+     * linking, but are graph structure rather than source-code symbols. */
+    if (!incr_label_is_registry_symbol(node->label) ||
+        (node->properties_json && strstr(node->properties_json, "\"config_key\":\"true\""))) {
         return;
     }
     CBMLanguage lang = cbm_registry_synthetic_path_language(node->file_path);
@@ -3522,7 +3526,11 @@ static int run_closure_delta(cbm_pipeline_t *p, const char *db_path, const char 
     }
 
     cbm_clock_gettime(CLOCK_MONOTONIC, &t);
+    CBMSqlDialectProfile *sql_profile = cbm_sql_dialect_profile_build(files, file_count);
+    ctx.sql_dialect_profile = sql_profile;
     int phase_rc = run_extract_resolve(&ctx, changed_files, ci, &cr);
+    ctx.sql_dialect_profile = NULL;
+    cbm_sql_dialect_profile_free(sql_profile);
     if (phase_rc == 0) {
         phase_rc = cbm_pipeline_pass_k8s(&ctx, changed_files, ci);
     }
@@ -4263,7 +4271,11 @@ int cbm_pipeline_run_incremental(cbm_pipeline_t *p, const char *db_path, cbm_fil
 
     ctx.build_decl_files = decl_files;
     ctx.build_decl_count = decl_count;
+    CBMSqlDialectProfile *sql_profile = cbm_sql_dialect_profile_build(files, file_count);
+    ctx.sql_dialect_profile = sql_profile;
     int phase_rc = run_extract_resolve(&ctx, changed_files, ci, NULL);
+    ctx.sql_dialect_profile = NULL;
+    cbm_sql_dialect_profile_free(sql_profile);
     if (phase_rc == 0) {
         phase_rc = cbm_pipeline_pass_k8s(&ctx, changed_files, ci);
     }
