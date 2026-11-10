@@ -58,8 +58,8 @@ static const char *ALWAYS_SKIP_DIRS[] = {
     /* Language caches */
     ".cargo", ".stack-work", ".dart_tool", "zig-cache", "zig-out", ".metals", ".bloop", ".bsp",
     ".ccls-cache", ".clangd", "elm-stuff", "_opam", ".cpcache", ".shadow-cljs",
-    /* Deploy */
-    ".vercel", ".netlify", "deploy", "deployed",
+    /* Deployment artifacts. "deploy" can contain maintained source/migrations. */
+    ".vercel", ".netlify", "deployed",
     /* Misc */
     ".codebase-memory", ".qdrant_code_embeddings", ".tmp", "vendor", "vendored", NULL};
 

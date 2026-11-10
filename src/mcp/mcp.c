@@ -57,6 +57,7 @@ enum {
 #include "mcp/mcp.h"
 #include "mcp/mcp_internal.h"
 #include "mcp/architecture_jobs.h"
+#include "mcp/lineage_session.h"
 #include "mcp/test_impact.h"
 #include "mcp/test_impact_engine.h"
 #include "store/graph_mem.h"
@@ -593,6 +594,10 @@ static const tool_def_t TOOLS[] = {
 
     {"query_graph",
      "Read-only Cypher for multi-hop, aggregation, complexity, or cross-service analysis. "
+     "For SQL analysis, use search_sql and get_sql_file_outline to discover statements, then "
+     "get_sql_statement for statement structure and on-demand contextual variable resolution. "
+     "query_graph does not perform that resolution. For SQL, use it only for bounded questions "
+     "not covered by those tools (e.g. additional config callers), not bulk SQL graph extraction. "
      "Default: 200 visible rows with "
      "exact/lower-bound totals and truncation; continue safely with next_cursor. "
      "graph=missed is a file tree of flagged coverage gaps; absence is not proof of completeness. "
@@ -682,6 +687,17 @@ static const tool_def_t TOOLS[] = {
      "\"default\":\"tree\"}},\"additionalProperties\":false,"
      "\"required\":[\"project\",\"file_path\"]}"},
 
+    {"lineage_session",
+     "Persist agent-decided table/column lineage in a separate SQLite session under output_dir. "
+     "init resumes without reset; put atomically replaces decisions by decision_id; remove retracts "
+     "only those decisions; status returns counters and a paged ledger without rows; export writes "
+     "sorted deduplicated table_lineage.tsv or column_lineage.tsv atomically. No semantic inference. "
+     "Use non-CTE SqlTableRef source_id/target_id or explicit names with evidence. Confirmed transfers "
+     "may emit literal template endpoints when resolution fails; record the reason/context. "
+     "generation must match index_status; export requires allow_partial for unresolved decisions "
+     "and overwrite to replace an existing TSV. Writes require user authorization.",
+     cbm_lineage_session_schema},
+
     {"get_sql_file_outline",
      "Compact statement outline for one indexed SQL file, with exact structural counts and "
      "source coordinates.",
@@ -692,33 +708,60 @@ static const tool_def_t TOOLS[] = {
      "\"enum\":[\"tree\",\"json\"],\"default\":\"tree\"}},"
      "\"required\":[\"project\",\"file_path\"],\"additionalProperties\":false}"},
 
+    {"resolve_variables",
+     "Resolve one SQL variable use, or an external configuration name left after reading local DSL. "
+     "Use use_id (SqlVariableRef), or file_path, line and name. This does not interpret DSL assignments: "
+     "read them first and pass only the remaining external variable. Local/caller definitions win; "
+     "missing nested names search sibling configuration files reachable from the caller root. "
+     "Returns all alternatives, caller contexts, definition evidence and sibling fallback IDs. "
+     "Never combine independent contexts or alternatives. This is read-only; query_graph does not resolve values.",
+     "{\"type\":\"object\",\"properties\":{\"project\":{\"type\":\"string\"},"
+     "\"use_id\":{\"type\":\"integer\",\"minimum\":1},"
+     "\"file_path\":{\"type\":\"string\"},\"line\":{\"type\":\"integer\",\"minimum\":1},"
+     "\"name\":{\"type\":\"string\",\"minLength\":1},"
+     "\"caller_variant_id\":{\"type\":\"integer\",\"minimum\":1},"
+     "\"limit\":{\"type\":\"integer\",\"minimum\":1,\"maximum\":10000,\"default\":1000},"
+     "\"offset\":{\"type\":\"integer\",\"minimum\":0,\"default\":0},"
+     "\"format\":{\"type\":\"string\",\"enum\":[\"tree\",\"json\"]}},"
+     "\"required\":[\"project\"],\"oneOf\":[{\"required\":[\"use_id\"]},"
+     "{\"required\":[\"file_path\",\"line\",\"name\"]}],\"additionalProperties\":false}"},
+
     {"get_sql_statement",
-     "Return one SQL statement and its compact structural descendants. Read/write lineage "
+     "Return SQL evidence for statement_id or a batch of statement_ids (1..50). Use detail=table "
+     "for table lineage (omit columns/projections/clauses); full preserves all structure. "
+     "Pagination and resolution cursors apply independently to each statement. Read/write lineage "
      "classification is left to the caller. Config bindings are resolved on demand per call context, "
-     "not stored as SQL-to-config edges. Check sql_variable_resolution; page resolutions with "
+     "not stored as SQL-to-config edges. Each binding includes recursively resolved_values and "
+     "definition_ids; value_resolution_status distinguishes concrete values from missing/cyclic templates. "
+     "Never mix different caller contexts. Check sql_variable_resolution; page resolutions with "
      "resolution_limit/resolution_offset when resolutions_truncated.",
      "{\"type\":\"object\",\"properties\":{\"project\":{\"type\":\"string\"},"
      "\"statement_id\":{\"type\":\"integer\",\"minimum\":1},"
+     "\"statement_ids\":{\"type\":\"array\",\"minItems\":1,\"maxItems\":50,\"uniqueItems\":true,\"items\":{\"type\":\"integer\",\"minimum\":1}},"
+     "\"detail\":{\"type\":\"string\",\"enum\":[\"full\",\"table\"],\"default\":\"full\"},"
      "\"resolution_limit\":{\"type\":\"integer\",\"minimum\":1,\"maximum\":10000,\"default\":1000},"
      "\"resolution_offset\":{\"type\":\"integer\",\"minimum\":0,\"default\":0},"
      "\"limit\":{\"type\":\"integer\",\"minimum\":1,\"maximum\":10000,\"default\":5000},"
      "\"offset\":{\"type\":\"integer\",\"minimum\":0,\"default\":0},\"format\":{\"type\":"
      "\"string\",\"enum\":[\"tree\",\"json\"],\"default\":\"tree\"}},"
-     "\"required\":[\"project\",\"statement_id\"],\"additionalProperties\":false}"},
+     "\"required\":[\"project\"],\"oneOf\":[{\"required\":[\"statement_id\"]},{\"required\":[\"statement_ids\"]}],\"additionalProperties\":false}"},
 
     {"get_sql_structure",
-     "Return one compact SQL structure: scopes, relations, clauses/actions, external sources, "
+     "Alias of get_sql_statement. Accepts statement_id or statement_ids (1..50); detail=table "
+     "omits columns/projections/clauses, full returns scopes, relations, clauses/actions, external sources, "
      "table/CTE/column/dynamic references, config/CTE resolutions, and unparsed regions. "
      "Config bindings are resolved on demand per call context. Use limit/offset for entities and "
      "resolution_limit/resolution_offset for resolutions.",
      "{\"type\":\"object\",\"properties\":{\"project\":{\"type\":\"string\"},"
      "\"statement_id\":{\"type\":\"integer\",\"minimum\":1},"
+     "\"statement_ids\":{\"type\":\"array\",\"minItems\":1,\"maxItems\":50,\"uniqueItems\":true,\"items\":{\"type\":\"integer\",\"minimum\":1}},"
+     "\"detail\":{\"type\":\"string\",\"enum\":[\"full\",\"table\"],\"default\":\"full\"},"
      "\"resolution_limit\":{\"type\":\"integer\",\"minimum\":1,\"maximum\":10000,\"default\":1000},"
      "\"resolution_offset\":{\"type\":\"integer\",\"minimum\":0,\"default\":0},"
      "\"limit\":{\"type\":\"integer\",\"minimum\":1,\"maximum\":10000,\"default\":5000},"
      "\"offset\":{\"type\":\"integer\",\"minimum\":0,\"default\":0},\"format\":{\"type\":"
      "\"string\",\"enum\":[\"tree\",\"json\"],\"default\":\"tree\"}},"
-     "\"required\":[\"project\",\"statement_id\"],\"additionalProperties\":false}"},
+     "\"required\":[\"project\"],\"oneOf\":[{\"required\":[\"statement_id\"]},{\"required\":[\"statement_ids\"]}],\"additionalProperties\":false}"},
 
     {"search_sql",
      "Search indexed SQL statements by path, syntax type, table, parse status, or errors; "
@@ -973,9 +1016,11 @@ static const tool_annotation_def_t TOOL_ANNOTATIONS[] = {
     {"get_file_outline", true, false, true, false, false},
     {"get_sql_file_outline", true, false, true, false, true},
     {"get_sql_statement", true, false, true, false, true},
+    {"resolve_variables", true, false, true, false, true},
     {"get_sql_structure", true, false, true, false, true},
     {"search_sql", true, false, true, false, true},
     {"get_sql_snippet", true, false, true, false, true},
+    {"lineage_session", false, true, true, false, true},
     {"get_graph_schema", true, false, true, false, false},
     {"compare_graphs", true, false, true, false, false},
     {"get_architecture", true, false, true, false, false},
@@ -1049,7 +1094,7 @@ static bool mcp_tool_allowed(cbm_mcp_tool_profile_t profile, const char *name) {
     static const char *const analysis_tools[] = {
         "search_graph",     "query_graph",      "trace_path",     "get_code_snippet",
         "get_file_outline", "get_sql_file_outline", "get_sql_statement", "get_sql_structure",
-        "search_sql", "get_sql_snippet",
+        "search_sql", "get_sql_snippet", "resolve_variables",
         "get_graph_schema", "compare_graphs", "get_architecture",
         "search_code",      "list_projects",    "index_status",   "check_index_coverage",
         "detect_changes",
@@ -14383,13 +14428,15 @@ static char *handle_search_sql(cbm_mcp_server_t *srv, const char *args) {
  * disposable snapshot, so returned endpoints refer to the persistent graph.
  * No SQL AST or other files' SQL uses are loaded, and no config expansion is
  * repeated here: concrete call contexts already belong to path variants.
- * Only this SQL file's incoming variants and their ancestor contexts enter
- * the snapshot. Keep declarations available for explicit file.key lookup:
+ * Load incoming contexts and configuration file variants reachable from their
+ * roots, so unresolved names can visit sibling branches. Other SQL ASTs and
+ * uses are excluded. Keep declarations available for explicit file.key lookup:
  * a referenced namespace need not be in the caller chain. */
 static bool mcp_sql_lazy_bindings(sqlite3 *db, const char *project, int64_t statement_id,
                                   const char *path, yyjson_mut_doc *doc,
                                   yyjson_mut_val *out, int offset, int limit,
-                                  int *total, int *returned) {
+                                  int *total, int *returned, const char *variable,
+                                  int line, int64_t caller_variant_id) {
     cbm_gbuf_t *gb = cbm_gbuf_new(project, "");
     if (!gb) return false;
     sqlite3_stmt *q = NULL;
@@ -14403,12 +14450,17 @@ static bool mcp_sql_lazy_bindings(sqlite3 *db, const char *project, int64_t stat
         "WHERE f.project=?1 AND f.label='File' AND f.file_path=?3 "
         "AND e.project=?1 AND e.type='REFERENCES_FILE' UNION "
         "SELECT e.target_id FROM callers c CROSS JOIN edges e ON e.source_id=c.id "
-        "WHERE e.project=?1 AND e.type='HAS_CALLER_CONTEXT') "
+        "WHERE e.project=?1 AND e.type='HAS_CALLER_CONTEXT'), "
+        "reachable(path) AS (SELECT n.file_path FROM callers c JOIN nodes n ON n.id=c.id "
+        "UNION SELECT f.file_path FROM reachable p JOIN nodes v ON v.project=?1 "
+        "AND v.file_path=p.path AND v.label='ConfigValueVariant' "
+        "JOIN edges e ON e.project=?1 AND e.source_id=v.id AND e.type='REFERENCES_FILE' "
+        "JOIN nodes f ON f.id=e.target_id AND f.project=?1 AND f.label='File') "
         "SELECT id,label,name,qualified_name,file_path,start_line,end_line,properties "
-        "FROM nodes WHERE project=?1 AND EXISTS (SELECT 1 FROM d JOIN nodes u ON u.id=d.id "
-        "WHERE u.project=?1 AND u.label='SqlVariableRef') AND EXISTS (SELECT 1 FROM callers) "
+        "FROM nodes WHERE project=?1 AND (?2=0 OR EXISTS (SELECT 1 FROM d JOIN nodes u ON u.id=d.id "
+        "WHERE u.project=?1 AND u.label='SqlVariableRef')) "
         "AND (label IN ('Variable','File') "
-        "OR (label='ConfigValueVariant' AND id IN (SELECT id FROM callers)) "
+        "OR (label='ConfigValueVariant' AND file_path IN (SELECT path FROM reachable)) "
         "OR (label='SqlVariableRef' AND id IN (SELECT id FROM d))) ORDER BY id";
     bool ok = sqlite3_prepare_v2(db, nodes_sql, -1, &q, NULL) == SQLITE_OK;
     int rc = SQLITE_ERROR;
@@ -14445,6 +14497,20 @@ static bool mcp_sql_lazy_bindings(sqlite3 *db, const char *project, int64_t stat
         ok &= rc == SQLITE_DONE;
     }
     sqlite3_finalize(q);
+    if (ok && variable) {
+        int64_t max_id = 0;
+        sqlite3_stmt *maxq = NULL;
+        if (sqlite3_prepare_v2(db, "SELECT max(id) FROM nodes", -1, &maxq, NULL) != SQLITE_OK)
+            ok = false;
+        else if (sqlite3_step(maxq) == SQLITE_ROW) max_id = sqlite3_column_int64(maxq, 0);
+        else ok = false;
+        sqlite3_finalize(maxq);
+        if (ok) {
+            cbm_gbuf_set_next_id(gb, max_id + 1);
+            ok = cbm_gbuf_upsert_node(gb, "SqlVariableRef", variable,
+                "__resolve_variables__.request", path, line, line, "{}") > 0;
+        }
+    }
     if (ok) ok = cbm_configlink_resolve_sql(gb, path) >= 0;
     const cbm_gbuf_node_t **bindings = NULL; int count = 0;
     if (ok) cbm_gbuf_find_by_label(gb, "SqlConfigBinding", &bindings, &count);
@@ -14456,16 +14522,24 @@ static bool mcp_sql_lazy_bindings(sqlite3 *db, const char *project, int64_t stat
         cbm_gbuf_find_edges_by_target_type(gb, bindings[i]->id, "HAS_BINDING", &callers, &cn);
         cbm_gbuf_find_edges_by_source_type(gb, bindings[i]->id, "HAS_CALLER_CONTEXT", &contexts, &xn);
         if (un != 1 || cn != 1) { ok = false; break; }
+        if (caller_variant_id && callers[0]->source_id != caller_variant_id) continue;
         const cbm_gbuf_node_t *use = cbm_gbuf_find_by_id(gb, uses[0]->target_id);
         for (int j = 0; j < (tn ? tn : 1); j++) {
             (*total)++;
             if (*total <= offset || *returned >= limit) continue;
             yyjson_mut_val *item = yyjson_mut_obj(doc), *chain = yyjson_mut_arr(doc);
-            yyjson_mut_obj_add_sint(doc, item, "use_id", use->id);
+            if (!variable) yyjson_mut_obj_add_sint(doc, item, "use_id", use->id);
+            yyjson_mut_obj_add_strcpy(doc, item, "use_file_path", use->file_path);
+            yyjson_mut_obj_add_int(doc, item, "use_line", use->start_line);
             yyjson_mut_obj_add_strcpy(doc, item, "use_name", use->name);
             yyjson_mut_obj_add_strcpy(doc, item, "binding_key", bindings[i]->qualified_name);
             yyjson_mut_obj_add_str(doc, item, "resolution_mode", "on_demand");
             yyjson_mut_obj_add_str(doc, item, "resolution_status", tn ? "resolved" : "unresolved");
+            if (!tn) {
+                yyjson_mut_obj_add_str(doc, item, "value_resolution_status", "unresolved");
+                yyjson_mut_obj_add_str(doc, item, "unresolved_reason", "initializer_not_found_in_call_context");
+                yyjson_mut_obj_add_val(doc, item, "resolved_values", yyjson_mut_arr(doc));
+            }
             yyjson_mut_obj_add_sint(doc, item, "caller_variant_id", callers[0]->source_id);
             for (int depth = 0; depth < xn; depth++) for (int x = 0; x < xn; x++) {
                 yyjson_doc *p = yyjson_read(contexts[x]->properties_json,
@@ -14484,12 +14558,128 @@ static bool mcp_sql_lazy_bindings(sqlite3 *db, const char *project, int64_t stat
                 yyjson_mut_obj_add_strcpy(doc, item, "target_file_path", target->file_path);
                 yyjson_mut_obj_add_strcpy(doc, item, "target_properties", target->properties_json);
                 yyjson_mut_obj_add_str(doc, item, "edge_type", "RESOLVES_TO_CONFIG");
+                yyjson_doc *expanded = yyjson_read(targets[j]->properties_json,
+                                                   strlen(targets[j]->properties_json), 0);
+                yyjson_val *root = expanded ? yyjson_doc_get_root(expanded) : NULL;
+                yyjson_val *values = yyjson_obj_get(root, "resolved_values");
+                const char *status = yyjson_get_str(yyjson_obj_get(root, "value_resolution_status"));
+                yyjson_mut_obj_add_strcpy(doc, item, "value_resolution_status", status ? status : "unresolved");
+                yyjson_mut_obj_add_val(doc, item, "resolved_values", values ?
+                    yyjson_val_mut_copy(doc, values) : yyjson_mut_arr(doc));
+                yyjson_mut_val *definitions = yyjson_mut_arr(doc);
+                size_t vi, vn; yyjson_val *value;
+                yyjson_arr_foreach(values, vi, vn, value) {
+                    yyjson_val *ids = yyjson_obj_get(value, "definition_ids"), *id;
+                    size_t di, dn;
+                    yyjson_arr_foreach(ids, di, dn, id) {
+                        int64_t definition_id = yyjson_get_sint(id);
+                        bool seen = false;
+                        for (size_t k = 0; k < yyjson_mut_arr_size(definitions); k++)
+                            if (yyjson_mut_get_sint(yyjson_mut_obj_get(
+                                yyjson_mut_arr_get(definitions, k), "id")) == definition_id) seen = true;
+                        const cbm_gbuf_node_t *n = cbm_gbuf_find_by_id(gb, definition_id);
+                        if (seen || !n) continue;
+                        cbm_node_t evidence = {.id=n->id, .label=n->label, .name=n->name,
+                            .qualified_name=n->qualified_name, .file_path=n->file_path,
+                            .start_line=n->start_line, .end_line=n->end_line,
+                            .properties_json=n->properties_json};
+                        yyjson_mut_arr_add_val(definitions, mcp_sql_node_json(doc, &evidence));
+                    }
+                }
+                yyjson_mut_obj_add_val(doc, item, "definitions", definitions);
+                if (!status || strcmp(status, "resolved"))
+                    yyjson_mut_obj_add_str(doc, item, "unresolved_reason",
+                        status && !strcmp(status, "cycle") ? "cyclic_config_template" :
+                        "nested_template_definition_missing_in_call_context");
+                if (expanded) yyjson_doc_free(expanded);
             }
             yyjson_mut_arr_add_val(out, item); (*returned)++;
         }
     }
     cbm_gbuf_free(gb);
     return ok;
+}
+
+static char *handle_resolve_variables(cbm_mcp_server_t *srv, const char *args) {
+    char *project = get_project_arg(args), *path = cbm_mcp_get_string_arg(args, "file_path");
+    char *name = cbm_mcp_get_string_arg(args, "name");
+    int line = cbm_mcp_get_int_arg(args, "line", 0);
+    int limit = cbm_mcp_get_int_arg(args, "limit", 1000);
+    int offset = cbm_mcp_get_int_arg(args, "offset", 0);
+    int64_t use_id = mcp_get_positive_id_arg(args, "use_id");
+    int64_t caller = mcp_get_positive_id_arg(args, "caller_variant_id");
+    cbm_store_t *store = project ? resolve_store(srv, project) : NULL;
+    cbm_node_t use = {0};
+    const char *error = NULL;
+    yyjson_doc *request = yyjson_read(args, strlen(args), 0);
+    yyjson_val *input = request ? yyjson_doc_get_root(request) : NULL;
+    bool has_use_id = yyjson_obj_get(input, "use_id") != NULL;
+    bool has_caller = yyjson_obj_get(input, "caller_variant_id") != NULL;
+    bool invalid_id = (has_use_id && use_id < 1) || (has_caller && caller < 1);
+    if (!has_use_id) use_id = 0;
+    if (!has_caller) caller = 0;
+    if (request) yyjson_doc_free(request);
+    if (invalid_id) error = "use_id and caller_variant_id must be positive integers";
+    else if (!store || limit < 1 || limit > 10000 || offset < 0)
+        error = "indexed project and valid limit/offset are required";
+    else if (use_id) {
+        if (path || name || line) error = "use either use_id or file_path, line and name";
+        else if (cbm_store_find_node_by_id(store, use_id, &use) != CBM_STORE_OK ||
+                 !use.project || strcmp(use.project, project) ||
+                 !use.label || strcmp(use.label, "SqlVariableRef"))
+            error = "use_id must identify a SqlVariableRef in this project";
+        else { path = strdup(use.file_path); name = strdup(use.name); line = use.start_line; }
+    } else if (!path || !*path || !name || !*name || line < 1)
+        error = "provide use_id or file_path, positive line and unwrapped variable name";
+    if (!error && (!path || !name)) error = "cannot allocate variable request";
+    if (!error && !use_id) {
+        sqlite3_stmt *q = NULL;
+        sqlite3 *db = cbm_store_get_db(store);
+        bool exists = sqlite3_prepare_v2(db,
+            "SELECT 1 FROM nodes WHERE project=?1 AND label='File' AND file_path=?2 LIMIT 1",
+            -1, &q, NULL) == SQLITE_OK;
+        if (exists) {
+            sqlite3_bind_text(q, 1, project, -1, SQLITE_TRANSIENT);
+            sqlite3_bind_text(q, 2, path, -1, SQLITE_TRANSIENT);
+            exists = sqlite3_step(q) == SQLITE_ROW;
+        }
+        sqlite3_finalize(q);
+        if (!exists) error = "file_path must identify an indexed file in this project";
+    }
+    yyjson_mut_doc *doc = NULL;
+    char *result = NULL;
+    if (!error) {
+        doc = yyjson_mut_doc_new(NULL);
+        if (!doc) error = "cannot allocate resolution response";
+    }
+    if (!error) {
+        yyjson_mut_val *root = yyjson_mut_obj(doc), *bindings = yyjson_mut_arr(doc);
+        yyjson_mut_doc_set_root(doc, root);
+        int total = 0, returned = 0;
+        bool ok = mcp_sql_lazy_bindings(cbm_store_get_db(store), project, use_id,
+            path, doc, bindings, offset, limit, &total, &returned,
+            use_id ? NULL : name, line, caller);
+        if (!ok) error = "variable resolution failed";
+        else {
+            yyjson_mut_obj_add_strcpy(doc, root, "project", project);
+            yyjson_mut_obj_add_strcpy(doc, root, "file_path", path);
+            yyjson_mut_obj_add_strcpy(doc, root, "name", name);
+            yyjson_mut_obj_add_int(doc, root, "line", line);
+            yyjson_mut_obj_add_str(doc, root, "resolution_mode", "on_demand");
+            yyjson_mut_obj_add_val(doc, root, "resolutions", bindings);
+            yyjson_mut_obj_add_int(doc, root, "total", total);
+            yyjson_mut_obj_add_int(doc, root, "returned", returned);
+            yyjson_mut_obj_add_int(doc, root, "offset", offset);
+            yyjson_mut_obj_add_bool(doc, root, "has_more", (int64_t)offset + returned < total);
+            if (!total) yyjson_mut_obj_add_str(doc, root, "unresolved_reason",
+                caller ? "caller_context_not_found" : "no_indexed_caller_context");
+            char *json = yy_doc_to_str(doc);
+            result = mcp_result_from_json(args, json); free(json);
+        }
+    }
+    if (doc) yyjson_mut_doc_free(doc);
+    free_node_contents(&use); free(project); free(path); free(name);
+    return error ? cbm_mcp_text_result(error, true) : result;
 }
 
 static char *handle_get_sql_statement(cbm_mcp_server_t *srv, const char *args) {
@@ -14499,6 +14689,11 @@ static char *handle_get_sql_statement(cbm_mcp_server_t *srv, const char *args) {
     int offset = cbm_mcp_get_int_arg(args, "offset", 0);
     int resolution_limit = cbm_mcp_get_int_arg(args, "resolution_limit", 1000);
     int resolution_offset = cbm_mcp_get_int_arg(args, "resolution_offset", 0);
+    char *detail = cbm_mcp_get_string_arg(args, "detail");
+    bool table_detail = detail && strcmp(detail, "table") == 0;
+    bool valid_detail = !detail || table_detail || strcmp(detail, "full") == 0;
+    free(detail);
+    if (!valid_detail) { free(project); return cbm_mcp_text_result("detail must be table or full", true); }
     if (!project || statement_id <= 0 || limit < 1 || limit > 10000 || offset < 0 ||
         resolution_limit < 1 || resolution_limit > 10000 || resolution_offset < 0) {
         free(project);
@@ -14516,13 +14711,27 @@ static char *handle_get_sql_statement(cbm_mcp_server_t *srv, const char *args) {
     yyjson_mut_val *root = yyjson_mut_obj(doc);
     yyjson_mut_doc_set_root(doc, root);
     yyjson_mut_obj_add_val(doc, root, "statement", mcp_sql_node_json(doc, &statement));
+    yyjson_mut_obj_add_str(doc, root, "detail", table_detail ? "table" : "full");
+    char graph_revision[80];
+    if (cbm_store_generation(store, graph_revision, sizeof(graph_revision)) == CBM_STORE_OK)
+        yyjson_mut_obj_add_strcpy(doc, root, "graph_revision", graph_revision);
+    cbm_project_t project_info = {0};
+    if (cbm_store_get_project(store, project, &project_info) == CBM_STORE_OK) {
+        yyjson_mut_obj_add_strcpy(doc, root, "generation", project_info.indexed_at ? project_info.indexed_at : "");
+        cbm_project_free_fields(&project_info);
+    }
     yyjson_mut_val *entities = yyjson_mut_arr(doc);
     const char *prefix =
         "WITH RECURSIVE d(id,depth,parent_id,edge_type) AS MATERIALIZED "
         "(SELECT ?1,0,NULL,NULL UNION "
         "SELECT e.target_id,d.depth+1,e.source_id,e.type FROM d "
         "CROSS JOIN edges e ON e.source_id=d.id WHERE e.project=?2 AND ";
-    const char *suffix =
+    const char *suffix = table_detail ?
+        ") SELECT n.id,n.project,n.label,n.name,n.qualified_name,n.file_path,n.start_line,"
+        "n.end_line,n.properties,d.depth,d.parent_id,d.edge_type,COUNT(*) OVER() FROM d "
+        "JOIN nodes n ON n.id=d.id WHERE d.depth>0 AND n.label NOT IN "
+        "('SqlColumnRef','SqlProjection','SqlClause') "
+        "ORDER BY d.depth,n.start_line,n.id LIMIT ?3 OFFSET ?4" :
         ") SELECT n.id,n.project,n.label,n.name,n.qualified_name,n.file_path,n.start_line,"
         "n.end_line,n.properties,d.depth,d.parent_id,d.edge_type,COUNT(*) OVER() FROM d "
         "JOIN nodes n ON n.id=d.id WHERE d.depth>0 "
@@ -14571,7 +14780,10 @@ static char *handle_get_sql_statement(cbm_mcp_server_t *srv, const char *args) {
     /* The window count already covers nonempty pages. Only an empty page
      * needs a separate count (e.g. an offset beyond the last entity). */
     if (!returned) {
-        const char *count_suffix = ") SELECT COUNT(*) FROM d WHERE depth>0";
+        const char *count_suffix = table_detail ?
+            ") SELECT COUNT(*) FROM d JOIN nodes n ON n.id=d.id WHERE depth>0 "
+            "AND n.label NOT IN ('SqlColumnRef','SqlProjection','SqlClause')" :
+            ") SELECT COUNT(*) FROM d WHERE depth>0";
         size_t count_len = strlen(prefix) + strlen(mcp_sql_descendant_edge_predicate) +
                            strlen(count_suffix) + 1;
         char *count_sql = malloc(count_len);
@@ -14659,7 +14871,7 @@ static char *handle_get_sql_statement(cbm_mcp_server_t *srv, const char *args) {
     sqlite3_finalize(bindings_query);
     bool resolved_on_demand = db && mcp_sql_lazy_bindings(db, project, statement_id,
         statement.file_path, doc, bindings, resolution_offset, resolution_limit,
-        &resolution_total, &resolution_returned);
+        &resolution_total, &resolution_returned, NULL, 0, 0);
     yyjson_mut_obj_add_str(doc, root, "sql_variable_resolution",
                            resolved_on_demand ? "on_demand" : "error");
     yyjson_mut_obj_add_val(doc, root, "resolutions", bindings);
@@ -14712,6 +14924,63 @@ static char *handle_get_sql_statement(cbm_mcp_server_t *srv, const char *args) {
     char *response = mcp_result_from_json(args, json);
     free(json);
     return response;
+}
+
+/* Batch the existing handler, including its on-demand resolver. No lineage
+ * classification or pair generation is performed here. Failed members remain
+ * explicit work items rather than disappearing from a partially successful batch. */
+static char *handle_get_sql_statements(cbm_mcp_server_t *srv, const char *args) {
+    yyjson_doc *input = yyjson_read(args, strlen(args), 0);
+    yyjson_val *in = input ? yyjson_doc_get_root(input) : NULL;
+    yyjson_val *ids = yyjson_obj_get(in, "statement_ids");
+    if (!ids) { yyjson_doc_free(input); return handle_get_sql_statement(srv, args); }
+    size_t count = yyjson_arr_size(ids);
+    bool valid = yyjson_is_arr(ids) && count > 0 && count <= 50 &&
+                 !yyjson_obj_get(in, "statement_id");
+    for (size_t i = 0; valid && i < count; i++) {
+        yyjson_val *id = yyjson_arr_get(ids, i);
+        valid = yyjson_is_int(id) && yyjson_get_sint(id) > 0;
+        for (size_t j = 0; valid && j < i; j++)
+            valid = yyjson_get_sint(id) != yyjson_get_sint(yyjson_arr_get(ids, j));
+    }
+    if (!valid) {
+        yyjson_doc_free(input);
+        return cbm_mcp_text_result("Use exactly one of statement_id or 1..50 distinct positive statement_ids", true);
+    }
+    yyjson_mut_doc *out = yyjson_mut_doc_new(NULL);
+    yyjson_mut_val *root = yyjson_mut_obj(out), *items = yyjson_mut_arr(out);
+    yyjson_mut_doc_set_root(out, root);
+    size_t errors = 0;
+    for (size_t i = 0; i < count; i++) {
+        yyjson_mut_doc *request = yyjson_mut_doc_new(NULL);
+        yyjson_mut_val *r = yyjson_val_mut_copy(request, in);
+        yyjson_mut_doc_set_root(request, r);
+        yyjson_mut_obj_remove_key(r, "statement_ids");
+        yyjson_mut_obj_remove_key(r, "format");
+        yyjson_mut_obj_add_str(request, r, "format", "json");
+        yyjson_mut_obj_add_sint(request, r, "statement_id", yyjson_get_sint(yyjson_arr_get(ids, i)));
+        char *json = yyjson_mut_write(request, 0, NULL);
+        char *reply = handle_get_sql_statement(srv, json);
+        yyjson_doc *parsed = reply ? yyjson_read(reply, strlen(reply), 0) : NULL;
+        yyjson_val *body = parsed ? yyjson_doc_get_root(parsed) : NULL;
+        yyjson_val *payload = yyjson_obj_get(body, "structuredContent");
+        bool error = !payload || yyjson_get_bool(yyjson_obj_get(body, "isError"));
+        yyjson_mut_val *item = yyjson_mut_obj(out);
+        yyjson_mut_obj_add_sint(out, item, "statement_id", yyjson_get_sint(yyjson_arr_get(ids, i)));
+        yyjson_mut_obj_add_bool(out, item, "is_error", error);
+        if (payload) yyjson_mut_obj_add_val(out, item, "result", yyjson_val_mut_copy(out, payload));
+        else yyjson_mut_obj_add_str(out, item, "error", "failed to retrieve statement");
+        yyjson_mut_arr_add_val(items, item);
+        errors += error;
+        yyjson_doc_free(parsed); free(reply); free(json); yyjson_mut_doc_free(request);
+    }
+    yyjson_mut_obj_add_val(out, root, "statements", items);
+    yyjson_mut_obj_add_uint(out, root, "returned", count);
+    yyjson_mut_obj_add_uint(out, root, "errors", errors);
+    char *json = yyjson_mut_write(out, 0, NULL);
+    char *reply = mcp_result_from_json(args, json);
+    free(json); yyjson_mut_doc_free(out); yyjson_doc_free(input);
+    return reply;
 }
 
 static bool mcp_sql_file_sha256(const char *path, char out[CBM_SHA256_HEX_LEN + 1]) {
@@ -21334,7 +21603,20 @@ static char *dispatch_tool(cbm_mcp_server_t *srv, const char *tool_name, const c
     }
     if (strcmp(tool_name, "get_sql_statement") == 0 ||
         strcmp(tool_name, "get_sql_structure") == 0) {
-        return handle_get_sql_statement(srv, args_json);
+        return handle_get_sql_statements(srv, args_json);
+    }
+    if (strcmp(tool_name, "resolve_variables") == 0) {
+        return handle_resolve_variables(srv, args_json);
+    }
+    if (strcmp(tool_name, "lineage_session") == 0) {
+        char *project = get_project_arg(args_json);
+        cbm_store_t *store = project ? resolve_store(srv, project) : NULL;
+        bool error = false;
+        char *json = cbm_lineage_session(store ? cbm_store_get_db(store) : NULL,
+                                        project, args_json, &error);
+        char *result = cbm_mcp_text_result(json, error);
+        free(json); free(project);
+        return result;
     }
     if (strcmp(tool_name, "search_sql") == 0) {
         return handle_search_sql(srv, args_json);
@@ -21368,7 +21650,7 @@ static bool mcp_tool_reads_in_batch(const char *tool_name) {
         "query_graph",      "trace_path",           "trace_call_path",  "search_graph",
         "get_architecture", "get_graph_schema",     "get_code_snippet", "get_file_outline",
         "get_sql_file_outline", "get_sql_statement", "get_sql_structure", "search_sql",
-        "get_sql_snippet",
+        "get_sql_snippet", "resolve_variables",
         "compare_graphs",   "check_index_coverage",
     };
     for (size_t i = 0; tool_name && i < sizeof(batched) / sizeof(batched[0]); i++) {

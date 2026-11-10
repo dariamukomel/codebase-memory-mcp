@@ -1374,12 +1374,11 @@ TEST(mcp_metadata_byte_budget) {
 
     char *json = cbm_mcp_tools_list();
     ASSERT_NOT_NULL(json);
-    /* Seed discovery and independent pagination have a reviewed budget:
-     * 21 KiB overall (raised from 20 KiB for the infra filters and the
-     * topology/deploy/run trace modes: one usage hint per mode keeps them
-     * findable); only detect_changes may exceed the 3200-byte per-tool
+    /* SQL inventory, batch/table evidence and the decision collector have a
+     * reviewed budget of 29 KiB overall (current registry ~28 KiB).
+     * Only detect_changes may exceed the 3200-byte per-tool
      * ceiling, with its own 4096-byte bound. */
-    ASSERT_LT((int)strlen(json), 21 * 1024);
+    ASSERT_LT((int)strlen(json), 29 * 1024);
 
     yyjson_doc *doc = yyjson_read(json, strlen(json), 0);
     ASSERT_NOT_NULL(doc);
@@ -1404,13 +1403,15 @@ TEST(mcp_metadata_byte_budget) {
 
 static bool mcp_tool_loads_upfront(const char *name) {
     return strcmp(name, "search_graph") == 0 || strcmp(name, "trace_path") == 0 ||
-           strcmp(name, "get_code_snippet") == 0;
+           strcmp(name, "get_code_snippet") == 0 || strcmp(name, "search_sql") == 0 ||
+           strcmp(name, "get_sql_file_outline") == 0 || strcmp(name, "get_sql_statement") == 0 ||
+           strcmp(name, "get_sql_structure") == 0 || strcmp(name, "get_sql_snippet") == 0 ||
+           strcmp(name, "lineage_session") == 0 || strcmp(name, "resolve_variables") == 0;
 }
 
 TEST(mcp_tools_list_loads_structural_path_upfront) {
-    /* Claude Code defers MCP tools behind ToolSearch; exactly the structural
-     * discovery path carries _meta["anthropic/alwaysLoad"], in every profile
-     * that lists it, and no other tool grows a _meta object. */
+    /* SQL evidence and the writable collector are discoverable upfront too;
+     * restricted profiles still exclude tools outside their authority. */
     static const cbm_mcp_tool_profile_t profiles[] = {
         CBM_MCP_TOOL_PROFILE_ALL,
         CBM_MCP_TOOL_PROFILE_ANALYSIS,
@@ -1445,7 +1446,8 @@ TEST(mcp_tools_list_loads_structural_path_upfront) {
                 ASSERT_NULL(meta);
             }
         }
-        ASSERT_EQ(upfront, 3);
+        ASSERT_EQ(upfront, profiles[p] == CBM_MCP_TOOL_PROFILE_ALL ? 10 :
+                          profiles[p] == CBM_MCP_TOOL_PROFILE_ANALYSIS ? 9 : 3);
         yyjson_doc_free(doc);
         free(resp);
         cbm_mcp_server_free(srv);
@@ -1498,9 +1500,11 @@ TEST(mcp_tools_have_behavior_annotations) {
         {"get_file_outline", true, false, true, false},
         {"get_sql_file_outline", true, false, true, false},
         {"get_sql_statement", true, false, true, false},
+        {"resolve_variables", true, false, true, false},
         {"get_sql_structure", true, false, true, false},
         {"search_sql", true, false, true, false},
         {"get_sql_snippet", true, false, true, false},
+        {"lineage_session", false, true, true, false},
         {"get_graph_schema", true, false, true, false},
         {"compare_graphs", true, false, true, false},
         {"get_architecture", true, false, true, false},
@@ -1599,9 +1603,9 @@ TEST(mcp_tool_annotations_only_mutators_are_writable_issue2118) {
      * (removes the index), ingest_traces (accumulates observations and evicts
      * old runs). Everything else must be read-only. */
     static const char *const mutating[] = {"index_repository", "manage_adr", "delete_project",
-                                           "ingest_traces"};
+                                           "ingest_traces", "lineage_session"};
     /* Of those, only the ones that can remove/overwrite existing data. */
-    static const char *const destructive[] = {"manage_adr", "delete_project", "ingest_traces"};
+    static const char *const destructive[] = {"manage_adr", "delete_project", "ingest_traces", "lineage_session"};
     const size_t n_mut = sizeof(mutating) / sizeof(mutating[0]);
     const size_t n_des = sizeof(destructive) / sizeof(destructive[0]);
 
@@ -2210,7 +2214,7 @@ TEST(server_handle_analysis_profile_filters_and_rejects_mutators) {
     static const char *const analysis_tools[] = {
         "search_graph",     "query_graph",      "trace_path",     "get_code_snippet",
         "get_file_outline", "get_sql_file_outline", "get_sql_statement", "get_sql_structure",
-        "search_sql", "get_sql_snippet",
+        "search_sql", "get_sql_snippet", "resolve_variables",
         "get_graph_schema", "compare_graphs", "get_architecture",
         "search_code",      "list_projects",    "index_status",   "check_index_coverage",
         "detect_changes",
@@ -25085,19 +25089,27 @@ TEST(tool_get_sql_statement_pages_structure_and_exposes_cross_file_links) {
          .file_path="etl/job.sql",.start_line=1,.end_line=4,.properties_json="{\"parse_status\":\"complete\"}"},
         {.project=project,.label="SqlQuery",.name="select",.qualified_name="sqltools.query",
          .file_path="etl/job.sql",.start_line=1,.end_line=4,.properties_json="{}"},
-        {.project=project,.label="SqlVariableRef",.name="mart.X",.qualified_name="sqltools.use",
+        {.project=project,.label="SqlVariableRef",.name="app.X",.qualified_name="sqltools.use",
          .file_path="etl/job.sql",.start_line=2,.end_line=2,.properties_json="{}"},
-        {.project=project,.label="Variable",.name="mart.X",.qualified_name="sqltools.init",
-         .file_path="resources/ctl/ctl.yml",.start_line=8,.end_line=8,.properties_json="{\"config_key\":true,\"value\":\"raw.t\"}"},
+        {.project=project,.label="Variable",.name="app.X",.qualified_name="sqltools.init",
+         .file_path="resources/ctl/ctl.yml",.start_line=8,.end_line=8,.properties_json="{\"config_key\":true,\"value\":\"{{schema}}.t\"}"},
         {.project=project,.label="Variable",.name="sql_path",.qualified_name="sqltools.path",
          .file_path="resources/ctl/ctl.yml",.start_line=2,.end_line=2,.properties_json="{\"config_key\":true,\"value\":\"etl/job.sql\"}"},
         {.project=project,.label="ConfigValueVariant",.name="etl/job.sql",.qualified_name="sqltools.path.variant",
          .file_path="resources/ctl/ctl.yml",.properties_json="{\"value\":\"etl/job.sql\"}"},
         {.project=project,.label="Variable",.name="step",.qualified_name="sqltools.step",
          .file_path="resources/ctl/ctl.yml",.properties_json="{\"config_key\":true,\"value_kind\":\"object\"}"},
+        {.project=project,.label="File",.name="mart.yml",.qualified_name="sqltools.mart",
+         .file_path="mart.yml",.properties_json="{}"},
+        {.project=project,.label="Variable",.name="schema",.qualified_name="sqltools.schema",
+         .file_path="mart.yml",.start_line=4,.end_line=4,.properties_json="{\"config_key\":true,\"value\":\"raw\"}"},
+        {.project=project,.label="Variable",.name="vars_file",.qualified_name="sqltools.vars_file",
+         .file_path="resources/ctl/ctl.yml",.properties_json="{\"config_key\":true,\"value\":\"mart.yml\"}"},
+        {.project=project,.label="ConfigValueVariant",.name="mart.yml",.qualified_name="sqltools.vars_variant",
+         .file_path="resources/ctl/ctl.yml",.properties_json="{\"value\":\"mart.yml\"}"},
     };
-    int64_t ids[8];
-    for (int i = 0; i < 8; i++) { ids[i] = cbm_store_upsert_node(st, &nodes[i]); ASSERT_GT(ids[i], 0); }
+    int64_t ids[12];
+    for (int i = 0; i < 12; i++) { ids[i] = cbm_store_upsert_node(st, &nodes[i]); ASSERT_GT(ids[i], 0); }
     cbm_edge_t edges[] = {
         {.project=project,.source_id=ids[1],.target_id=ids[2],.type="CONTAINS_QUERY",.properties_json="{}"},
         {.project=project,.source_id=ids[2],.target_id=ids[3],.type="HAS_DYNAMIC_PART",.properties_json="{}"},
@@ -25105,6 +25117,8 @@ TEST(tool_get_sql_statement_pages_structure_and_exposes_cross_file_links) {
         {.project=project,.source_id=ids[6],.target_id=ids[0],.type="REFERENCES_FILE",.properties_json="{}"},
         {.project=project,.source_id=ids[7],.target_id=ids[4],.type="HAS_CONFIG_KEY",.properties_json="{}"},
         {.project=project,.source_id=ids[7],.target_id=ids[5],.type="HAS_CONFIG_KEY",.properties_json="{}"},
+        {.project=project,.source_id=ids[10],.target_id=ids[11],.type="HAS_VARIANT",.properties_json="{}"},
+        {.project=project,.source_id=ids[11],.target_id=ids[8],.type="REFERENCES_FILE",.properties_json="{}"},
     };
     for (size_t i = 0; i < sizeof(edges) / sizeof(edges[0]); i++)
         ASSERT_GT(cbm_store_insert_edge(st, &edges[i]), 0);
@@ -25142,6 +25156,9 @@ TEST(tool_get_sql_statement_pages_structure_and_exposes_cross_file_links) {
     ASSERT_NOT_NULL(strstr(inner, "sqltools.path"));
     ASSERT_NOT_NULL(strstr(inner, "caller_variant_id"));
     ASSERT_NOT_NULL(strstr(inner, "\"resolution_mode\":\"on_demand\""));
+    ASSERT_NOT_NULL(strstr(inner, "\"value_resolution_status\":\"resolved\""));
+    ASSERT_NOT_NULL(strstr(inner, "\"resolved_values\":[{\"value\":\"raw.t\""));
+    ASSERT_NOT_NULL(strstr(inner, "\"definition_ids\":"));
     char context[128];
     snprintf(context, sizeof(context), "\"caller_context_variant_ids\":[%lld]", (long long)ids[6]);
     ASSERT_NOT_NULL(strstr(inner, context));
@@ -25160,11 +25177,102 @@ TEST(tool_get_sql_statement_pages_structure_and_exposes_cross_file_links) {
     ASSERT_NOT_NULL(strstr(inner, "\"returned\":0"));
     ASSERT_EQ(sqlite3_total_changes(cbm_store_get_db(st)), changes_before);
     free(inner);
+    snprintf(request, sizeof(request),
+        "{\"jsonrpc\":\"2.0\",\"id\":702,\"method\":\"tools/call\",\"params\":{"
+        "\"name\":\"get_sql_statement\",\"arguments\":{\"project\":\"sqltools\","
+        "\"statement_ids\":[%lld],\"detail\":\"table\",\"format\":\"json\"}}}", (long long)ids[1]);
+    response = cbm_mcp_server_handle(srv, request);
+    ASSERT_NOT_NULL(response);
+    inner = extract_text_content(response); free(response);
+    ASSERT_NOT_NULL(inner);
+    ASSERT_NOT_NULL(strstr(inner, "\"errors\":0"));
+    ASSERT_NOT_NULL(strstr(inner, "\"resolution_total\":1"));
+    ASSERT_NOT_NULL(strstr(inner, context));
+    ASSERT_EQ(sqlite3_total_changes(cbm_store_get_db(st)), changes_before);
+    free(inner);
+    /* Independent tool works for indexed SQL uses and external DSL names
+     * outside any parsed statement, with the same read-only snapshot. */
+    for (int mode = 0; mode < 7; mode++) {
+        char arguments[240];
+        if (!mode) snprintf(arguments, sizeof(arguments), "\"use_id\":%lld", (long long)ids[3]);
+        else if (mode >= 3) snprintf(arguments, sizeof(arguments),
+            "\"use_id\":%lld,\"caller_variant_id\":%lld%s", (long long)ids[3],
+            mode == 4 ? 0LL : mode == 5 ? 999999LL : (long long)ids[6],
+            mode == 6 ? ",\"offset\":1" : "");
+        else snprintf(arguments, sizeof(arguments),
+            "\"file_path\":\"etl/job.sql\",\"line\":20,\"name\":\"%s\"",
+            mode == 1 ? "app.X" : "unknown");
+        snprintf(request, sizeof(request),
+            "{\"jsonrpc\":\"2.0\",\"id\":703,\"method\":\"tools/call\",\"params\":{"
+            "\"name\":\"resolve_variables\",\"arguments\":{\"project\":\"sqltools\",%s,\"format\":\"json\"}}}", arguments);
+        response = cbm_mcp_server_handle(srv, request);
+        ASSERT_NOT_NULL(response);
+        inner = extract_text_content(response); free(response);
+        ASSERT_NOT_NULL(inner);
+        if (mode < 2 || mode == 3) {
+            ASSERT_NOT_NULL(strstr(inner, "\"value\":\"raw.t\""));
+            ASSERT_NOT_NULL(strstr(inner, "sibling_definition_ids"));
+            ASSERT_NOT_NULL(strstr(inner, "sqltools.schema"));
+            ASSERT_NOT_NULL(strstr(inner, "\"definitions\":"));
+        } else if (mode == 4) {
+            ASSERT_NOT_NULL(strstr(inner, "must be positive integers"));
+        } else if (mode == 5) {
+            ASSERT_NOT_NULL(strstr(inner, "caller_context_not_found"));
+        } else if (mode == 6) {
+            ASSERT_NOT_NULL(strstr(inner, "\"total\":1"));
+            ASSERT_NOT_NULL(strstr(inner, "\"returned\":0"));
+        } else {
+            ASSERT_NOT_NULL(strstr(inner, "initializer_not_found_in_call_context"));
+            ASSERT_NOT_NULL(strstr(inner, "\"resolved_values\":[]"));
+        }
+        ASSERT_EQ(sqlite3_total_changes(cbm_store_get_db(st)), changes_before);
+        free(inner);
+    }
     cbm_mcp_server_free(srv);
     PASS();
 }
 
+TEST(tool_sql_table_batch_preserves_refs_and_pages_filtered_entities) {
+    cbm_mcp_server_t *srv = cbm_mcp_server_new(NULL);
+    ASSERT_NOT_NULL(srv);
+    cbm_store_t *st = cbm_mcp_server_store(srv);
+    cbm_mcp_server_set_project(srv, "batch");
+    cbm_store_upsert_project(st, "batch", "/tmp/batch");
+    const char *labels[] = {"SqlStatement", "SqlQuery", "SqlProjection", "SqlColumnRef", "SqlTableRef", "SqlClause"};
+    int64_t ids[6];
+    for (int i=0;i<6;i++) {
+        char qn[64]; snprintf(qn,sizeof(qn),"batch.%d",i);
+        cbm_node_t n={.project="batch",.label=labels[i],.name=labels[i],.qualified_name=qn,
+            .file_path="job.sql",.start_line=1,.end_line=3,.properties_json="{}"};
+        ids[i]=cbm_store_upsert_node(st,&n);ASSERT_GT(ids[i],0);
+        if (i) {
+            cbm_edge_t e={.project="batch",.source_id=ids[0],.target_id=ids[i],.type="CONTAINS_QUERY",.properties_json="{}"};
+            ASSERT_GT(cbm_store_insert_edge(st,&e),0);
+        }
+    }
+    char request[1024];
+    snprintf(request,sizeof(request),
+        "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{\"name\":\"get_sql_structure\","
+        "\"arguments\":{\"project\":\"batch\",\"statement_ids\":[%lld,999999],\"detail\":\"table\",\"limit\":1,\"format\":\"json\"}}}",(long long)ids[0]);
+    char *response=cbm_mcp_server_handle(srv,request);
+    char *inner=extract_text_content(response);free(response);
+    ASSERT_NOT_NULL(inner);
+    ASSERT_NOT_NULL(strstr(inner,"\"errors\":1"));
+    ASSERT_NOT_NULL(strstr(inner,"\"total\":2"));
+    ASSERT_NOT_NULL(strstr(inner,"\"has_more\":true"));
+    ASSERT_NULL(strstr(inner,"SqlProjection"));ASSERT_NULL(strstr(inner,"SqlColumnRef"));
+    ASSERT_NOT_NULL(strstr(inner,"sql_variable_resolution"));free(inner);
+    snprintf(request,sizeof(request),
+        "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/call\",\"params\":{\"name\":\"get_sql_statement\","
+        "\"arguments\":{\"project\":\"batch\",\"statement_id\":%lld,\"detail\":\"table\",\"offset\":1,\"limit\":1,\"format\":\"json\"}}}",(long long)ids[0]);
+    response=cbm_mcp_server_handle(srv,request);inner=extract_text_content(response);free(response);
+    ASSERT_NOT_NULL(inner);ASSERT_NOT_NULL(strstr(inner,"SqlTableRef"));
+    ASSERT_NOT_NULL(strstr(inner,"\"has_more\":false"));free(inner);
+    cbm_mcp_server_free(srv);PASS();
+}
+
 SUITE(mcp) {
+    RUN_TEST(tool_sql_table_batch_preserves_refs_and_pages_filtered_entities);
     RUN_TEST(tool_get_sql_statement_pages_structure_and_exposes_cross_file_links);
     RUN_TEST(index_repository_async_and_status_refused_without_daemon_issue2144);
     RUN_TEST(index_repository_schema_documents_async_polling_issue2144);

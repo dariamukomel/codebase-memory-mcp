@@ -848,6 +848,33 @@ Every response is standard UTF-8. Identifiers, paths, and raw search previews pr
 
 Use `cli <tool> --help` to see the flags generated from that tool's input schema:
 
+`resolve_variables` resolves an indexed SQL variable use independently of a SQL
+statement. It also accepts an external name left after inspecting local DSL:
+
+```bash
+codebase-memory-mcp cli resolve_variables --project my-project --use-id 123 --format json
+codebase-memory-mcp cli resolve_variables --project my-project \
+  --file-path etl/job.sql --line 20 --name app.schema --format json
+```
+
+Read local DSL assignments first, respecting blocks and assignment order. Expand
+local aliases, then pass the remaining external name with its file/position to
+this tool. An unsupported local computation is unresolved, not permission to
+replace it with an external variable of the same name. The tool does not execute
+DSL or SQL. Uses in unparsed regions can be requested directly by ID.
+
+The shared resolver used by `get_sql_statement` first searches the lexical and
+caller scopes. If a nested name is missing, it follows sibling configuration
+file references from that caller chain's root, excluding files already in the
+chain. For example, `devops → ctl → pipeline → SQL` can consult a separate
+`devops → mart` branch. This is graph traversal, not a hardcoded `mart`/CTL rule
+or a repository-wide name search. All matching sibling definitions are retained.
+`caller_variant_id` selects one incoming context; `limit`/`offset` page bindings.
+Results distinguish finding an initializer (`resolution_status`) from obtaining
+its value (`value_resolution_status`). `steps`, `definition_ids`, `definitions`, and
+`sibling_definition_ids` expose the source expressions and fallback provenance.
+Keep alternatives and caller contexts separate when substituting values.
+
 ```bash
 codebase-memory-mcp cli index_repository --repo-path /path/to/repo
 codebase-memory-mcp cli list_projects

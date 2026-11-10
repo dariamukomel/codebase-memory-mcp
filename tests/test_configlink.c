@@ -1154,7 +1154,136 @@ TEST(configlink_namespace_choices_survive_nested_paths) {
     cbm_gbuf_free(gb); PASS();
 }
 
+TEST(configlink_sql_values_expand_at_query_time) {
+    cbm_gbuf_t *gb = cbm_gbuf_new("test", "/tmp/test");
+    cbm_gbuf_upsert_node(gb, "File", "job.sql", "test.sql", "sql/job.sql", 1, 1, "{}");
+    int64_t use = cbm_gbuf_upsert_node(gb, "SqlVariableRef", "app.X", "test.use",
+                                      "sql/job.sql", 1, 1, "{}");
+    int64_t wf = add_config_key(gb, "test.wf", "workflow", NULL);
+    int64_t path = add_config_key(gb, "test.path", "path", "sql/job.sql");
+    int64_t init = add_config_key(gb, "test.init", "app.X", "{{mart.schema}}.table");
+    cbm_gbuf_insert_edge(gb, wf, path, "HAS_CONFIG_KEY", "{}");
+    cbm_gbuf_insert_edge(gb, wf, init, "HAS_CONFIG_KEY", "{}");
+    int64_t mart = cbm_gbuf_upsert_node(gb, "Variable", "vars", "test.mart.vars", "mart.yml", 1, 3,
+        "{\"config_key\":true,\"value_kind\":\"object\"}");
+    int64_t schema = cbm_gbuf_upsert_node(gb, "Variable", "schema", "test.mart.schema", "mart.yml", 1, 1,
+        "{\"config_key\":true,\"value\":\"{{base}}\"}");
+    int64_t base = cbm_gbuf_upsert_node(gb, "Variable", "base", "test.mart.base", "mart.yml", 2, 2,
+        "{\"config_key\":true,\"value\":\"raw\"}");
+    cbm_gbuf_insert_edge(gb, mart, schema, "HAS_CONFIG_KEY", "{}");
+    cbm_gbuf_insert_edge(gb, mart, base, "HAS_CONFIG_KEY", "{}");
+    ASSERT_GTE(run_configlink(gb, "test", NULL), 0);
+    const cbm_gbuf_node_t **bindings = NULL; int count = 0;
+    cbm_gbuf_find_by_label(gb, "SqlConfigBinding", &bindings, &count);
+    ASSERT_EQ(count, 0);
+    ASSERT_GTE(cbm_configlink_resolve_sql(gb, "sql/job.sql"), 0);
+    cbm_gbuf_find_by_label(gb, "SqlConfigBinding", &bindings, &count);
+    ASSERT_EQ(count, 1);
+    ASSERT_TRUE(has_typed_edge(gb, "BINDS_VARIABLE", bindings[0]->id, use));
+    const cbm_gbuf_edge_t **edges = NULL; int n = 0;
+    cbm_gbuf_find_edges_by_source_type(gb, bindings[0]->id, "RESOLVES_TO_CONFIG", &edges, &n);
+    ASSERT_EQ(n, 1);
+    ASSERT_NOT_NULL(strstr(edges[0]->properties_json, "\"value\":\"raw.table\""));
+    ASSERT_NOT_NULL(strstr(edges[0]->properties_json, "\"value_resolution_status\":\"resolved\""));
+    ASSERT_NOT_NULL(strstr(edges[0]->properties_json, "definition_ids"));
+    ASSERT_NOT_NULL(strstr(cbm_gbuf_find_by_id(gb, init)->properties_json, "{{mart.schema}}"));
+    const char *bad_values[] = {"{{base}}", "{{missing}}/raw"};
+    const char *statuses[] = {"cycle", "unresolved"};
+    for (int k = 0; k < 2; k++) {
+        char props[256], expected[128];
+        snprintf(props, sizeof(props), "{\"config_key\":true,\"value\":\"%s\"}", bad_values[k]);
+        cbm_gbuf_node_set_properties_json((cbm_gbuf_node_t *)cbm_gbuf_find_by_id(gb, base), props);
+        ASSERT_GTE(cbm_configlink_resolve_sql(gb, "sql/job.sql"), 0);
+        cbm_gbuf_find_by_label(gb, "SqlConfigBinding", &bindings, &count);
+        ASSERT_EQ(count, 1);
+        cbm_gbuf_find_edges_by_source_type(gb, bindings[0]->id, "RESOLVES_TO_CONFIG", &edges, &n);
+        ASSERT_EQ(n, 1);
+        snprintf(expected, sizeof(expected), "\"value_resolution_status\":\"%s\"", statuses[k]);
+        ASSERT_NOT_NULL(strstr(edges[0]->properties_json, expected));
+        ASSERT_NOT_NULL(strstr(edges[0]->properties_json, "\"resolved_values\":[]"));
+    }
+    cbm_gbuf_free(gb); PASS();
+}
+
+static int64_t sibling_key(cbm_gbuf_t *gb, const char *file, const char *qn,
+                           const char *name, const char *value, int64_t parent) {
+    char props[512];
+    snprintf(props, sizeof(props), value ? "{\"config_key\":true,\"value\":\"%s\"}" :
+        "{\"config_key\":true,\"value_kind\":\"mapping\"}", value ? value : "");
+    int64_t id = cbm_gbuf_upsert_node(gb, "Variable", name, qn, file, 1, 1, props);
+    if (parent) cbm_gbuf_insert_edge(gb, parent, id, "HAS_CONFIG_KEY", "{}");
+    return id;
+}
+
+TEST(configlink_root_siblings_resolve_nested_values_without_crossing_stands) {
+    cbm_gbuf_t *gb = cbm_gbuf_new("test", "/tmp/test");
+    cbm_gbuf_upsert_node(gb, "File", "ctl.yml", "test.ctl", "resources/ctl/ctl.yml", 1, 1, "{}");
+    cbm_gbuf_upsert_node(gb, "File", "mart.yml", "test.mart", "mart.yml", 1, 1, "{}");
+    cbm_gbuf_upsert_node(gb, "File", "job.sql", "test.sql", "sql/job.sql", 1, 1, "{}");
+    int64_t root = sibling_key(gb, "devops.json", "test.root", "root", NULL, 0);
+    sibling_key(gb, "devops.json", "test.root.ctl", "source", "resources/ctl/ctl.yml", root);
+    sibling_key(gb, "devops.json", "test.root.mart", "vars", "mart.yml", root);
+    int64_t wf = add_config_key(gb, "test.wf", "workflow", NULL);
+    int64_t path = add_config_key(gb, "test.wf.path", "path", "sql/job.sql");
+    int64_t init = add_config_key(gb, "test.wf.X", "app.X", "{{schema}}.{{prefix}}t");
+    cbm_gbuf_insert_edge(gb, wf, path, "HAS_CONFIG_KEY", "{}");
+    cbm_gbuf_insert_edge(gb, wf, init, "HAS_CONFIG_KEY", "{}");
+    int64_t stands = cbm_gbuf_upsert_node(gb, "Variable", "stands", "test.stands", "mart.yml", 1, 1,
+        "{\"config_key\":true,\"value_kind\":\"sequence\"}");
+    for (int i = 0; i < 2; i++) {
+        char qn[64]; snprintf(qn, sizeof(qn), "test.stand%d", i);
+        int64_t stand = sibling_key(gb, "mart.yml", qn, "stand", NULL, stands);
+        snprintf(qn, sizeof(qn), "test.stand%d.schema", i);
+        sibling_key(gb, "mart.yml", qn, "schema", i ? "beta" : "alpha", stand);
+        snprintf(qn, sizeof(qn), "test.stand%d.prefix", i);
+        sibling_key(gb, "mart.yml", qn, "prefix", i ? "b_" : "a_", stand);
+    }
+    /* Same name in an unreferenced file is never a fallback candidate. */
+    sibling_key(gb, "unrelated.yml", "test.unrelated", "schema", "wrong", 0);
+    cbm_gbuf_upsert_node(gb, "SqlVariableRef", "app.X", "test.use", "sql/job.sql", 1, 1, "{}");
+    ASSERT_GTE(run_configlink(gb, "test", NULL), 0);
+    ASSERT_GTE(cbm_configlink_resolve_sql(gb, "sql/job.sql"), 0);
+    const cbm_gbuf_node_t **bindings = NULL; int count = 0;
+    cbm_gbuf_find_by_label(gb, "SqlConfigBinding", &bindings, &count);
+    ASSERT_EQ(count, 1);
+    const cbm_gbuf_edge_t **edges = NULL; int n = 0;
+    cbm_gbuf_find_edges_by_source_type(gb, bindings[0]->id, "RESOLVES_TO_CONFIG", &edges, &n);
+    ASSERT_EQ(n, 1);
+    ASSERT_NOT_NULL(strstr(edges[0]->properties_json, "alpha.a_t"));
+    ASSERT_NOT_NULL(strstr(edges[0]->properties_json, "beta.b_t"));
+    ASSERT_NULL(strstr(edges[0]->properties_json, "alpha.b_t"));
+    ASSERT_NULL(strstr(edges[0]->properties_json, "beta.a_t"));
+    ASSERT_NULL(strstr(edges[0]->properties_json, "wrong"));
+    ASSERT_NOT_NULL(strstr(edges[0]->properties_json, "sibling_definition_ids"));
+    ASSERT_NOT_NULL(strstr(edges[0]->properties_json, "\"lookup\":\"root_siblings\""));
+    ASSERT_NOT_NULL(strstr(edges[0]->properties_json, "\"variable\":\"schema\""));
+    /* Framework path templates use the same fallback during indexing. */
+    int64_t dynamic_path = sibling_key(gb, "resources/ctl/ctl.yml", "test.dynamic_path",
+        "filePath", "sql/{{schema}}/job.sql", wf);
+    int64_t alpha_file = cbm_gbuf_upsert_node(gb, "File", "job.sql", "test.alpha_sql",
+        "sql/alpha/job.sql", 1, 1, "{}");
+    int64_t beta_file = cbm_gbuf_upsert_node(gb, "File", "job.sql", "test.beta_sql",
+        "sql/beta/job.sql", 1, 1, "{}");
+    ASSERT_GTE(run_configlink(gb, "test", NULL), 0);
+    ASSERT_TRUE(has_config_file_edge(gb, dynamic_path, alpha_file));
+    ASSERT_TRUE(has_config_file_edge(gb, dynamic_path, beta_file));
+    /* A concrete local value shadows every sibling alternative. */
+    sibling_key(gb, "resources/ctl/ctl.yml", "test.local_schema", "schema", "local", wf);
+    sibling_key(gb, "resources/ctl/ctl.yml", "test.local_prefix", "prefix", "x_", wf);
+    ASSERT_GTE(cbm_configlink_resolve_sql(gb, "sql/job.sql"), 0);
+    cbm_gbuf_find_by_label(gb, "SqlConfigBinding", &bindings, &count);
+    ASSERT_EQ(count, 1);
+    cbm_gbuf_find_edges_by_source_type(gb, bindings[0]->id, "RESOLVES_TO_CONFIG", &edges, &n);
+    ASSERT_EQ(n, 1);
+    ASSERT_NOT_NULL(strstr(edges[0]->properties_json, "local.x_t"));
+    ASSERT_NULL(strstr(edges[0]->properties_json, "alpha"));
+    ASSERT_NULL(strstr(edges[0]->properties_json, "beta"));
+    cbm_gbuf_free(gb); PASS();
+}
+
 SUITE(configlink) {
+    RUN_TEST(configlink_root_siblings_resolve_nested_values_without_crossing_stands);
+    RUN_TEST(configlink_sql_values_expand_at_query_time);
     RUN_TEST(configlink_namespace_choices_survive_nested_paths);
     RUN_TEST(configlink_nonpath_templates_keep_uses_without_products);
     RUN_TEST(configlink_yaml_alias_chains_and_cycles);

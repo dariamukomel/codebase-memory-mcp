@@ -1750,6 +1750,7 @@ extern void suite_test_impact_runner_filter(void);
 extern void suite_store_search(void);
 extern void suite_cypher(void);
 extern void suite_mcp(void);
+extern void suite_lineage_session(void);
 extern void suite_mcp_mutation_guard(void);
 extern void suite_index_supervisor(void);
 extern void suite_daemon(void);
@@ -2311,6 +2312,7 @@ int main(int argc, char **argv) {
 
     /* MCP Server (M9) */
     RUN_SELECTED_SUITE(mcp);
+    RUN_SELECTED_SUITE(lineage_session);
     RUN_SELECTED_SUITE(mcp_mutation_guard);
     RUN_SELECTED_SUITE(index_supervisor);
 

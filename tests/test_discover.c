@@ -1244,14 +1244,46 @@ TEST(discover_generic_dirs_fast_mode) {
     PASS();
 }
 
-TEST(discover_deploy_excluded_full_mode) {
+TEST(discover_deploy_included_all_modes) {
     char *base = th_mktempdir("cbm_disc_deploy");
     ASSERT(base != NULL);
 
     th_write_file(TH_PATH(base, "src/main.go"), "package main\n");
     th_write_file(TH_PATH(base, "deploy/main.go"), "package deploy\n");
+    th_write_file(TH_PATH(base, "etl/workflows/deploy/sql/archive/migration.sql"),
+                  "INSERT INTO target_table SELECT * FROM source_table;\n");
     th_write_file(TH_PATH(base, "deployed/main.go"), "package deployed\n");
 
+    cbm_index_mode_t modes[] = {CBM_MODE_FAST, CBM_MODE_FULL};
+    for (size_t i = 0; i < sizeof(modes) / sizeof(modes[0]); i++) {
+        cbm_discover_opts_t opts = {.mode = modes[i]};
+        cbm_file_info_t *files = NULL;
+        int count = 0;
+        ASSERT_EQ(cbm_discover(base, &opts, &files, &count), 0);
+        ASSERT_EQ(count, 3);
+        bool root_deploy = false, nested_deploy = false;
+        for (int j = 0; j < count; j++) {
+            if (strcmp(files[j].rel_path, "deploy/main.go") == 0) root_deploy = true;
+            if (strcmp(files[j].rel_path,
+                       "etl/workflows/deploy/sql/archive/migration.sql") == 0)
+                nested_deploy = true;
+        }
+        ASSERT_TRUE(root_deploy);
+        ASSERT_TRUE(nested_deploy);
+        cbm_discover_free(files, count);
+    }
+    th_cleanup(base);
+    PASS();
+}
+
+TEST(discover_deploy_explicit_cbmignore) {
+    char *base = th_mktempdir("cbm_disc_deploy_ignore");
+    ASSERT(base != NULL);
+    th_write_file(TH_PATH(base, ".cbmignore"), "deploy/\n");
+    th_write_file(TH_PATH(base, "src/main.go"), "package main\n");
+    th_write_file(TH_PATH(base, "deploy/main.go"), "package deploy\n");
+    th_write_file(TH_PATH(base, "etl/workflows/deploy/sql/migration.sql"),
+                  "INSERT INTO target_table SELECT * FROM source_table;\n");
     cbm_discover_opts_t opts = {.mode = CBM_MODE_FULL};
     cbm_file_info_t *files = NULL;
     int count = 0;
@@ -1259,6 +1291,7 @@ TEST(discover_deploy_excluded_full_mode) {
     int rc = cbm_discover(base, &opts, &files, &count);
     ASSERT_EQ(rc, 0);
     ASSERT_EQ(count, 1);
+    ASSERT_STR_EQ(files[0].rel_path, "src/main.go");
 
     cbm_discover_free(files, count);
     th_cleanup(base);
@@ -2495,7 +2528,8 @@ SUITE(discover) {
     RUN_TEST(discover_new_ignore_patterns);
     RUN_TEST(discover_generic_dirs_full_mode);
     RUN_TEST(discover_generic_dirs_fast_mode);
-    RUN_TEST(discover_deploy_excluded_full_mode);
+    RUN_TEST(discover_deploy_included_all_modes);
+    RUN_TEST(discover_deploy_explicit_cbmignore);
     RUN_TEST(discover_cbmignore_no_git);
 
     /* .cbmignore negation vs built-in skip dirs (issue #500) */

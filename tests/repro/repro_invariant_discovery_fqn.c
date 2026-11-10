@@ -193,7 +193,6 @@ TEST(invariant_discovery_always_skip_dirs) {
         /* Deploy */
         { ".vercel",                 1 }, /* GREEN */
         { ".netlify",                1 }, /* GREEN */
-        { "deploy",                  1 }, /* GREEN */
         { "deployed",                1 }, /* GREEN */
 
         /* Misc */

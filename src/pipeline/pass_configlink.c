@@ -1082,6 +1082,8 @@ typedef struct {
     CBMHashTable *namespaces;
     size_t alias_cycle_epoch;
     bool scan_only;
+    bool sql_values; /* Query-time values must never discard unresolved path prefixes. */
+    cl_variant_t fallback_definitions;
 } cl_resolver_t;
 
 static void cl_variants_free(cl_variants_t *v) {
@@ -1105,13 +1107,34 @@ static bool cl_origin_add(cl_resolver_t *r, cl_variant_t *v, int64_t id) {
     return true;
 }
 
+static bool cl_has_origin(const cl_variant_t *v, int64_t id);
+static bool cl_compatible_choices(cl_resolver_t *r, const cl_variant_t *a,
+                                  const cl_variant_t *b);
+
+static bool cl_same_fallback_choices(cl_resolver_t *r, const cl_variant_t *existing,
+                                     const cl_variant_t *a, const cl_variant_t *b,
+                                     int64_t origin) {
+    for (size_t i = 0; i < r->fallback_definitions.origin_count; i++) {
+        int64_t id = r->fallback_definitions.origins[i];
+        bool wanted = id == origin || cl_has_origin(a, id) || cl_has_origin(b, id);
+        if (cl_has_origin(existing, id) != wanted) return false;
+    }
+    return true;
+}
+
 static void cl_variant_add(cl_resolver_t *r, cl_variants_t *list, const char *text,
                            bool suffix, const cl_variant_t *a, const cl_variant_t *b,
                            int64_t origin) {
     if (r->failed) return;
+    if (origin && cl_has_origin(&r->fallback_definitions, origin)) {
+        cl_variant_t selection = {.origins = &origin, .origin_count = 1};
+        if ((a && !cl_compatible_choices(r, &selection, a)) ||
+            (b && !cl_compatible_choices(r, &selection, b))) return;
+    }
     cl_variant_t *v = NULL;
     for (size_t i = 0; i < list->count; i++)
-        if (list->items[i].suffix == suffix && !strcmp(list->items[i].text, text)) {
+        if (list->items[i].suffix == suffix && !strcmp(list->items[i].text, text) &&
+            cl_same_fallback_choices(r, &list->items[i], a, b, origin)) {
             v = &list->items[i]; break;
         }
     if (!v) {
@@ -1262,6 +1285,109 @@ static void cl_namespace_free(const char *key, void *value, void *data) {
     (void)value; (void)data; free((void *)key);
 }
 
+static bool cl_has_origin(const cl_variant_t *v, int64_t id) {
+    if (v) for (size_t i = 0; i < v->origin_count; i++)
+        if (v->origins[i] == id) return true;
+    return false;
+}
+
+/* Last resort only: follow file references out of the root, without reentering
+ * any file in this caller chain. In particular, other workflows in the CTL
+ * file never become sibling scopes. All declarations in reachable sibling
+ * files are candidates; lexical distance in the CTL cannot rank them. */
+static cl_variant_t cl_lookup_root_siblings(cl_resolver_t *r, const char *name) {
+    cl_variant_t found = {0}, files = {0};
+    if (!r->context) return found;
+    const cbm_gbuf_node_t *root = cbm_gbuf_find_by_id(r->gb, r->context->link->owner);
+    if (!root || !root->file_path) return found;
+    const cbm_gbuf_edge_t **refs = NULL;
+    int ref_count = 0;
+    cbm_gbuf_find_edges_by_type(r->gb, "REFERENCES_FILE", &refs, &ref_count);
+    bool changed;
+    do {
+        changed = false;
+        for (int i = 0; i < ref_count && !r->failed; i++) {
+            const cbm_gbuf_node_t *from = cbm_gbuf_find_by_id(r->gb, refs[i]->source_id);
+            const cbm_gbuf_node_t *to = cbm_gbuf_find_by_id(r->gb, refs[i]->target_id);
+            if (!from || !to || !from->file_path || !to->file_path ||
+                strcmp(from->label, "ConfigValueVariant") || strcmp(to->label, "File") ||
+                cl_has_origin(&files, to->id)) continue;
+            bool reachable = !strcmp(from->file_path, root->file_path), blocked = false;
+            for (size_t j = 0; !reachable && j < files.origin_count; j++) {
+                const cbm_gbuf_node_t *file = cbm_gbuf_find_by_id(r->gb, files.origins[j]);
+                reachable = file && !strcmp(file->file_path, from->file_path);
+            }
+            if (!reachable) continue;
+            /* A shared sibling file may have path variants produced by other
+             * roots. Those variants are not edges of this caller environment. */
+            const cbm_gbuf_edge_t **contexts = NULL; int context_count = 0;
+            cbm_gbuf_find_edges_by_source_type(r->gb, from->id, "HAS_CALLER_CONTEXT",
+                                               &contexts, &context_count);
+            for (int j = 0; j < context_count; j++) {
+                yyjson_doc *p = yyjson_read(contexts[j]->properties_json,
+                                            strlen(contexts[j]->properties_json), 0);
+                yyjson_val *depth = p ? yyjson_obj_get(yyjson_doc_get_root(p), "depth") : NULL;
+                const cbm_gbuf_node_t *ancestor = cbm_gbuf_find_by_id(r->gb, contexts[j]->target_id);
+                if (yyjson_is_int(depth) && yyjson_get_sint(depth) == 0 && ancestor &&
+                    strcmp(ancestor->file_path, root->file_path)) blocked = true;
+                if (p) yyjson_doc_free(p);
+            }
+            for (const cl_call_frame_t *f = r->context; f; f = f->child) {
+                const cbm_gbuf_node_t *owner = cbm_gbuf_find_by_id(r->gb, f->link->owner);
+                const cbm_gbuf_node_t *callee = cbm_gbuf_find_by_id(r->gb, f->link->file);
+                if ((owner && !strcmp(to->file_path, owner->file_path)) ||
+                    (callee && !strcmp(to->file_path, callee->file_path))) blocked = true;
+            }
+            if (!blocked) { cl_origin_add(r, &files, to->id); changed = true; }
+        }
+    } while (changed && !r->failed);
+    for (int mode = 0; mode < 2; mode++) {
+        const cl_config_value_t *index = mode ? r->by_name : r->values;
+        int first = mode ? cl_name_lower_bound(index, r->count, name) :
+                           cl_value_lower_bound(index, r->count, name);
+        for (int i = first; i < r->count; i++) {
+            const cbm_gbuf_node_t *decl = index[i].node, *init = NULL;
+            const char *candidate = mode ? decl->name : index[i].value;
+            if (!candidate || strcmp(candidate, name)) break;
+            bool reachable = false;
+            for (size_t j = 0; j < files.origin_count; j++) {
+                const cbm_gbuf_node_t *file = cbm_gbuf_find_by_id(r->gb, files.origins[j]);
+                if (file && !strcmp(decl->file_path, file->file_path)) reachable = true;
+            }
+            if (!reachable) continue;
+            if (mode) init = decl;
+            else if (!strcmp(decl->name, "name"))
+                init = cl_initializer(r->gb, r->children, r->hc,
+                                      cl_parent_of(r->parents, r->hc, decl->id));
+            if (init) {
+                cl_origin_add(r, &found, init->id);
+                cl_origin_add(r, &r->fallback_definitions, init->id);
+            }
+        }
+    }
+    free(files.origins);
+    return found;
+}
+
+/* Do not form a schema/prefix product across separate sibling environments
+ * (e.g. two entries of a stands sequence). Definitions retain their IDs even
+ * when their concrete strings happen to be equal. */
+static bool cl_compatible_choices(cl_resolver_t *r, const cl_variant_t *a,
+                                  const cl_variant_t *b) {
+    for (size_t i = 0; i < a->origin_count; i++) {
+        if (!cl_has_origin(&r->fallback_definitions, a->origins[i])) continue;
+        const cbm_gbuf_node_t *left = cbm_gbuf_find_by_id(r->gb, a->origins[i]);
+        for (size_t j = 0; j < b->origin_count; j++) {
+            if (!cl_has_origin(&r->fallback_definitions, b->origins[j])) continue;
+            const cbm_gbuf_node_t *right = cbm_gbuf_find_by_id(r->gb, b->origins[j]);
+            if (left && right && !strcmp(left->file_path, right->file_path) &&
+                cl_scope_distance(r->gb, r->parents, r->hc, left->id, right->id) >= 1000000)
+                return false;
+        }
+    }
+    return true;
+}
+
 /* Resolve in the declaration's lexical scope first, then in its callers.
  * A caller's own template must not see parameters of its callee. */
 static cl_variant_t cl_lookup_context(cl_resolver_t *r, const cbm_gbuf_node_t *owner,
@@ -1307,6 +1433,10 @@ static cl_variant_t cl_lookup_context(cl_resolver_t *r, const cbm_gbuf_node_t *o
                     found.origins[n++] = found.origins[i]; break;
                 }
         found.origin_count = n;
+    }
+    if (!found.origin_count) {
+        free(found.origins);
+        found = cl_lookup_root_siblings(r, name);
     }
     return found;
 }
@@ -1398,10 +1528,22 @@ static cl_variants_t cl_expand_variants(cl_resolver_t *r, const cbm_gbuf_node_t 
         free(qn);
         if (!use || !cbm_gbuf_insert_edge(r->gb, owner->id, use, "HAS_VARIABLE_REF", "{}")) r->failed = true;
         }
-        free(name);
         cl_variants_t choices = {0};
         for (size_t i = 0; i < bindings.origin_count && !r->failed; i++) {
             const cbm_gbuf_node_t *init = cbm_gbuf_find_by_id(r->gb, bindings.origins[i]);
+            if (r->sql_values) {
+                char *escaped = cl_json_escape(name);
+                size_t cap = escaped ? strlen(escaped) + 128 : 0;
+                char *props = cap ? malloc(cap) : NULL;
+                if (!props) r->failed = true;
+                else {
+                    snprintf(props, cap, "{\"variable\":\"%s\",\"lookup\":\"%s\"}", escaped,
+                        cl_has_origin(&r->fallback_definitions, init->id) ? "root_siblings" : "lexical_or_caller");
+                    if (!cbm_gbuf_insert_edge(r->gb, owner->id, init->id,
+                                              "RESOLVES_VALUE_FROM", props)) r->failed = true;
+                }
+                free(props); free(escaped);
+            }
             if (use && !cbm_gbuf_insert_edge(r->gb, use, init->id, "RESOLVES_TO_CONFIG",
                                       "{\"strategy\":\"config_reference\"}")) r->failed = true;
             if (r->scan_only) continue;
@@ -1415,7 +1557,8 @@ static cl_variants_t cl_expand_variants(cl_resolver_t *r, const cbm_gbuf_node_t 
                                &sub.items[j], NULL, init->id);
             cl_variants_free(&sub);
         }
-        bool prefix = !bindings.origin_count && !namespaced && p == value &&
+        free(name);
+        bool prefix = !r->sql_values && !bindings.origin_count && !namespaced && p == value &&
                       (*next == '/' || *next == '\\');
         if (r->scan_only) {
             if (use) cl_resolution_properties(r->gb, use, bindings.origin_count ? "resolved" :
@@ -1434,6 +1577,7 @@ static cl_variants_t cl_expand_variants(cl_resolver_t *r, const cbm_gbuf_node_t 
         for (size_t i = 0; i < result.count && !r->failed; i++)
             for (size_t j = 0; j < choices.count && !r->failed; j++) {
                 cl_variant_t *a = &result.items[i], *b = &choices.items[j];
+                if (!cl_compatible_choices(r, a, b)) continue;
                 /* An unknown prefix of a nested value cannot erase a middle directory. */
                 if (b->suffix && a->text[0]) { product.unresolved = true; continue; }
                 size_t an = strlen(a->text), bn = strlen(b->text);
@@ -1457,6 +1601,12 @@ static int64_t cl_emit_variant(cl_resolver_t *r, const cbm_gbuf_node_t *owner,
     char digest[CBM_SHA256_HEX_LEN + 1];
     cbm_sha256_ctx hash; cbm_sha256_init(&hash);
     cbm_sha256_update(&hash, v->text, strlen(v->text) + 1);
+    for (size_t i = 0; i < v->origin_count; i++) {
+        if (!cl_has_origin(&r->fallback_definitions, v->origins[i])) continue;
+        const cbm_gbuf_node_t *definition = cbm_gbuf_find_by_id(r->gb, v->origins[i]);
+        if (definition) cbm_sha256_update(&hash, definition->qualified_name,
+                                          strlen(definition->qualified_name) + 1);
+    }
     for (const cl_call_frame_t *f = r->context; f; f = f->child) {
         const cbm_gbuf_node_t *caller = cbm_gbuf_find_by_id(r->gb, f->link->variant);
         cbm_sha256_update(&hash, caller->qualified_name, strlen(caller->qualified_name) + 1);
@@ -1560,6 +1710,13 @@ static void cl_bind_call_chain(cl_resolver_t *r, const cl_call_frame_t *frame,
                 }
             }
         }
+        if (!binding.origin_count) {
+            const cl_call_frame_t *saved = r->context;
+            r->context = frame;
+            free(binding.origins);
+            binding = cl_lookup_root_siblings(r, use->name);
+            r->context = saved;
+        }
         cbm_sha256_ctx hash; cbm_sha256_init(&hash);
         for (const cl_call_frame_t *f = frame; f; f = f->child) {
             const cbm_gbuf_node_t *v = cbm_gbuf_find_by_id(r->gb, f->link->variant);
@@ -1594,8 +1751,75 @@ static void cl_bind_call_chain(cl_resolver_t *r, const cl_call_frame_t *frame,
             if (selected) for (size_t j = 0; j < selected->selection.origin_count; j++)
                 if (binding.origins[b] == selected->selection.origins[j]) keep = true;
             if (keep) {
+                char *expanded_json = NULL;
+                if (r->sql_values && !config_use) {
+                    const cbm_gbuf_node_t *init = cbm_gbuf_find_by_id(r->gb, binding.origins[b]);
+                    char *raw = NULL;
+                    const cl_call_frame_t *saved = r->context;
+                    r->context = frame;
+                    cl_variants_t expanded = {0};
+                    if (cl_config_value(init, &raw)) {
+                        expanded = cl_expand_variants(r, init, raw, NULL);
+                        free(raw);
+                    } else expanded.unresolved = true;
+                    r->context = saved;
+                    yyjson_mut_doc *doc = yyjson_mut_doc_new(NULL);
+                    if (!doc) r->failed = true;
+                    else {
+                        yyjson_mut_val *root = yyjson_mut_obj(doc), *values = yyjson_mut_arr(doc);
+                        yyjson_mut_doc_set_root(doc, root);
+                        yyjson_mut_obj_add_str(doc, root, "strategy", "variant_config_scope");
+                        yyjson_mut_obj_add_str(doc, root, "value_resolution_status",
+                            expanded.cycle ? "cycle" : expanded.unresolved ? "unresolved" :
+                            expanded.count ? "resolved" : "unresolved");
+                        yyjson_mut_obj_add_val(doc, root, "resolved_values", values);
+                        for (size_t v = 0; v < expanded.count; v++) {
+                            yyjson_mut_val *item = yyjson_mut_obj(doc), *origins = yyjson_mut_arr(doc);
+                            yyjson_mut_val *fallback = yyjson_mut_arr(doc);
+                            yyjson_mut_obj_add_strcpy(doc, item, "value", expanded.items[v].text);
+                            yyjson_mut_arr_add_sint(doc, origins, init->id);
+                            for (size_t o = 0; o < expanded.items[v].origin_count; o++)
+                                if (expanded.items[v].origins[o] != init->id)
+                                    yyjson_mut_arr_add_sint(doc, origins, expanded.items[v].origins[o]);
+                            if (cl_has_origin(&r->fallback_definitions, init->id))
+                                yyjson_mut_arr_add_sint(doc, fallback, init->id);
+                            for (size_t o = 0; o < expanded.items[v].origin_count; o++)
+                                if (expanded.items[v].origins[o] != init->id &&
+                                    cl_has_origin(&r->fallback_definitions, expanded.items[v].origins[o]))
+                                    yyjson_mut_arr_add_sint(doc, fallback, expanded.items[v].origins[o]);
+                            yyjson_mut_obj_add_val(doc, item, "definition_ids", origins);
+                            yyjson_mut_obj_add_val(doc, item, "sibling_definition_ids", fallback);
+                            yyjson_mut_val *steps = yyjson_mut_arr(doc);
+                            for (size_t o = 0; o <= expanded.items[v].origin_count; o++) {
+                                int64_t from = o ? expanded.items[v].origins[o - 1] : init->id;
+                                if (o && from == init->id) continue;
+                                const cbm_gbuf_edge_t **trace = NULL; int trace_count = 0;
+                                cbm_gbuf_find_edges_by_source_type(r->gb, from, "RESOLVES_VALUE_FROM",
+                                                                   &trace, &trace_count);
+                                for (int t = 0; t < trace_count; t++) {
+                                    if (!cl_has_origin(&expanded.items[v], trace[t]->target_id)) continue;
+                                    yyjson_doc *p = yyjson_read(trace[t]->properties_json,
+                                                               strlen(trace[t]->properties_json), 0);
+                                    if (!p) { r->failed = true; break; }
+                                    yyjson_mut_val *step = yyjson_val_mut_copy(doc, yyjson_doc_get_root(p));
+                                    yyjson_mut_obj_add_sint(doc, step, "from_definition_id", from);
+                                    yyjson_mut_obj_add_sint(doc, step, "to_definition_id", trace[t]->target_id);
+                                    yyjson_mut_arr_add_val(steps, step);
+                                    yyjson_doc_free(p);
+                                }
+                            }
+                            yyjson_mut_obj_add_val(doc, item, "steps", steps);
+                            yyjson_mut_arr_add_val(values, item);
+                        }
+                        expanded_json = yyjson_mut_write(doc, 0, NULL);
+                        if (!expanded_json) r->failed = true;
+                        yyjson_mut_doc_free(doc);
+                    }
+                    cl_variants_free(&expanded);
+                }
                 if (!cbm_gbuf_insert_edge(r->gb, id, binding.origins[b], "RESOLVES_TO_CONFIG",
-                    "{\"strategy\":\"variant_config_scope\"}")) r->failed = true;
+                    expanded_json ? expanded_json : "{\"strategy\":\"variant_config_scope\"}")) r->failed = true;
+                free(expanded_json);
                 linked++;
                 r->binding_edges++;
             }
@@ -1649,7 +1873,11 @@ static void cl_resolve_sql_on_demand(cl_resolver_t *r, const char *path,
             if (j < count) frames[j].child = &frames[j + 1];
             if (!links[j].variant) valid = false;
         }
-        if (valid) cl_bind_call_chain(r, frames, uses, use_count);
+        if (valid) {
+            r->sql_values = true;
+            cl_bind_call_chain(r, frames, uses, use_count);
+            r->sql_values = false;
+        }
         for (int j = 0; j <= count; j++) free(links[j].selection.origins);
         free(links); free(frames);
     }
@@ -1724,11 +1952,6 @@ typedef struct {
     const cbm_gbuf_edge_t **edges;
     int count;
 } cl_prune_t;
-
-static bool cl_has_origin(const cl_variant_t *v, int64_t id) {
-    for (size_t i = 0; i < v->origin_count; i++) if (v->origins[i] == id) return true;
-    return false;
-}
 
 static void cl_collect_invalid_edge(const cbm_gbuf_edge_t *edge, void *data) {
     cl_prune_t *p = data;
@@ -2033,6 +2256,7 @@ static int strategy_config_sql_links(cbm_gbuf_t *gb, const char *sql_path) {
     free(by_name);
     free(parents);
     free(children);
+    free(resolver.fallback_definitions.origins);
     if (resolver.lookup_cache) {
         cbm_ht_foreach(resolver.lookup_cache, cl_lookup_cache_free, NULL);
         cbm_ht_free(resolver.lookup_cache);
@@ -2049,6 +2273,9 @@ static int strategy_config_sql_links(cbm_gbuf_t *gb, const char *sql_path) {
 int cbm_configlink_resolve_sql(cbm_gbuf_t *snapshot, const char *file_path) {
     if (!snapshot || !file_path) return -1;
     cbm_gbuf_delete_by_label(snapshot, "SqlConfigBinding");
+    const cbm_gbuf_edge_t **trace = NULL; int trace_count = 0;
+    cbm_gbuf_find_edges_by_type(snapshot, "RESOLVES_VALUE_FROM", &trace, &trace_count);
+    if (trace_count) cbm_gbuf_delete_edges(snapshot, trace, trace_count);
     return strategy_config_sql_links(snapshot, file_path);
 }
 
